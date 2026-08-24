@@ -42,4 +42,4 @@ A URL do projeto pode ser configurada como `NEXT_PUBLIC_SUPABASE_URL` (preferida
 
 A `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` é reconhecida para diagnóstico, mas **não é usada para gravar contratos**. O schema ativa RLS e não possui policies públicas. Para operações server-side configure `SUPABASE_SECRET_KEY` (chave `sb_secret_...`, recomendada nos projetos novos) ou, em projetos legados, `SUPABASE_SERVICE_ROLE_KEY`.
 
-Depois do login, `GET /api/supabase-status` informa apenas se as variáveis foram detectadas e quais nomes foram usados; nenhum valor secreto é devolvido.
+Depois do login, `GET /api/config` informa apenas se as variáveis foram detectadas e quais nomes foram usados; nenhum valor secreto é devolvido.

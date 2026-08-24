@@ -1,5 +1,5 @@
-import { json, readJson, requireAuth } from './_lib/http.js';
-import { db } from './_lib/supabase.js';
+import { json, readJson, requireAuth } from '../lib/http.js';
+import { db } from '../lib/supabase.js';
 
 export default async function handler(req, res) {
   if (!requireAuth(req, res)) return;

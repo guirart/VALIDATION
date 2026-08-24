@@ -1,6 +1,6 @@
-import { json, readJson } from '../_lib/http.js';
-import { requireActionAuth } from '../_lib/actionAuth.js';
-import { db } from '../_lib/supabase.js';
+import { json, readJson } from '../../lib/http.js';
+import { requireActionAuth } from '../../lib/actionAuth.js';
+import { db } from '../../lib/supabase.js';
 
 const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','requer-correcao','concluido','erro']);
 

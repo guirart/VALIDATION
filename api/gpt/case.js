@@ -1,6 +1,6 @@
-import { json } from '../_lib/http.js';
-import { requireActionAuth } from '../_lib/actionAuth.js';
-import { db } from '../_lib/supabase.js';
+import { json } from '../../lib/http.js';
+import { requireActionAuth } from '../../lib/actionAuth.js';
+import { db } from '../../lib/supabase.js';
 
 export default async function handler(req, res) {
   if (!requireActionAuth(req, res)) return;

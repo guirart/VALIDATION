@@ -1,7 +1,7 @@
-import { json, readJson } from '../_lib/http.js';
-import { requireActionAuth } from '../_lib/actionAuth.js';
-import { db } from '../_lib/supabase.js';
-import { verifyAnalysis, FINAL_CLASSES } from '../_lib/legal.js';
+import { json, readJson } from '../../lib/http.js';
+import { requireActionAuth } from '../../lib/actionAuth.js';
+import { db } from '../../lib/supabase.js';
+import { verifyAnalysis, FINAL_CLASSES } from '../../lib/legal.js';
 
 const AUDIT_RECOMMENDATIONS = new Set(['liberar','corrigir','escalar para revisão humana aprofundada']);
 const AUDIT_STATUSES = new Set(['confirmado','divergente','não encontrado','opinião sem precedente']);

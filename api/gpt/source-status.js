@@ -1,6 +1,6 @@
-import { json } from '../_lib/http.js';
-import { requireActionAuth } from '../_lib/actionAuth.js';
-import { mpText, memoText } from '../_lib/legal.js';
+import { json } from '../../lib/http.js';
+import { requireActionAuth } from '../../lib/actionAuth.js';
+import { mpText, memoText } from '../../lib/legal.js';
 import crypto from 'node:crypto';
 
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');

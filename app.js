@@ -19,17 +19,17 @@ function showLogin(){ $('#app').classList.add('hidden'); $('#login').classList.r
 function showApp(){ $('#login').classList.add('hidden'); $('#app').classList.remove('hidden'); }
 
 async function boot(){
-  const s = await fetch('/api/session',{credentials:'same-origin'}).then(r=>r.json());
+  const s = await fetch('/api/auth',{credentials:'same-origin'}).then(r=>r.json());
   if(s.passwordRequired && !s.authenticated) return showLogin();
   showApp(); await loadConfig(); await loadCases();
 }
 
 $('#login-form').addEventListener('submit', async e=>{
   e.preventDefault(); $('#login-error').textContent='';
-  try { await api('/api/login',{method:'POST',body:JSON.stringify({password:$('#password').value})}); showApp(); await loadConfig(); await loadCases(); }
+  try { await api('/api/auth',{method:'POST',body:JSON.stringify({password:$('#password').value})}); showApp(); await loadConfig(); await loadCases(); }
   catch(err){ $('#login-error').textContent=err.message; }
 });
-$('#logout').addEventListener('click', async()=>{ await fetch('/api/logout',{method:'POST'}); showLogin(); });
+$('#logout').addEventListener('click', async()=>{ await fetch('/api/auth',{method:'DELETE'}); showLogin(); });
 $('#new-case').addEventListener('click',()=>{ selectedId=null; renderCaseList(); $('#empty').classList.add('hidden'); $('#case-panel').classList.add('hidden'); $('#new-panel').classList.remove('hidden'); });
 
 $('#case-form').addEventListener('submit',async e=>{
@@ -56,7 +56,7 @@ function renderCaseList(){
 async function openCase(id){
   selectedId=id; renderCaseList(); $('#empty').classList.add('hidden'); $('#new-panel').classList.add('hidden'); $('#case-panel').classList.remove('hidden');
   $('#case-panel').innerHTML='<div class="empty-state">Carregando…</div>';
-  try{const out=await api('/api/case?id='+encodeURIComponent(id)); renderCase(out.case)}catch(err){$('#case-panel').innerHTML=`<p class="error">${esc(err.message)}</p>`}
+  try{const out=await api('/api/cases?id='+encodeURIComponent(id)); renderCase(out.case)}catch(err){$('#case-panel').innerHTML=`<p class="error">${esc(err.message)}</p>`}
 }
 function latest(arr=[]){return [...arr].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0]}
 function verdictClass(v){return ['atinge','parcial','atenção','ausente'].includes(v)?v:'ausente'}
