@@ -1,0 +1,202 @@
+openapi: 3.1.0
+info:
+  title: Veredicta MP 1376 Action API
+  version: 2.0.0
+  description: API usada por um GPT personalizado para buscar contratos do Veredicta e gravar análises auditadas.
+servers:
+  - url: https://SEU-DOMINIO.vercel.app
+paths:
+  /api/gpt/source-status:
+    get:
+      operationId: getLegalSourceStatus
+      summary: Consulta versões e hashes das fontes jurídicas do app.
+      responses:
+        '200':
+          description: Status das fontes.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /api/gpt/cases:
+    get:
+      operationId: listCases
+      summary: Lista casos do Veredicta, opcionalmente filtrados por status.
+      parameters:
+        - in: query
+          name: status
+          required: false
+          schema:
+            type: string
+            enum: [pendente, em-analise, aguardando-revisao, requer-correcao, concluido, erro]
+      responses:
+        '200':
+          description: Lista de casos.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cases:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
+    post:
+      operationId: createCase
+      summary: Cria um caso diretamente a partir da conversa com o GPT.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, contract_text]
+              properties:
+                title:
+                  type: string
+                client_name:
+                  type: string
+                contract_text:
+                  type: string
+      responses:
+        '201':
+          description: Caso criado.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /api/gpt/case:
+    get:
+      operationId: getCaseForAnalysis
+      summary: Busca o texto integral de um caso para análise e o marca como em análise.
+      parameters:
+        - in: query
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Caso com contrato/dossiê integral.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /api/gpt/analysis:
+    post:
+      operationId: submitAuditedAnalysis
+      summary: Grava a análise de 15 pontos e sua auditoria adversarial. O servidor valida citações e estrutura antes de liberar para revisão humana.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [case_id, analyst, audit]
+              properties:
+                case_id:
+                  type: string
+                  format: uuid
+                analyst:
+                  $ref: '#/components/schemas/AnalystResult'
+                audit:
+                  $ref: '#/components/schemas/AuditResult'
+      responses:
+        '200':
+          description: Resultado da validação e persistência.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+components:
+  schemas:
+    AnalystPoint:
+      type: object
+      required: [number, title, legal_reference, verdict, display_label, mp_quote, contract_quote, reasoning]
+      properties:
+        number:
+          type: integer
+          minimum: 1
+          maximum: 15
+        title:
+          type: string
+        legal_reference:
+          type: string
+        verdict:
+          type: string
+          enum: [atinge, parcial, atenção, ausente]
+        display_label:
+          type: string
+        mp_quote:
+          type: string
+        contract_quote:
+          type: string
+        reasoning:
+          type: string
+    AnalystResult:
+      type: object
+      required: [final_classification, modality, summary, warnings, tested_paths, points]
+      properties:
+        final_classification:
+          type: string
+          enum: [enquadrável, parcialmente enquadrável, inconclusivo, não enquadrável]
+        modality:
+          type: string
+        summary:
+          type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        tested_paths:
+          type: array
+          items:
+            type: object
+            required: [path, result]
+            properties:
+              path:
+                type: string
+              result:
+                type: string
+        points:
+          type: array
+          minItems: 15
+          maxItems: 15
+          items:
+            $ref: '#/components/schemas/AnalystPoint'
+    AuditFinding:
+      type: object
+      required: [point, status, detail]
+      properties:
+        point:
+          type: integer
+          minimum: 1
+          maximum: 15
+        status:
+          type: string
+          enum: [confirmado, divergente, não encontrado, opinião sem precedente]
+        detail:
+          type: string
+    AuditResult:
+      type: object
+      required: [recommendation, final_classification, findings, summary]
+      properties:
+        recommendation:
+          type: string
+          enum: [liberar, corrigir, escalar para revisão humana aprofundada]
+        final_classification:
+          type: string
+          enum: [enquadrável, parcialmente enquadrável, inconclusivo, não enquadrável]
+        findings:
+          type: array
+          minItems: 15
+          maxItems: 15
+          items:
+            $ref: '#/components/schemas/AuditFinding'
+        summary:
+          type: string
