@@ -1,0 +1,13 @@
+{
+  "name": "veredicta-mp1376-app",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "check": "node --check api/gpt/cases.js && node --check api/gpt/case.js && node --check api/gpt/analysis.js && node --check api/gpt/source-status.js && node --check api/config.js && node --check api/cases.js && node --check api/review.js && node --check app.js"
+  },
+  "devDependencies": {
+    "vercel": "latest"
+  }
+}

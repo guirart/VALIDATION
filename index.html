@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Veredicta — MP 1.376/2026</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div id="login" class="screen hidden">
+    <form id="login-form" class="card login-card">
+      <div class="eyebrow">ACESSO INTERNO</div>
+      <h1>Veredicta</h1>
+      <p>Triagem assistida de contratos de crédito rural.</p>
+      <input id="password" type="password" placeholder="Senha do app" autocomplete="current-password" required />
+      <button>Entrar</button>
+      <p id="login-error" class="error"></p>
+    </form>
+  </div>
+
+  <div id="app" class="hidden">
+    <header class="topbar">
+      <div><span class="brand">VEREDICTA</span><span class="subtitle">MP nº 1.376/2026</span></div>
+      <button id="logout" class="ghost">Sair</button>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <button id="new-case" class="primary">+ Novo caso</button>
+        <div class="side-title">Casos</div>
+        <div id="case-list"></div>
+      </aside>
+      <section class="workspace">
+        <div id="empty" class="empty-state">
+          <h2>Selecione ou crie um caso</h2>
+          <p>Cadastre o contrato aqui. Seu GPT personalizado buscará o caso via Action, fará a análise dos 15 pontos e gravará o resultado neste painel.</p>
+        </div>
+        <div id="new-panel" class="hidden">
+          <div class="section-head"><div><div class="eyebrow">NOVO CASO</div><h2>Enviar contrato</h2></div></div>
+          <form id="case-form" class="form-grid">
+            <label>Título<input id="title" required placeholder="Ex.: João Carlos — Custeio 2024" /></label>
+            <label>Cliente<input id="client-name" placeholder="Nome do produtor/cooperativa" /></label>
+            <label class="full">Texto do contrato/dossiê<textarea id="contract-text" required rows="18" placeholder="Cole aqui o contrato e, quando relevante, o conteúdo do laudo/dossiê..."></textarea></label>
+            <div class="full actions"><button class="primary">Salvar caso</button></div>
+          </form>
+        </div>
+        <div id="case-panel" class="hidden"></div>
+      </section>
+    </main>
+  </div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
