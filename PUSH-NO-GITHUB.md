@@ -1,52 +1,18 @@
-# Substituição limpa do repositório VALIDATION
+# Versão 1.3 — substituição integral
 
-Esta versão foi preparada para a Vercel Hobby e contém somente 8 Serverless Functions.
+Esta versão usa **1 única Serverless Function** (`api/index.js`).
 
 ## IMPORTANTE
-Não copie esta versão por cima dos arquivos antigos sem apagar o conteúdo anterior.
-O erro anterior da Vercel ocorreu porque endpoints antigos permaneceram dentro de `/api`.
+Não copie por cima do repositório antigo. Apague os arquivos antigos do projeto, preservando somente a pasta `.git`, e então copie o conteúdo desta versão.
 
-## Método recomendado
-
-1. Faça backup do repositório atual.
-2. Apague todos os arquivos do repositório local, preservando apenas a pasta `.git`.
-3. Copie TODO o conteúdo deste pacote para a raiz do repositório.
-4. Rode:
+Depois execute:
 
 ```bash
 git add -A
-git commit -m "Versao 1.2 limpa - Vercel Hobby e Supabase secret key"
+git commit -m "Versao 1.3 - API unificada para Vercel Hobby"
 git push
 ```
 
-`git add -A` é importante porque registra as exclusões dos endpoints antigos.
+No GitHub, confirme que a pasta `/api` contém **somente** `index.js`.
 
-## Funções Serverless esperadas
-
-Somente estas 8:
-
-- `api/auth.js`
-- `api/cases.js`
-- `api/config.js`
-- `api/review.js`
-- `api/gpt/cases.js`
-- `api/gpt/case.js`
-- `api/gpt/analysis.js`
-- `api/gpt/source-status.js`
-
-Os helpers ficam em `/lib` e NÃO devem voltar para `/api/_lib`.
-
-## Variáveis da Vercel
-
-Use:
-
-- `APP_PASSWORD=marcal2015`
-- `APP_SESSION_SECRET=<segredo>`
-- `GPT_ACTION_API_KEY=<segredo>`
-- `NEXT_PUBLIC_SUPABASE_URL=<url>`
-- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<publishable key>`
-- `SUPABASE_SECRET_KEY=<sb_secret_...>`
-- `LEGAL_SOURCE_VERSION=2026-08-24`
-- `MEMORANDUM_VERSION=1.0`
-
-O backend prioriza `SUPABASE_SECRET_KEY` e também aceita `SUPABASE_SERVICE_ROLE_KEY` por compatibilidade.
+A Vercel continuará aceitando as URLs antigas (`/api/auth`, `/api/cases`, `/api/gpt/...`) por meio de rewrites, mas todas são processadas pela mesma função.

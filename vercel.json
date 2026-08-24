@@ -1,13 +1,56 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/api/auth",
+      "destination": "/api?action=auth"
+    },
+    {
+      "source": "/api/cases",
+      "destination": "/api?action=cases"
+    },
+    {
+      "source": "/api/config",
+      "destination": "/api?action=config"
+    },
+    {
+      "source": "/api/review",
+      "destination": "/api?action=review"
+    },
+    {
+      "source": "/api/gpt/cases",
+      "destination": "/api?action=gpt-cases"
+    },
+    {
+      "source": "/api/gpt/case",
+      "destination": "/api?action=gpt-case"
+    },
+    {
+      "source": "/api/gpt/analysis",
+      "destination": "/api?action=gpt-analysis"
+    },
+    {
+      "source": "/api/gpt/source-status",
+      "destination": "/api?action=source-status"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "no-referrer" },
-        { "key": "X-Frame-Options", "value": "DENY" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        }
       ]
     }
   ]
