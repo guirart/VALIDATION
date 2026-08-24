@@ -26,7 +26,7 @@ function cookies(req) {
 }
 
 function sign(value) {
-  const secret = process.env.APP_SESSION_SECRET || '';
+  const secret = process.env.APP_SESSION_SECRET || 'veredicta-session-marcal2015-v1-2026';
   if (!secret) return '';
   return crypto.createHmac('sha256', secret).update(value).digest('hex');
 }
@@ -42,7 +42,10 @@ export function clearSessionCookie() {
 }
 
 export function isAuthenticated(req) {
-  if (!process.env.APP_PASSWORD) return true;
+  // O app exige autenticação mesmo sem variáveis de ambiente na Vercel.
+  // APP_PASSWORD pode sobrescrever a senha padrão definida no login.
+  const passwordEnabled = Boolean(process.env.APP_PASSWORD || 'marcal2015');
+  if (!passwordEnabled) return true;
   const token = cookies(req).veredicta_session;
   if (!token) return false;
   const [issued, signature] = token.split('.');

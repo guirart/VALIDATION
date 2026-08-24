@@ -1,4 +1,6 @@
-# Veredicta — MP nº 1.376/2026 — modo GPT Action
+# Veredicta
+
+> Senha padrão do app: `marcal2015`. Em produção, ela pode ser sobrescrita pela variável `APP_PASSWORD`. — MP nº 1.376/2026 — modo GPT Action
 
 App web para organizar e auditar análises de contratos de crédito rural. Nesta versão, **o app não chama a OpenAI por API**.
 
