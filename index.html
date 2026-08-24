@@ -31,23 +31,37 @@
       </div>
     </header>
 
-    <main class="page">
+    <div class="workspace">
+      <aside class="history-sidebar">
+        <div class="sidebar-head">
+          <div>
+            <div class="micro">HISTÓRICO</div>
+            <h2>Análises</h2>
+          </div>
+          <button id="sidebar-refresh" class="sidebar-icon" title="Atualizar">↻</button>
+        </div>
+        <div class="sidebar-search">
+          <input id="case-search" placeholder="Buscar caso..." />
+        </div>
+        <div id="case-history" class="case-history"></div>
+        <div class="sidebar-foot">
+          <button id="sidebar-new" class="btn btn-dark">+ Novo caso</button>
+        </div>
+      </aside>
+
+      <main class="page">
       <section id="stats" class="stats-grid"></section>
 
-      <section class="section">
+      <section class="section analysis-section">
         <div class="section-title-row">
-          <h2>Testes realizados</h2>
-          <span id="tests-note" class="mono-note"></span>
+          <div>
+            <h2 id="analysis-section-title">Análise selecionada</h2>
+            <span id="tests-note" class="mono-note"></span>
+          </div>
         </div>
-        <div class="info-box">
+        <div class="info-box compact-info">
           <span class="info-icon">i</span>
-          <p>As abas abaixo representam os casos reais desta instância do Veredicta. Selecione um caso para ver classificação, os 15 pontos, evidências e o checklist de resolução correspondente.</p>
-        </div>
-
-        <div class="tabs-shell">
-          <button id="tabs-left" class="tab-arrow" aria-label="rolar abas para esquerda">‹</button>
-          <div id="case-tabs" class="case-tabs"></div>
-          <button id="tabs-right" class="tab-arrow" aria-label="rolar abas para direita">›</button>
+          <p>Use o histórico lateral para navegar entre análises antigas. O conteúdo completo do caso selecionado aparece abaixo.</p>
         </div>
 
         <div id="case-view" class="case-view">
@@ -95,7 +109,8 @@
         </div>
         <div id="resolution-panel" class="resolution-panel"></div>
       </section>
-    </main>
+      </main>
+    </div>
   </div>
 
   <script type="module" src="/app.js"></script>

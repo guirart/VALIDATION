@@ -64,3 +64,8 @@ A interface foi redesenhada para reproduzir o fluxo demonstrado no vídeo de ref
 - itens dos pontos 1–15 aparecem somente quando o ponto não está `atinge`;
 - marcações do checklist persistem no navegador por caso;
 - atualização automática quando uma nova análise chega do GPT.
+
+
+## Versão 1.6 — histórico lateral
+
+Mantém o fluxo da versão 1.5, mas substitui a navegação por abas horizontais por uma barra lateral rolável. As análises antigas ficam permanentemente acessíveis à esquerda, com busca, cliente, classificação, status e data. O caso selecionado abre no painel principal com os 15 pontos, evidências, filtros e checklist resolutivo.

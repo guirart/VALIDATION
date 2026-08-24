@@ -64,8 +64,9 @@ $('#login-form').addEventListener('submit',async e=>{
 });
 $('#logout').addEventListener('click',async()=>{await fetch('/api/auth',{method:'DELETE'});showLogin()});
 $('#refresh').addEventListener('click',async()=>{await loadCases(true)});
-$('#tabs-left').addEventListener('click',()=>$('#case-tabs').scrollBy({left:-520,behavior:'smooth'}));
-$('#tabs-right').addEventListener('click',()=>$('#case-tabs').scrollBy({left:520,behavior:'smooth'}));
+$('#sidebar-refresh')?.addEventListener('click',async()=>{await loadCases(true)});
+$('#case-search')?.addEventListener('input',()=>renderHistory());
+$('#sidebar-new')?.addEventListener('click',()=>document.querySelector('#new-case-section')?.scrollIntoView({behavior:'smooth',block:'start'}));
 
 async function loadConfig(){try{const out=await api('/api/config');customGptUrl=out.custom_gpt_url||''}catch{customGptUrl=''}}
 async function loadCases(keep=false){
@@ -85,20 +86,35 @@ function renderStats(){
     ['CONTRATOS TESTADOS',String(cases.length),`${analyzed} com análise gravada`],
     ['REVISÕES HUMANAS',String(reviewed),`${pending} casos pendentes/em análise`]
   ].map(x=>`<div class="stat-card"><span>${x[0]}</span><b>${x[1]}</b><small>${x[2]}</small></div>`).join('');
-  $('#tests-note').textContent=`${cases.length} caso${cases.length===1?'':'s'} nesta instância — clique numa aba`;
+  $('#tests-note').textContent=`${cases.length} caso${cases.length===1?'':'s'} nesta instância — navegue pelo histórico lateral`;
 }
-function renderTabs(){
-  $('#case-tabs').innerHTML=cases.map(c=>{
+function renderHistory(){
+  const q=norm($('#case-search')?.value||'');
+  const filtered=cases.filter(c=>{
+    if(!q)return true;
     const a=latest(c.analyses);
-    const badge=a?shortClass(a.final_classification):c.status;
-    return `<button class="case-tab ${c.id===selectedId?'active':''}" data-id="${esc(c.id)}"><span>Teste real · ${esc(c.title)}</span><small>${esc(badge)}</small></button>`
-  }).join('');
-  $$('.case-tab').forEach(b=>b.addEventListener('click',()=>openCase(b.dataset.id)));
+    return norm([c.title,c.client_name,c.status,a?.final_classification].join(' ')).includes(q);
+  });
+  $('#case-history').innerHTML=filtered.length?filtered.map(c=>{
+    const a=latest(c.analyses);
+    const selected=c.id===selectedId;
+    const classification=a?.final_classification||'ainda não analisado';
+    return `<button class="history-item ${selected?'active':''}" data-id="${esc(c.id)}">
+      <span class="history-dot ${a?'done':'pending'}"></span>
+      <span class="history-content">
+        <b>${esc(c.title)}</b>
+        <small>${esc(c.client_name||'cliente não informado')}</small>
+        <span class="history-meta"><em>${esc(shortClass(classification))}</em><time>${fmtDate(c.updated_at||c.created_at)}</time></span>
+      </span>
+    </button>`;
+  }).join(''):`<div class="history-empty">Nenhum caso encontrado.</div>`;
+  $$('.history-item').forEach(b=>b.addEventListener('click',()=>openCase(b.dataset.id)));
 }
+function renderTabs(){ renderHistory(); }
 async function openCase(id,rerenderTabs=true){
   selectedId=id;if(rerenderTabs)renderTabs();
   $('#case-view').innerHTML='<div class="loading-card">Carregando caso…</div>';
-  try{const out=await api('/api/cases?id='+encodeURIComponent(id));selectedCase=out.case;renderCase();renderResolution();renderTabs()}
+  try{const out=await api('/api/cases?id='+encodeURIComponent(id));selectedCase=out.case;if($('#analysis-section-title'))$('#analysis-section-title').textContent=selectedCase.title||'Análise selecionada';renderCase();renderResolution();renderTabs()}
   catch(err){$('#case-view').innerHTML=`<div class="error-card">${esc(err.message)}</div>`}
 }
 function shortClass(v=''){return v.replace('parcialmente enquadrável','parcial').replace('não enquadrável','não enquadrável')}
