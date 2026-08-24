@@ -48,3 +48,19 @@ Depois do login, `GET /api/config` informa apenas se as variáveis foram detecta
 ## Versão 1.4 — checklist no app
 
 Cada caso agora exibe permanentemente os 15 pontos jurídicos. Antes da análise ficam como pendentes; após a Action do GPT, cada ponto mostra veredito, referência jurídica, citação da MP, citação do contrato, raciocínio e status da auditoria.
+
+
+## Versão 1.5 — fluxo do painel de referência
+
+A interface foi redesenhada para reproduzir o fluxo demonstrado no vídeo de referência:
+- abas horizontais por caso;
+- classificação final + resumo;
+- grade 4×4 dos 15 pontos;
+- filtros por veredito;
+- expansão/recolhimento dos 15 cards;
+- comparação "Na MP" × "No contrato/laudo";
+- formulário de novo contrato no mesmo fluxo;
+- checklist resolutivo com documentação genérica;
+- itens dos pontos 1–15 aparecem somente quando o ponto não está `atinge`;
+- marcações do checklist persistem no navegador por caso;
+- atualização automática quando uma nova análise chega do GPT.

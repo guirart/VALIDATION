@@ -1,168 +1,244 @@
 const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
 let cases = [];
 let selectedId = null;
+let selectedCase = null;
 let customGptUrl = '';
+let currentFilter = 'all';
 
 const CHECKLIST_15 = [
-  {point:1,title:'Natureza do instrumento',legal_reference:'art. 1º, caput e art. 7º — regulamentação do CMN',description:'Reconhecer a fase administrativa e a dependência de regulamentação do CMN, sem tratar a MP como substituta da atuação jurídica.'},
-  {point:2,title:'Filtro geral cumulativo',legal_reference:'art. 1º, § 1º',description:'Verificar cumulativamente beneficiário, janela 2019–2025, 2+ safras, redução de 30%+, nexo, laudo, categoria da dívida e sujeição à aprovação da instituição.'},
-  {point:3,title:'Modalidade excepcional',legal_reference:'art. 1º, § 7º',description:'Verificar 3+ safras, redução de 40%+ e vínculo específico a evento climático extremo.'},
-  {point:4,title:'Escopo da dívida abrangida',legal_reference:'art. 1º, I/II/III; art. 6º para CPR',description:'Identificar corretamente custeio, comercialização, industrialização, investimento ou CPR e conferir as datas e condições específicas.'},
-  {point:5,title:'Ausência de obrigação bancária',legal_reference:'art. 1º, § 4º, V; art. 3º, I',description:'Não presumir direito subjetivo à contratação; verificar adesão, recusa, tratamento desigual ou exigência não prevista.'},
-  {point:6,title:'Processos judiciais ativos',legal_reference:'silêncio da MP quanto a execução em curso',description:'Não presumir suspensão automática de execução, penhora, leilão ou negativação; identificar providências cabíveis.'},
-  {point:7,title:'Prorrogação de 30 dias',legal_reference:'art. 4º',description:'Verificar inadimplência em 14/07/2026, vencimento em até 30 dias da publicação e pedido de contratação da nova linha.'},
-  {point:8,title:'Suficiência do laudo técnico',legal_reference:'art. 1º, § 1º e § 7º',description:'Conferir evento, safras, atividade financiada, renda esperada x obtida, percentual de redução, nexo causal e critério de renda adotado.'},
-  {point:9,title:'Independência técnica / risco de fraude',legal_reference:'art. 9º',description:'Não induzir enquadramento; preservar independência técnica e sinalizar consequências de falsidade ou fraude.'},
-  {point:10,title:'Limites cumulativos',legal_reference:'art. 1º, § 4º, I, d; § 7º, VI',description:'Somar operações por mutuário em todas as instituições e aplicar regras complementares quando cabíveis.'},
-  {point:11,title:'Linha do art. 2º sem juros protegidos',legal_reference:'art. 2º, § 2º, I',description:'Quando aplicável, alertar que os juros são negociados e comparar custo total antes de presumir vantagem.'},
-  {point:12,title:'Garantias e novação',legal_reference:'art. 5º, parágrafo único',description:'Revisar riscos de novação, renúncias, vencimento antecipado e redução/ampliação de garantias.'},
-  {point:13,title:'Valores já pagos/indenizados',legal_reference:'art. 3º, II',description:'Separar valores efetivamente pagos ou indenizados da parcela não coberta, sem excluir automaticamente toda a operação.'},
-  {point:14,title:'Dívida Ativa da União',legal_reference:'art. 1º, § 9º',description:'Conferir se a operação foi encaminhada à Dívida Ativa da União e aplicar a exclusão quando pertinente.'},
-  {point:15,title:'Janela real de 120 dias',legal_reference:'art. 1º, § 4º, IV; art. 62, CF',description:'Controlar o prazo de contratação e distingui-lo do prazo constitucional de vigência/conversão da MP.'}
+  {point:1,title:'Natureza do instrumento',legal_reference:'art. 1º, caput / art. 7º',description:'A MP cria uma via administrativa e depende de regulamentação; não substitui a análise jurídica nem promete automatismos.',resolve:'Confirmar a natureza do instrumento e registrar que a MP autoriza linhas de composição, sem transformar o enquadramento técnico em aprovação automática. Conferir a regulamentação do CMN vigente.'},
+  {point:2,title:'Filtro geral cumulativo',legal_reference:'art. 1º, § 1º',description:'Beneficiário, janela 2019–2025, 2+ safras, redução mínima de 30%, nexo com a atividade financiada e laudo.',resolve:'Completar a prova do filtro geral: identificação do beneficiário, duas ou mais safras no período, percentuais de perda, renda esperada x obtida, nexo e laudo habilitado.'},
+  {point:3,title:'Modalidade excepcional',legal_reference:'art. 1º, § 7º',description:'Exige 3+ safras, evento climático extremo e redução mínima de 40%.',resolve:'Se a excepcional não fechar, testar expressamente a modalidade geral do ponto 2. Para a excepcional, obter prova de três ou mais safras, causa climática elegível e queda de pelo menos 40%.'},
+  {point:4,title:'Escopo da dívida abrangida',legal_reference:'art. 1º, I/II/III; art. 6º',description:'Classificar corretamente custeio/comercialização/industrialização, investimento ou CPR e conferir datas.',resolve:'Identificar a modalidade exata da dívida, datas de contratação/renegociação/inadimplência, fonte de recursos e, se CPR, quem é o credor e como o título foi registrado.'},
+  {point:5,title:'Ausência de obrigação bancária',legal_reference:'art. 1º, § 4º, V',description:'A instituição mantém o risco da nova operação; enquadramento não equivale a crédito obrigatório.',resolve:'Protocolar pedido completo e exigir análise motivada. Documentar recusa genérica, tratamento desigual ou exigência não prevista, sem formular a tese simplista de aprovação automática.'},
+  {point:6,title:'Processos judiciais ativos',legal_reference:'silêncio da MP',description:'Não existe suspensão automática de execução, penhora, leilão ou negativação.',resolve:'Mapear execuções e medidas em curso. Avaliar comunicação do fato superveniente, pedido consensual de suspensão, audiência de conciliação e preservação da atividade produtiva.'},
+  {point:7,title:'Prorrogação de 30 dias',legal_reference:'art. 4º',description:'Mecanismo limitado, condicionado às datas e ao pedido da nova linha.',resolve:'Conferir situação em 14/07/2026 e vencimento no período legal. Se aplicável, protocolar pedido expresso do art. 4º; se não, registrar por que não se aplica e avaliar alternativas de regularização.'},
+  {point:8,title:'Suficiência do laudo técnico',legal_reference:'art. 1º, § 1º / § 7º',description:'O laudo deve demonstrar evento, safras, atividade, renda, percentuais e nexo causal.',resolve:'Solicitar laudo técnico específico contendo produtividade esperada e obtida, área, preço, renda bruta esperada e efetiva, metodologia, safras afetadas e nexo com a operação.'},
+  {point:9,title:'Independência técnica / risco de fraude',legal_reference:'art. 9º',description:'O laudo não pode ser produzido para “encaixar” o produtor.',resolve:'Corrigir inconsistências documentais com autonomia do profissional habilitado. Não orientar alteração artificial de percentuais ou fatos; documentar divergências e sua explicação técnica.'},
+  {point:10,title:'Limites cumulativos',legal_reference:'art. 1º, § 4º, I, d / § 7º, VI',description:'O teto é cumulativo por mutuário, inclusive entre instituições.',resolve:'Levantar todas as operações do produtor em todas as instituições, respectivos saldos, programas, garantias e situação. Somar contra o teto global aplicável.'},
+  {point:11,title:'Linha do art. 2º sem juros protegidos',legal_reference:'art. 2º, § 2º, I',description:'Pode cobrir excedentes, mas a taxa é negociada.',resolve:'Se houver valor excedente, testar a linha do art. 2º e comparar taxa atual, encargos, nova taxa, prazo, carência, garantias e custo total antes de recomendar contratação.'},
+  {point:12,title:'Garantias e novação',legal_reference:'art. 5º, parágrafo único',description:'A nova operação pode reduzir ou ampliar garantias e alterar relações jurídicas.',resolve:'Obter matrícula e avaliação atualizadas das garantias. Revisar minuta da nova operação para novação, confissão, renúncias, vencimento antecipado e reforço ou liberação de garantias.'},
+  {point:13,title:'Valores já pagos/indenizados',legal_reference:'art. 3º, II',description:'Valores já liquidados ou cobertos não podem ser contados novamente.',resolve:'Reunir apólices, Proagro e comprovantes. Separar a parcela efetivamente indenizada da parcela não coberta, franquias e prejuízo excedente, evitando dupla contagem.'},
+  {point:14,title:'Dívida Ativa da União',legal_reference:'art. 1º, § 9º',description:'Operação encaminhada à DAU fica fora do mecanismo do art. 1º.',resolve:'Obter certidão e documentação da situação da dívida. Se encaminhada à DAU, registrar a exclusão e avaliar a estratégia jurídica adequada fora desta via.'},
+  {point:15,title:'Janela real de 120 dias',legal_reference:'art. 1º, § 4º, IV / art. 62 CF',description:'O prazo do beneficiário não se confunde com a vigência constitucional da MP.',resolve:'Registrar a data de publicação, calcular o prazo de contratação, documentar a data do protocolo e acompanhar separadamente eventual conversão, alteração ou perda de eficácia da MP.'}
 ];
 
+const GENERIC_DOCS = [
+  ['identificacao','Obter identificação individual completa do produtor/cooperativa — nome, CPF/CNPJ, propriedade rural (matrícula/CCIR) e categoria declarada (Pronaf, Pronamp ou demais produtores).'],
+  ['instrumento','Reunir a cópia integral do instrumento de crédito (CCR, CPR, contrato de mútuo etc.), incluindo aditivos, renegociações e prorrogações anteriores — não apenas o resumo ou a última via.'],
+  ['credor','Obter extrato ou declaração da instituição credora confirmando datas de contratação, renegociação e a situação de adimplência/inadimplência nas datas relevantes da MP.'],
+  ['laudo','Exigir laudo técnico específico de perda de safra/renda — produtividade esperada e obtida, área, preço, metodologia e nexo causal explícito com a operação financiada.'],
+  ['seguro','Reunir apólices de seguro rural/Proagro e comprovantes de indenização eventualmente já recebida sobre as mesmas safras alegadas no laudo.'],
+  ['dau','Obter certidão de situação na Dívida Ativa da União (PGFN), emitida o mais próximo possível da data do pedido.'],
+  ['judicial','Obter certidões de distribuição cível e documentos de execuções, protestos e ações em curso relacionadas ao produtor e à dívida.'],
+  ['garantias','Reunir matrícula atualizada e avaliação dos bens oferecidos em garantia (hipoteca, alienação fiduciária etc.).']
+];
 
+function esc(s=''){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function fmtDate(s){if(!s)return '—';try{return new Intl.DateTimeFormat('pt-BR',{dateStyle:'short',timeStyle:'short'}).format(new Date(s));}catch{return s}}
+function norm(v=''){return String(v).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
+function verdictClass(v){const n=norm(v);return ['atinge','parcial','atencao','ausente'].includes(n)?n:'ausente'}
+function verdictLabel(v,display=''){const n=verdictClass(v); if(display)return display; return ({atinge:'atinge',parcial:'parcial',atencao:'atenção',ausente:'não consta'})[n]}
+function latest(arr=[]){return [...arr].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0]}
 
-async function api(url, options={}) {
-  const res = await fetch(url, { credentials:'same-origin', headers:{'Content-Type':'application/json', ...(options.headers||{})}, ...options });
-  let body = {};
-  try { body = await res.json(); } catch {}
-  if (res.status === 401) { showLogin(); throw new Error('Sessão encerrada'); }
-  if (!res.ok) throw new Error(body.error || `Erro ${res.status}`);
+async function api(url, options={}){
+  const res=await fetch(url,{credentials:'same-origin',headers:{'Content-Type':'application/json',...(options.headers||{})},...options});
+  let body={};try{body=await res.json()}catch{}
+  if(res.status===401){showLogin();throw new Error('Sessão encerrada')}
+  if(!res.ok)throw new Error(body.error||`Erro ${res.status}`);
   return body;
 }
-
-function esc(s=''){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
-function fmtDate(s){if(!s)return '—'; try{return new Intl.DateTimeFormat('pt-BR',{dateStyle:'short',timeStyle:'short'}).format(new Date(s));}catch{return s}}
-function showLogin(){ $('#app').classList.add('hidden'); $('#login').classList.remove('hidden'); }
-function showApp(){ $('#login').classList.add('hidden'); $('#app').classList.remove('hidden'); }
+function showLogin(){$('#app').classList.add('hidden');$('#login').classList.remove('hidden')}
+function showApp(){$('#login').classList.add('hidden');$('#app').classList.remove('hidden')}
 
 async function boot(){
-  const s = await fetch('/api/auth',{credentials:'same-origin'}).then(r=>r.json());
-  if(s.passwordRequired && !s.authenticated) return showLogin();
-  showApp(); await loadConfig(); await loadCases();
+  const s=await fetch('/api/auth',{credentials:'same-origin'}).then(r=>r.json());
+  if(s.passwordRequired&&!s.authenticated)return showLogin();
+  showApp();await loadConfig();await loadCases();
+}
+$('#login-form').addEventListener('submit',async e=>{
+  e.preventDefault();$('#login-error').textContent='';
+  try{await api('/api/auth',{method:'POST',body:JSON.stringify({password:$('#password').value})});showApp();await loadConfig();await loadCases()}
+  catch(err){$('#login-error').textContent=err.message}
+});
+$('#logout').addEventListener('click',async()=>{await fetch('/api/auth',{method:'DELETE'});showLogin()});
+$('#refresh').addEventListener('click',async()=>{await loadCases(true)});
+$('#tabs-left').addEventListener('click',()=>$('#case-tabs').scrollBy({left:-520,behavior:'smooth'}));
+$('#tabs-right').addEventListener('click',()=>$('#case-tabs').scrollBy({left:520,behavior:'smooth'}));
+
+async function loadConfig(){try{const out=await api('/api/config');customGptUrl=out.custom_gpt_url||''}catch{customGptUrl=''}}
+async function loadCases(keep=false){
+  const out=await api('/api/cases');cases=out.cases||[];
+  renderStats();renderTabs();
+  if(selectedId && cases.some(c=>c.id===selectedId)){await openCase(selectedId,false)}
+  else if(cases.length){await openCase(cases[0].id,false)}
+  else{selectedId=null;selectedCase=null;renderEmptyCase();renderResolution()}
+}
+function renderStats(){
+  const analyzed=cases.filter(c=>(c.analyses||[]).length).length;
+  const reviewed=cases.filter(c=>(c.reviews||[]).length).length;
+  const pending=cases.filter(c=>c.status==='pendente'||c.status==='em-analise').length;
+  $('#stats').innerHTML=[
+    ['AGENTES CONFIGURADOS','2','analista + auditor'],
+    ['FONTES DE REFERÊNCIA','2','MP integral + memorando'],
+    ['CONTRATOS TESTADOS',String(cases.length),`${analyzed} com análise gravada`],
+    ['REVISÕES HUMANAS',String(reviewed),`${pending} casos pendentes/em análise`]
+  ].map(x=>`<div class="stat-card"><span>${x[0]}</span><b>${x[1]}</b><small>${x[2]}</small></div>`).join('');
+  $('#tests-note').textContent=`${cases.length} caso${cases.length===1?'':'s'} nesta instância — clique numa aba`;
+}
+function renderTabs(){
+  $('#case-tabs').innerHTML=cases.map(c=>{
+    const a=latest(c.analyses);
+    const badge=a?shortClass(a.final_classification):c.status;
+    return `<button class="case-tab ${c.id===selectedId?'active':''}" data-id="${esc(c.id)}"><span>Teste real · ${esc(c.title)}</span><small>${esc(badge)}</small></button>`
+  }).join('');
+  $$('.case-tab').forEach(b=>b.addEventListener('click',()=>openCase(b.dataset.id)));
+}
+async function openCase(id,rerenderTabs=true){
+  selectedId=id;if(rerenderTabs)renderTabs();
+  $('#case-view').innerHTML='<div class="loading-card">Carregando caso…</div>';
+  try{const out=await api('/api/cases?id='+encodeURIComponent(id));selectedCase=out.case;renderCase();renderResolution();renderTabs()}
+  catch(err){$('#case-view').innerHTML=`<div class="error-card">${esc(err.message)}</div>`}
+}
+function shortClass(v=''){return v.replace('parcialmente enquadrável','parcial').replace('não enquadrável','não enquadrável')}
+
+function pointsMap(a){return new Map(((a?.analyst_json?.points)||[]).map(p=>[Number(p.point??p.number),p]))}
+function findingsMap(a){return new Map(((a?.audit_json?.findings)||[]).map(f=>[Number(f.point),f]))}
+function countVerdicts(a){
+  const pm=pointsMap(a);const c={atinge:0,parcial:0,atencao:0,ausente:0};
+  CHECKLIST_15.forEach(i=>{const p=pm.get(i.point);if(p)c[verdictClass(p.verdict)]++});
+  return c;
+}
+function gridHtml(a){
+  const pm=pointsMap(a);const counts=countVerdicts(a);
+  return `<div class="memo15">
+    <div class="memo15-head"><b>Checklist dos 15 pontos do memorando — status neste contrato</b><span>${counts.atinge} atingidos · ${counts.parcial} parcial · ${counts.atencao} atenção · ${counts.ausente} não consta/não se aplica</span></div>
+    <div class="memo-grid">
+      ${CHECKLIST_15.map(item=>{
+        const p=pm.get(item.point);const v=p?verdictClass(p.verdict):'ausente';const label=p?verdictLabel(p.verdict,p.display_label):'pendente';
+        return `<div class="memo-cell"><span class="memo-num">${String(item.point).padStart(2,'0')}</span><span class="memo-title">${esc(item.title)} <i>(${esc(p?.legal_reference||item.legal_reference)})</i></span><span class="pill v-${v}">${esc(label)}</span></div>`
+      }).join('')}
+      <div class="memo-cell memo-blank"></div>
+    </div>
+    <div class="memo-note">A grade resume o resultado; o quadro comparativo abaixo mantém os 15 pontos completos com as evidências usadas na análise.</div>
+  </div>`;
+}
+function filterBarHtml(a){
+  const c=countVerdicts(a);
+  return `<div class="filterbar">
+    <div class="filters">
+      <button class="filter-chip ${currentFilter==='all'?'active':''}" data-filter="all">Todos <b>(15)</b></button>
+      <button class="filter-chip ${currentFilter==='atinge'?'active':''}" data-filter="atinge">Atinge <b>(${c.atinge})</b></button>
+      <button class="filter-chip ${currentFilter==='ausente'?'active':''}" data-filter="ausente">Não consta <b>(${c.ausente})</b></button>
+      <button class="filter-chip ${currentFilter==='parcial'?'active':''}" data-filter="parcial">Parcial <b>(${c.parcial})</b></button>
+      <button class="filter-chip ${currentFilter==='atencao'?'active':''}" data-filter="atencao">Atenção <b>(${c.atencao})</b></button>
+    </div>
+    <div class="expand-actions"><button data-expand="1">expandir todos</button><button data-expand="0">recolher todos</button></div>
+  </div>`;
+}
+function pointCardsHtml(a){
+  const pm=pointsMap(a), fm=findingsMap(a);
+  return `<div class="checkpoint-list">${CHECKLIST_15.map(item=>{
+    const p=pm.get(item.point);const f=fm.get(item.point);const v=p?verdictClass(p.verdict):'ausente';
+    const label=p?verdictLabel(p.verdict,p.display_label):'pendente';
+    const hidden=currentFilter!=='all'&&currentFilter!==v?' checkpoint-hidden':'';
+    return `<details class="checkpoint${hidden}" data-verdict="${v}">
+      <summary><span class="cp-num">${String(item.point).padStart(2,'0')}</span><span class="cp-title">${esc(p?.title||item.title)}${p?.display_label?` — ${esc(p.display_label)}`:''}</span><span class="pill v-${v}">${esc(label)}</span><span class="chev">›</span></summary>
+      <div class="cp-body">
+        <div class="evidence-grid">
+          <div class="evidence-box"><div class="evidence-label">NA MP — ${esc(p?.legal_reference||item.legal_reference)}</div><blockquote>${p?.mp_quote?`“${esc(p.mp_quote)}”`:'Nenhuma citação gravada.'}</blockquote>${p?.mp_quote_verified===true?'<small class="verified">✓ verificada pelo backend</small>':p?.mp_quote_verified===false?'<small class="not-verified">✕ não verificada</small>':''}</div>
+          <div class="evidence-box"><div class="evidence-label">NO CONTRATO / LAUDO</div><blockquote>${p?.contract_quote?`“${esc(p.contract_quote)}”`:'Não consta no documento analisado.'}</blockquote>${p?.contract_quote_verified===true?'<small class="verified">✓ verificada pelo backend</small>':p?.contract_quote_verified===false?'<small class="not-verified">✕ não verificada</small>':''}</div>
+        </div>
+        <p class="reasoning"><b>Por quê ${esc(label)}:</b> ${esc(p?.reasoning||item.description)}</p>
+        ${f?`<div class="audit-line"><b>Auditoria:</b> ${esc(f.status)}${f.reason?` — ${esc(f.reason)}`:''}</div>`:''}
+      </div>
+    </details>`
+  }).join('')}</div>`;
+}
+function renderCase(){
+  const c=selectedCase;if(!c)return renderEmptyCase();
+  const a=latest(c.analyses||[]);const aj=a?.analyst_json||{};const au=a?.audit_json||{};
+  let html=`<article class="analysis-sheet">
+    <div class="case-head">
+      <div><h3>${esc(c.title)}</h3><div class="source-line">caso ${esc(c.id)} · ${esc(c.client_name||'cliente não informado')} · ${esc(c.status)}</div></div>
+      <button id="analyze-btn" class="btn btn-outline">${a?'reanalisar no GPT':'analisar no GPT'}</button>
+    </div>`;
+  if(a){
+    html+=`<div class="final-class"><span>CLASSIFICAÇÃO FINAL</span><strong>${esc(a.final_classification)}</strong></div>
+    <div class="summary-box"><p><b>Resumo:</b> ${esc(aj.summary||au.summary||'')}</p><p><b>Auditoria:</b> ${esc(a.auditor_recommendation||'—')} · quality gate ${a.quality_gate?'liberado':'bloqueado'}</p></div>
+    ${gridHtml(a)}${filterBarHtml(a)}${pointCardsHtml(a)}
+    <div class="report-foot">análise ${esc(a.id)} · fonte ${esc(a.legal_source_version||'não informada')} · memorando ${esc(a.memorandum_version||'não informado')} · criada em ${fmtDate(a.created_at)}</div>`;
+  }else{
+    html+=`<div class="no-analysis"><h4>Ainda não analisado</h4><p>O caso está salvo. Clique em <b>analisar no GPT</b>; o GPT buscará o contrato pela Action, fará os 15 pontos + auditoria e gravará o resultado aqui.</p><code>Analise o caso ${esc(c.id)}.</code></div>`;
+  }
+  html+='</article>';
+  $('#case-view').innerHTML=html;
+  $('#analyze-btn')?.addEventListener('click',()=>openInGpt(c));
+  $$('.filter-chip').forEach(b=>b.addEventListener('click',()=>{currentFilter=b.dataset.filter;renderCase()}));
+  $$('[data-expand]').forEach(b=>b.addEventListener('click',()=>{$$('.checkpoint:not(.checkpoint-hidden)').forEach(d=>d.open=b.dataset.expand==='1')}));
+}
+function renderEmptyCase(){
+  $('#case-view').innerHTML='<div class="empty-card"><h3>Nenhum caso cadastrado</h3><p>Use o formulário abaixo para criar o primeiro contrato.</p></div>';
 }
 
-$('#login-form').addEventListener('submit', async e=>{
-  e.preventDefault(); $('#login-error').textContent='';
-  try { await api('/api/auth',{method:'POST',body:JSON.stringify({password:$('#password').value})}); showApp(); await loadConfig(); await loadCases(); }
-  catch(err){ $('#login-error').textContent=err.message; }
-});
-$('#logout').addEventListener('click', async()=>{ await fetch('/api/auth',{method:'DELETE'}); showLogin(); });
-$('#new-case').addEventListener('click',()=>{ selectedId=null; renderCaseList(); $('#empty').classList.add('hidden'); $('#case-panel').classList.add('hidden'); $('#new-panel').classList.remove('hidden'); });
+async function openInGpt(c){
+  const command=`Busque o caso ${c.id} (${c.title}) no Veredicta e faça a análise completa seguindo suas instruções. Execute os 15 pontos, a auditoria adversarial e envie a análise auditada de volta ao Veredicta.`;
+  try{await navigator.clipboard.writeText(command)}catch{}
+  if(customGptUrl){window.open(customGptUrl,'_blank','noopener,noreferrer');alert('GPT aberto. O comando do caso foi copiado para a área de transferência.')}
+  else alert('Comando copiado. Abra o seu GPT Veredicta e cole o comando. Configure CUSTOM_GPT_URL na Vercel para abrir automaticamente.');
+}
 
 $('#case-form').addEventListener('submit',async e=>{
-  e.preventDefault();
-  const btn=e.submitter; btn.disabled=true; btn.textContent='Salvando…';
+  e.preventDefault();const btn=e.submitter;btn.disabled=true;btn.textContent='Salvando…';$('#save-status').textContent='';
   try{
     const out=await api('/api/cases',{method:'POST',body:JSON.stringify({title:$('#title').value,client_name:$('#client-name').value,contract_text:$('#contract-text').value})});
-    e.target.reset(); await loadCases(); await openCase(out.case.id);
+    e.target.reset();$('#save-status').textContent='salvo';await loadCases();await openCase(out.case.id);
+    document.querySelector('.tabs-shell')?.scrollIntoView({behavior:'smooth',block:'start'});
   }catch(err){alert(err.message)}finally{btn.disabled=false;btn.textContent='Salvar caso'}
 });
 
-
-async function loadConfig(){
-  try{const out=await api('/api/config'); customGptUrl=out.custom_gpt_url||'';}catch{customGptUrl='';}
+function resolutionStateKey(){return `veredicta_resolution_${selectedId||'global'}`}
+function loadResolutionState(){try{return JSON.parse(localStorage.getItem(resolutionStateKey())||'{}')}catch{return {}}}
+function saveResolutionState(s){localStorage.setItem(resolutionStateKey(),JSON.stringify(s))}
+function groupForPoint(n){
+  if([1,2,3].includes(n))return 'ENQUADRAMENTO GERAL (PONTOS 1–3)';
+  if([4,5,7,15].includes(n))return 'ESCOPO E PRAZOS (PONTOS 4, 5, 7, 15)';
+  if([8,9,13].includes(n))return 'PROVA TÉCNICA E INDENIZAÇÕES (PONTOS 8, 9, 13)';
+  if([10,11,12].includes(n))return 'LIMITES, LINHAS E GARANTIAS (PONTOS 10, 11, 12)';
+  return 'CONTENCIOSO E EXCLUSÕES (PONTOS 6 E 14)';
 }
-
-async function loadCases(){
-  const out=await api('/api/cases'); cases=out.cases||[]; renderCaseList();
-}
-function renderCaseList(){
-  $('#case-list').innerHTML=cases.map(c=>`<button class="case-link ${c.id===selectedId?'active':''}" data-id="${c.id}"><b>${esc(c.title)}</b><small>${esc(c.status)} · ${fmtDate(c.created_at)}</small></button>`).join('');
-  document.querySelectorAll('.case-link').forEach(b=>b.addEventListener('click',()=>openCase(b.dataset.id)));
-}
-async function openCase(id){
-  selectedId=id; renderCaseList(); $('#empty').classList.add('hidden'); $('#new-panel').classList.add('hidden'); $('#case-panel').classList.remove('hidden');
-  $('#case-panel').innerHTML='<div class="empty-state">Carregando…</div>';
-  try{const out=await api('/api/cases?id='+encodeURIComponent(id)); renderCase(out.case)}catch(err){$('#case-panel').innerHTML=`<p class="error">${esc(err.message)}</p>`}
-}
-function latest(arr=[]){return [...arr].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0]}
-function verdictClass(v){
-  const n=String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-  return ['atinge','parcial','atencao','ausente'].includes(n)?n:'ausente';
-}
-function auditClass(v){
-  const n=String(v||'').toLowerCase();
-  if(n==='confirmado') return 'audit-ok';
-  if(n==='divergente') return 'audit-bad';
-  if(n==='não encontrado') return 'audit-missing';
-  if(n==='opinião sem precedente') return 'audit-opinion';
-  return 'audit-pending';
-}
-function renderChecklist15(a){
-  const aj=a?.analyst_json||{};
-  const au=a?.audit_json||{};
-  const points=new Map((aj.points||[]).map(p=>[Number(p.point ?? p.number),p]));
-  const findings=new Map((au.findings||[]).map(f=>[Number(f.point),f]));
-  const counts={atinge:0,parcial:0,atencao:0,ausente:0,pendente:0};
-  CHECKLIST_15.forEach(item=>{
-    const p=points.get(item.point);
-    if(!p){counts.pendente++;return;}
-    counts[verdictClass(p.verdict)]++;
-  });
-  const progress=a ? 15-counts.pendente : 0;
-  return `<section class="checklist-section">
-    <div class="checklist-head">
-      <div><div class="eyebrow">CHECKLIST OBRIGATÓRIO</div><h3>15 pontos da MP nº 1.376/2026</h3><p>Todos os pontos são exibidos sempre. Antes da análise ficam pendentes; depois recebem veredito, evidências, raciocínio e auditoria.</p></div>
-      <div class="checklist-progress"><b>${progress}/15</b><span>analisados</span></div>
+function renderResolution(){
+  const panel=$('#resolution-panel');if(!panel)return;
+  const a=latest(selectedCase?.analyses||[]);const pm=pointsMap(a);
+  const unresolved=CHECKLIST_15.filter(item=>{const p=pm.get(item.point);return !p||verdictClass(p.verdict)!=='atinge'});
+  const state=loadResolutionState();
+  const items=[];
+  GENERIC_DOCS.forEach(([id,text])=>items.push({id:`doc-${id}`,group:'DOCUMENTAÇÃO GENÉRICA EXIGIDA (TODO CONTRATO, ANTES DE AVALIAR OS 15 PONTOS)',text}));
+  unresolved.forEach(item=>items.push({id:`point-${item.point}`,group:groupForPoint(item.point),text:`<b>Ponto ${item.point} — ${esc(item.title)}</b> <i>(${esc(item.legal_reference)})</i>: ${esc(item.resolve)}`}));
+  const groups=[...new Set(items.map(i=>i.group))];
+  const checked=items.filter(i=>state[i.id]).length;
+  const pct=items.length?Math.round(checked/items.length*100):100;
+  panel.innerHTML=`<div class="resolution-top">
+      <p>Os itens dos pontos 1–15 se ajustam automaticamente ao caso selecionado: pontos com veredito <b>atinge</b> não aparecem aqui.</p>
+      <div class="progress-row"><div class="progress"><span style="width:${pct}%"></span></div><b>${checked} / ${items.length} resolvidos</b><button id="clear-resolution">limpar marcações</button></div>
     </div>
-    <div class="checklist-stats">
-      <span class="stat-chip v-atinge">${counts.atinge} atinge</span>
-      <span class="stat-chip v-parcial">${counts.parcial} parcial</span>
-      <span class="stat-chip v-atencao">${counts.atencao} atenção</span>
-      <span class="stat-chip v-ausente">${counts.ausente} ausente</span>
-      ${counts.pendente?`<span class="stat-chip v-pendente">${counts.pendente} pendente</span>`:''}
-    </div>
-    <div class="points checklist-points">${CHECKLIST_15.map(item=>{
-      const p=points.get(item.point);
-      const f=findings.get(item.point);
-      const verdict=p?verdictClass(p.verdict):'pendente';
-      const label=p?(p.display_label||p.verdict):'pendente';
-      const auditLabel=f?(f.status||'pendente'):'pendente';
-      return `<details class="point checklist-point" data-point="${item.point}">
-        <summary>
-          <span class="point-num">${String(item.point).padStart(2,'0')}</span>
-          <span><b>${esc(item.title)}</b><br><small>${esc(p?.legal_reference||item.legal_reference)}</small></span>
-          <span class="point-badges"><span class="pill v-${verdict}">${esc(label)}</span><span class="audit-pill ${auditClass(auditLabel)}">auditoria: ${esc(auditLabel)}</span></span>
-        </summary>
-        <div class="point-body">
-          <p class="checklist-description">${esc(item.description)}</p>
-          ${p?`<div class="evidence"><div class="quote"><small>NA MP</small><p>“${esc(p.mp_quote||'')}”</p><span class="${p.mp_quote_verified?'verified':'not-verified'}">${p.mp_quote_verified?'✓ citação verificada':'✕ citação não verificada'}</span></div><div class="quote"><small>NO CONTRATO/LAUDO</small><p>“${esc(p.contract_quote||'')}”</p><span class="${p.contract_quote_verified?'verified':'not-verified'}">${p.contract_quote_verified?'✓ citação verificada':'✕ citação não verificada'}</span></div></div><p><b>Raciocínio:</b> ${esc(p.reasoning||'')}</p>`:`<div class="pending-box">Este ponto ainda não foi analisado pelo GPT.</div>`}
-          ${f?`<div class="audit-box ${auditClass(f.status)}"><b>Auditoria:</b> ${esc(f.status)}${f.reason?` — ${esc(f.reason)}`:''}</div>`:''}
-        </div>
-      </details>`;
-    }).join('')}</div>
-  </section>`;
+    <div class="resolution-list">${groups.map(g=>`<div class="resolve-group"><h4>${esc(g)}</h4>${items.filter(i=>i.group===g).map(i=>`<label class="resolve-item ${state[i.id]?'done':''}"><input type="checkbox" data-resolve="${esc(i.id)}" ${state[i.id]?'checked':''}><span>${i.text}</span></label>`).join('')}</div>`).join('')}</div>`;
+  $$('[data-resolve]').forEach(cb=>cb.addEventListener('change',()=>{
+    const s=loadResolutionState();s[cb.dataset.resolve]=cb.checked;saveResolutionState(s);renderResolution();
+  }));
+  $('#clear-resolution')?.addEventListener('click',()=>{localStorage.removeItem(resolutionStateKey());renderResolution()});
 }
-function renderCase(c){
-  const a=latest(c.analyses||[]), r=latest(c.reviews||[]);
-  const meta=`<div class="meta-grid"><div class="meta"><span>Status</span><b>${esc(c.status)}</b></div><div class="meta"><span>Cliente</span><b>${esc(c.client_name||'—')}</b></div><div class="meta"><span>Criado</span><b>${fmtDate(c.created_at)}</b></div><div class="meta"><span>Revisão</span><b>${r?esc(r.decision):'pendente'}</b></div></div>`;
-  let html=`<div class="section-head"><div><div class="eyebrow">CASO</div><h2>${esc(c.title)}</h2></div><button id="analyze-btn" class="primary">${a?'Reanalisar no GPT':'Analisar no GPT'}</button></div>${meta}`;
-  if(!a){html+=`<div class="panel" style="padding:20px"><h3>Ainda não analisado</h3><p>O contrato já está no app. A análise é feita dentro do seu GPT personalizado, que busca este caso por Action, executa analista + auditor e grava o resultado de volta aqui.</p><p><code>Analise o caso ${esc(c.id)}.</code></p></div>${renderChecklist15(null)}`}
-  else{
-    const aj=a.analyst_json||{}; const au=a.audit_json||{};
-    html+=`<div class="analysis-summary"><div class="eyebrow">CLASSIFICAÇÃO FINAL</div><h2>${esc(a.final_classification)}</h2><p>${esc(aj.summary||au.summary||'')}</p><div class="status">auditor: ${esc(a.auditor_recommendation)}</div> <div class="status">quality gate: ${a.quality_gate?'aprovado':'bloqueado'}</div></div>`;
-    if((a.validation_errors||[]).length) html+=`<div class="warning"><b>Validador determinístico encontrou:</b><br>${(a.validation_errors||[]).map(esc).join('<br>')}</div>`;
-    html+=renderChecklist15(a);
-    html+=`<div class="review"><h3>Revisão humana</h3><p>O resultado só deve ser tratado como concluído após revisão de advogado.</p><div class="form-grid"><label>Nome<input id="reviewer-name" /></label><label>OAB<input id="reviewer-oab" /></label><label class="full">Observações<textarea id="review-notes" rows="4"></textarea></label><div class="full actions"><button class="primary review-btn" data-decision="aprovado">Aprovar revisão</button><button class="review-btn" data-decision="devolver">Devolver para correção</button></div></div></div>`;
+
+setInterval(async()=>{
+  if(selectedCase && ['pendente','em-analise','aguardando-revisao'].includes(selectedCase.status)){
+    try{
+      const out=await api('/api/cases?id='+encodeURIComponent(selectedCase.id));
+      const oldCount=(selectedCase.analyses||[]).length;
+      selectedCase=out.case;
+      if((selectedCase.analyses||[]).length!==oldCount){renderCase();renderResolution();await loadCases()}
+    }catch{}
   }
-  $('#case-panel').innerHTML=html;
-  $('#analyze-btn')?.addEventListener('click',()=>openInGpt(c));
-  document.querySelectorAll('.review-btn').forEach(b=>b.addEventListener('click',()=>review(c.id,a.id,b.dataset.decision)));
-}
-async function openInGpt(c){
-  const command=`Analise o caso ${c.id} (${c.title}) usando as Actions do Veredicta. Faça a análise completa dos 15 pontos, a auditoria adversarial e grave o resultado no app.`;
-  try{await navigator.clipboard.writeText(command);}catch{}
-  if(customGptUrl){
-    window.open(customGptUrl,'_blank','noopener,noreferrer');
-    alert('GPT aberto. O comando do caso foi copiado para a área de transferência.');
-  }else{
-    alert('Comando copiado para a área de transferência. Abra seu GPT Veredicta e cole o comando. Para abrir automaticamente, configure CUSTOM_GPT_URL na Vercel.');
-  }
-}
-async function review(caseId,analysisId,decision){
-  const reviewer_name=$('#reviewer-name').value.trim(); if(!reviewer_name)return alert('Informe o nome do advogado revisor.');
-  try{await api('/api/review',{method:'POST',body:JSON.stringify({case_id:caseId,analysis_id:analysisId,reviewer_name,reviewer_oab:$('#reviewer-oab').value,notes:$('#review-notes').value,decision})}); await loadCases(); await openCase(caseId)}catch(err){alert(err.message)}
-}
+},15000);
+
 boot().catch(err=>{console.error(err);showLogin()});

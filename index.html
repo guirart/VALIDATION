@@ -8,47 +8,96 @@
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <div id="login" class="screen hidden">
-    <form id="login-form" class="card login-card">
-      <div class="eyebrow">ACESSO INTERNO</div>
+  <div id="login" class="login-screen hidden">
+    <form id="login-form" class="login-card">
+      <div class="micro">ACESSO INTERNO</div>
       <h1>Veredicta</h1>
       <p>Triagem assistida de contratos de crédito rural.</p>
       <input id="password" type="password" placeholder="Senha do app" autocomplete="current-password" required />
-      <button>Entrar</button>
+      <button class="btn btn-dark">Entrar</button>
       <p id="login-error" class="error"></p>
     </form>
   </div>
 
   <div id="app" class="hidden">
-    <header class="topbar">
-      <div><span class="brand">VEREDICTA</span><span class="subtitle">MP nº 1.376/2026</span></div>
-      <button id="logout" class="ghost">Sair</button>
+    <header class="appbar">
+      <div class="brand-wrap">
+        <span class="brand">VEREDICTA</span>
+        <span class="brand-sub">Painel — Agente de Análise de Contratos (MP 1.376/2026)</span>
+      </div>
+      <div class="appbar-actions">
+        <button id="refresh" class="link-btn">atualizar</button>
+        <button id="logout" class="link-btn">sair</button>
+      </div>
     </header>
 
-    <main class="layout">
-      <aside class="sidebar">
-        <button id="new-case" class="primary">+ Novo caso</button>
-        <div class="side-title">Casos</div>
-        <div id="case-list"></div>
-      </aside>
-      <section class="workspace">
-        <div id="empty" class="empty-state">
-          <h2>Selecione ou crie um caso</h2>
-          <p>Cadastre o contrato aqui. Seu GPT personalizado buscará o caso via Action, fará a análise dos 15 pontos e gravará o resultado neste painel.</p>
+    <main class="page">
+      <section id="stats" class="stats-grid"></section>
+
+      <section class="section">
+        <div class="section-title-row">
+          <h2>Testes realizados</h2>
+          <span id="tests-note" class="mono-note"></span>
         </div>
-        <div id="new-panel" class="hidden">
-          <div class="section-head"><div><div class="eyebrow">NOVO CASO</div><h2>Enviar contrato</h2></div></div>
-          <form id="case-form" class="form-grid">
-            <label>Título<input id="title" required placeholder="Ex.: João Carlos — Custeio 2024" /></label>
-            <label>Cliente<input id="client-name" placeholder="Nome do produtor/cooperativa" /></label>
-            <label class="full">Texto do contrato/dossiê<textarea id="contract-text" required rows="18" placeholder="Cole aqui o contrato e, quando relevante, o conteúdo do laudo/dossiê..."></textarea></label>
-            <div class="full actions"><button class="primary">Salvar caso</button></div>
+        <div class="info-box">
+          <span class="info-icon">i</span>
+          <p>As abas abaixo representam os casos reais desta instância do Veredicta. Selecione um caso para ver classificação, os 15 pontos, evidências e o checklist de resolução correspondente.</p>
+        </div>
+
+        <div class="tabs-shell">
+          <button id="tabs-left" class="tab-arrow" aria-label="rolar abas para esquerda">‹</button>
+          <div id="case-tabs" class="case-tabs"></div>
+          <button id="tabs-right" class="tab-arrow" aria-label="rolar abas para direita">›</button>
+        </div>
+
+        <div id="case-view" class="case-view">
+          <div class="empty-card">
+            <h3>Nenhum caso selecionado</h3>
+            <p>Crie um contrato abaixo ou selecione uma aba.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="new-case-section" class="section">
+        <div class="section-title-row">
+          <h2>Enviar novo contrato para análise</h2>
+          <span class="mono-note">fica salvo aqui — depois o GPT busca o caso pela Action</span>
+        </div>
+        <div class="form-card">
+          <div class="attachment-tip"><b>Tem o contrato em PDF?</b> Nesta versão, cole o texto extraído ou o conteúdo do dossiê. O GPT analisará exatamente o que estiver salvo no caso.</div>
+          <form id="case-form">
+            <label class="field">
+              <span>NOME DO CONTRATO / INSTITUIÇÃO</span>
+              <input id="title" required placeholder="Ex.: Custeio Pronamp — Banco Rural Alfa" />
+            </label>
+            <label class="field">
+              <span>CLIENTE / PRODUTOR / COOPERATIVA</span>
+              <input id="client-name" placeholder="Ex.: João Carlos Ferreira" />
+            </label>
+            <label class="field">
+              <span>TEXTO DO CONTRATO / DOSSIÊ</span>
+              <textarea id="contract-text" required rows="12" placeholder="Cole aqui o contrato, laudo e demais elementos relevantes do dossiê..."></textarea>
+            </label>
+            <div class="form-actions">
+              <button class="btn btn-dark" type="submit">Salvar caso</button>
+              <span id="save-status" class="mono-note"></span>
+            </div>
           </form>
         </div>
-        <div id="case-panel" class="hidden"></div>
+      </section>
+
+      <section id="resolution-section" class="section">
+        <div class="section-title-row">
+          <div>
+            <h2>Checklist de resolução — documentação genérica + o que fazer quando cada um dos 15 pontos falha</h2>
+            <p class="section-sub">Os itens dos pontos 1–15 se ajustam automaticamente à aba selecionada: um ponto marcado <b>atinge</b> some deste checklist, porque não há nada a resolver ali.</p>
+          </div>
+        </div>
+        <div id="resolution-panel" class="resolution-panel"></div>
       </section>
     </main>
   </div>
+
   <script type="module" src="/app.js"></script>
 </body>
 </html>
