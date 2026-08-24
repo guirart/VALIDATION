@@ -54,19 +54,5 @@ alter table public.analyses enable row level security;
 alter table public.reviews enable row level security;
 alter table public.audit_logs enable row level security;
 
--- MVP / teste com publishable key.
--- O acesso do usuário final continua passando pelo backend do app, mas estas policies
--- também tornam as tabelas acessíveis a qualquer cliente que possua a publishable key.
--- NÃO use esta configuração para contratos reais/confidenciais.
-
-drop policy if exists "mvp_anon_cases_all" on public.cases;
-create policy "mvp_anon_cases_all" on public.cases for all to anon using (true) with check (true);
-
-drop policy if exists "mvp_anon_analyses_all" on public.analyses;
-create policy "mvp_anon_analyses_all" on public.analyses for all to anon using (true) with check (true);
-
-drop policy if exists "mvp_anon_reviews_all" on public.reviews;
-create policy "mvp_anon_reviews_all" on public.reviews for all to anon using (true) with check (true);
-
-drop policy if exists "mvp_anon_audit_logs_all" on public.audit_logs;
-create policy "mvp_anon_audit_logs_all" on public.audit_logs for all to anon using (true) with check (true);
+-- Sem policies públicas: o navegador NÃO acessa as tabelas diretamente.
+-- O backend usa SUPABASE_SERVICE_ROLE_KEY, guardada apenas no ambiente do servidor.
