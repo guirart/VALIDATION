@@ -5,7 +5,8 @@ export default async function handler(req, res) {
   if (!requireAuth(req, res)) return;
   if (req.method !== 'GET') return json(res, 405, { error: 'Método não permitido' });
   return json(res, 200, {
-    custom_gpt_url: process.env.CUSTOM_GPT_URL || '',
-    supabase: supabaseConfigStatus()
+    supabase: supabaseConfigStatus(),
+    legalSourceVersion: process.env.LEGAL_SOURCE_VERSION || null,
+    memorandumVersion: process.env.MEMORANDUM_VERSION || null
   });
 }
