@@ -318,3 +318,11 @@ validation_debug, failed_points, contract_sha256 e versões.
 - Rail lateral com Documentos do Dossiê, Informações do Caso e Detalhes Técnicos recolhíveis.
 - Documentos são exibidos somente quando existentes nos dados/attachments ou explicitamente listados no texto do dossiê.
 - Mantém a sidebar redimensionável da v3.6.5 e não altera o validador jurídico.
+
+
+## UI 3.6.7 — correção real da visão executiva
+- Integra o card de resultado, visão dos 15 pontos e rail lateral diretamente em `renderCase()`.
+- Corrige a falha da v3.6.6, que buscava estado inexistente em `window.currentCase/window.currentAnalysis`.
+- Documentos e informações agora usam `selectedCase` e a análise mais recente já carregada pelo aplicativo.
+- A visão dos 15 pontos navega para os cards reais do checklist.
+- Não altera o validador jurídico.

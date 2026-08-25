@@ -2741,3 +2741,69 @@ html[data-theme="dark"] .result-rejected .result-icon{ background:#3d2b29; color
     border-bottom:1px solid var(--line);
   }
 }
+
+
+/* =========================================================
+   OVERVIEW RENDER REAL FIX 3.6.7
+   ========================================================= */
+
+.compact-summary{
+  margin:0 0 14px !important;
+}
+
+.case-overview-layout{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) 286px !important;
+  gap:16px !important;
+  align-items:start !important;
+}
+
+.case-overview-main{
+  min-width:0 !important;
+}
+
+.case-info-rail{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:12px !important;
+  min-width:0 !important;
+  position:sticky;
+  top:calc(var(--veredicta-header-height) + 14px);
+}
+
+.case-result-hero{
+  display:grid !important;
+}
+
+.points-overview{
+  display:block !important;
+}
+
+.point-mini-atinge i{background:#75a66f !important;}
+.point-mini-parcial i{background:#d3a73f !important;}
+.point-mini-atencao i{background:#c7766f !important;}
+.point-mini-ausente i{background:#aaa7a2 !important;}
+
+.analysis-sheet > .final-class{
+  display:none !important;
+}
+
+@media(max-width:1200px){
+  .case-overview-layout{
+    grid-template-columns:minmax(0,1fr) !important;
+  }
+  .case-info-rail{
+    position:static !important;
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  }
+  .case-info-rail .technical-details{
+    grid-column:1 / -1;
+  }
+}
+
+@media(max-width:760px){
+  .case-info-rail{
+    display:flex !important;
+  }
+}
