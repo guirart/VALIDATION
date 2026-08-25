@@ -1,6 +1,6 @@
 {
   "name": "veredicta-mp1376-app",
-  "version": "3.6.5",
+  "version": "3.6.6",
   "private": true,
   "type": "module",
   "scripts": {
@@ -21,7 +21,8 @@
     "test:v36": "node tests/v36-p11-semantic.test.mjs",
     "test:v363": "node tests/v363-sidebar-resize.test.mjs",
     "test:v364": "node tests/v364-sidebar-drag-collapse.test.mjs",
-    "test:v365": "node tests/v365-sidebar-real-layout.test.mjs"
+    "test:v365": "node tests/v365-sidebar-real-layout.test.mjs",
+    "test:v366": "node tests/v366-case-overview-ui.test.mjs"
   },
   "devDependencies": {
     "vercel": "latest"

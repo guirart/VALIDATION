@@ -309,3 +309,12 @@ validation_debug, failed_points, contract_sha256 e versões.
 - Minimizar mantém um trilho de 52px com botão de reabrir sempre acessível.
 - O painel direito ocupa imediatamente o espaço liberado.
 - Não altera o validador jurídico.
+
+
+## UI 3.6.6 — visão executiva do caso
+- Card de classificação final com destaque específico para enquadrável, parcial, inconclusivo e não enquadrável.
+- Exibe automaticamente a principal questão/impedimento a partir dos pontos analisados.
+- Visão compacta e clicável dos 15 pontos com navegação para o checklist.
+- Rail lateral com Documentos do Dossiê, Informações do Caso e Detalhes Técnicos recolhíveis.
+- Documentos são exibidos somente quando existentes nos dados/attachments ou explicitamente listados no texto do dossiê.
+- Mantém a sidebar redimensionável da v3.6.5 e não altera o validador jurídico.

@@ -439,3 +439,288 @@ initTheme();
 
   applyLayout();
 })();
+
+
+// CASE_OVERVIEW_UI_V366
+(function initCaseOverviewUI(){
+  const escText = (value) => String(value ?? '').replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+  })[c]);
+
+  const normalize = (v) => String(v ?? '').trim().toLocaleLowerCase('pt-BR');
+
+  function classificationMeta(value){
+    const v = normalize(value);
+    if (v === 'enquadrável' || v === 'enquadravel') {
+      return {key:'eligible', icon:'✓', title:'ENQUADRÁVEL', subtitle:'Requisitos documentais e jurídicos compatíveis com o enquadramento analisado.'};
+    }
+    if (v.includes('parcialmente')) {
+      return {key:'partial', icon:'◐', title:'PARCIALMENTE ENQUADRÁVEL', subtitle:'Há elementos favoráveis, mas permanecem requisitos ou provas incompletos.'};
+    }
+    if (v === 'inconclusivo') {
+      return {key:'uncertain', icon:'?', title:'INCONCLUSIVO', subtitle:'A documentação disponível não permite uma conclusão jurídica segura.'};
+    }
+    if (v.includes('não enquadr') || v.includes('nao enquadr')) {
+      return {key:'rejected', icon:'×', title:'NÃO ENQUADRÁVEL', subtitle:'Há requisito impeditivo ou incompatibilidade relevante com o enquadramento.'};
+    }
+    return {key:'neutral', icon:'•', title:String(value || 'SEM CLASSIFICAÇÃO').toUpperCase(), subtitle:'Classificação não identificada.'};
+  }
+
+  function pointStatus(point){
+    const verdict = normalize(point?.verdict);
+    const legal = normalize(point?.legal_result);
+    const evidence = normalize(point?.evidence_status);
+
+    if (verdict === 'atinge' || legal === 'atende') return 'hit';
+    if (verdict === 'parcial' || evidence === 'parcialmente_comprovado') return 'partial';
+    if (verdict === 'atencao' || verdict === 'atenção' || legal === 'nao_atende' || legal === 'não_atende') return 'attention';
+    if (verdict === 'ausente' || evidence === 'nao_consta' || evidence === 'não_consta' || legal === 'nao_aplicavel' || legal === 'não_aplicavel') return 'missing';
+    return 'neutral';
+  }
+
+  function extractPrimaryIssue(analysis){
+    const classification = normalize(analysis?.final_classification);
+    const points = Array.isArray(analysis?.points) ? analysis.points : [];
+
+    const problematic = points.find(p => {
+      const s = pointStatus(p);
+      return s === 'attention' || s === 'missing';
+    }) || points.find(p => pointStatus(p) === 'partial');
+
+    if (problematic) {
+      const reason = String(problematic.reasoning || '').trim();
+      if (reason) {
+        const short = reason.length > 260 ? reason.slice(0,257).trimEnd() + '…' : reason;
+        return {point:problematic.point, title:problematic.title || `Ponto ${problematic.point}`, text:short};
+      }
+    }
+
+    const summary = String(analysis?.summary || '').trim();
+    if (summary) {
+      return {point:null, title:classification === 'inconclusivo' ? 'Principal questão' : 'Síntese da conclusão', text:summary.length > 260 ? summary.slice(0,257).trimEnd() + '…' : summary};
+    }
+    return null;
+  }
+
+  function findDocuments(caseObj){
+    const docs = [];
+
+    const pushDoc = (name, detail='') => {
+      const clean = String(name || '').trim();
+      if (!clean) return;
+      if (docs.some(d => normalize(d.name) === normalize(clean))) return;
+      docs.push({name:clean, detail:String(detail || '').trim()});
+    };
+
+    if (Array.isArray(caseObj?.documents)) {
+      for (const d of caseObj.documents) {
+        if (typeof d === 'string') pushDoc(d);
+        else pushDoc(d?.name || d?.title || d?.filename, d?.filename && d?.filename !== d?.name ? d.filename : '');
+      }
+    }
+
+    if (Array.isArray(caseObj?.attachments)) {
+      for (const d of caseObj.attachments) {
+        if (typeof d === 'string') pushDoc(d);
+        else pushDoc(d?.name || d?.title || d?.filename, d?.filename && d?.filename !== d?.name ? d.filename : '');
+      }
+    }
+
+    // Fallback: extrai apenas a seção explicitamente intitulada DOCUMENTOS
+    // do dossiê. Não inventa arquivos nem nomes.
+    if (!docs.length) {
+      const text = String(caseObj?.contract_text || '');
+      const match = text.match(/DOCUMENTOS(?:\s+DISPON[IÍ]VEIS|\s+DO\s+DOSS[IÊ]E)?\s*[:\-]?\s*([\s\S]{0,1800})/i);
+      if (match) {
+        const block = match[1].split(/\n\s*\n/)[0];
+        const lines = block.split(/\n/).map(x => x.trim()).filter(Boolean);
+        for (const line of lines) {
+          const cleaned = line.replace(/^\d+\s*[.)-]\s*/, '').replace(/^[-•]\s*/, '').trim();
+          if (cleaned && cleaned.length < 180 && !/não foram apresentados outros documentos/i.test(cleaned)) {
+            pushDoc(cleaned);
+          }
+        }
+      }
+    }
+
+    return docs.slice(0, 12);
+  }
+
+  function renderOverview(){
+    // Aproveita o estado global já existente do app sem depender de uma única estrutura.
+    const caseObj =
+      window.currentCase ||
+      window.selectedCase ||
+      window.state?.selectedCase ||
+      window.state?.currentCase ||
+      null;
+
+    const analysis =
+      window.currentAnalysis ||
+      window.selectedAnalysis ||
+      window.state?.analysis ||
+      window.state?.selectedAnalysis ||
+      caseObj?.analysis ||
+      null;
+
+    if (!caseObj && !analysis) return;
+
+    const main = document.querySelector('.workspace > .page');
+    if (!main) return;
+
+    // Cria/atualiza card destacado de classificação.
+    let hero = document.querySelector('#case-result-hero');
+    if (!hero) {
+      hero = document.createElement('section');
+      hero.id = 'case-result-hero';
+      hero.className = 'case-result-hero';
+      const anchor =
+        document.querySelector('.case-card') ||
+        document.querySelector('.case-detail') ||
+        document.querySelector('#analysis-view') ||
+        main.firstElementChild;
+      if (anchor?.parentNode) anchor.parentNode.insertBefore(hero, anchor);
+      else main.prepend(hero);
+    }
+
+    const classification = analysis?.final_classification || caseObj?.final_classification || caseObj?.classification || '';
+    const meta = classificationMeta(classification);
+    const points = Array.isArray(analysis?.points) ? analysis.points : [];
+
+    const counts = {hit:0, partial:0, attention:0, missing:0, neutral:0};
+    points.forEach(p => counts[pointStatus(p)]++);
+
+    const issue = extractPrimaryIssue(analysis);
+
+    hero.className = `case-result-hero result-${meta.key}`;
+    hero.innerHTML = `
+      <div class="result-identity">
+        <div class="result-icon" aria-hidden="true">${escText(meta.icon)}</div>
+        <div>
+          <div class="result-eyebrow">CLASSIFICAÇÃO FINAL</div>
+          <h2>${escText(meta.title)}</h2>
+          <p>${escText(meta.subtitle)}</p>
+        </div>
+      </div>
+      <div class="result-counts" aria-label="Resumo dos 15 pontos">
+        <div><strong>${counts.hit}</strong><span>atendidos</span></div>
+        <div><strong>${counts.partial}</strong><span>parciais</span></div>
+        <div><strong>${counts.attention}</strong><span>atenção</span></div>
+        <div><strong>${counts.missing}</strong><span>não consta</span></div>
+      </div>
+      ${issue ? `
+        <div class="result-primary-issue">
+          <div class="result-eyebrow">${escText(issue.title || 'PRINCIPAL QUESTÃO')}</div>
+          <p>${escText(issue.text)}</p>
+          ${issue.point ? `<button type="button" class="result-jump-btn" data-jump-point="${Number(issue.point)}">Ir ao ponto ${Number(issue.point)}</button>` : ''}
+        </div>
+      ` : ''}
+    `;
+
+    // Visão geral dos 15 pontos.
+    let overview = document.querySelector('#points-overview');
+    if (!overview) {
+      overview = document.createElement('section');
+      overview.id = 'points-overview';
+      overview.className = 'points-overview';
+      hero.insertAdjacentElement('afterend', overview);
+    }
+
+    overview.innerHTML = `
+      <div class="points-overview-head">
+        <strong>VISÃO GERAL DOS 15 PONTOS</strong>
+        <span>Clique em um ponto para abrir no checklist</span>
+      </div>
+      <div class="points-overview-grid">
+        ${Array.from({length:15}, (_,i) => {
+          const num = i+1;
+          const p = points.find(x => Number(x.point) === num);
+          const status = p ? pointStatus(p) : 'neutral';
+          const title = p?.title || `Ponto ${num}`;
+          return `<button type="button" class="point-mini point-mini-${status}" data-jump-point="${num}" title="${escText(title)}">
+            <span>${String(num).padStart(2,'0')}</span>
+            <i aria-hidden="true"></i>
+          </button>`;
+        }).join('')}
+      </div>
+    `;
+
+    // Documentos.
+    const docs = findDocuments(caseObj);
+    const docsList = document.querySelector('#documents-list');
+    const docsCount = document.querySelector('#documents-count');
+    if (docsCount) docsCount.textContent = String(docs.length);
+    if (docsList) {
+      docsList.innerHTML = docs.length ? docs.map(d => `
+        <div class="document-row">
+          <span class="document-icon" aria-hidden="true">▱</span>
+          <div>
+            <strong>${escText(d.name)}</strong>
+            ${d.detail ? `<small>${escText(d.detail)}</small>` : ''}
+          </div>
+        </div>
+      `).join('') : `<div class="rail-empty">Nenhum documento estruturado foi identificado no dossiê.</div>`;
+    }
+
+    // Informações do caso.
+    const info = document.querySelector('#case-information-list');
+    if (info) {
+      const items = [
+        ['Cliente', caseObj?.client_name],
+        ['Status', caseObj?.status],
+        ['Caso', caseObj?.external_test_id || caseObj?.title],
+        ['Data da análise', analysis?.created_at || caseObj?.updated_at],
+      ].filter(([,v]) => v);
+      info.innerHTML = items.map(([k,v]) => `<div><dt>${escText(k)}</dt><dd>${escText(v)}</dd></div>`).join('');
+    }
+
+    const technical = document.querySelector('#technical-information-list');
+    if (technical) {
+      const items = [
+        ['UUID', caseObj?.id],
+        ['Analysis ID', analysis?.id],
+        ['Validador', analysis?.validator_version || window.validatorVersion || window.state?.validatorVersion],
+        ['App', analysis?.app_version || window.appVersion || window.state?.appVersion],
+        ['SHA-256', caseObj?.contract_sha256 || analysis?.contract_sha256],
+      ].filter(([,v]) => v);
+      technical.innerHTML = items.map(([k,v]) => `<div><dt>${escText(k)}</dt><dd class="technical-value">${escText(v)}</dd></div>`).join('');
+    }
+
+    // Click-to-scroll para o checklist real.
+    document.querySelectorAll('[data-jump-point]').forEach(btn => {
+      if (btn.dataset.jumpBound === '1') return;
+      btn.dataset.jumpBound = '1';
+      btn.addEventListener('click', () => {
+        const point = Number(btn.dataset.jumpPoint);
+        const candidates = [
+          document.querySelector(`[data-point="${point}"]`),
+          document.querySelector(`#point-${point}`),
+          ...Array.from(document.querySelectorAll('.check-item,.point-card,.checklist-item')).filter(el => {
+            const txt = (el.textContent || '').trim();
+            return new RegExp(`^0?${point}\\b`).test(txt);
+          })
+        ].filter(Boolean);
+        const target = candidates[0];
+        if (target) {
+          target.scrollIntoView({behavior:'smooth', block:'center'});
+          target.classList.add('point-focus-pulse');
+          setTimeout(() => target.classList.remove('point-focus-pulse'), 1100);
+        }
+      });
+    });
+  }
+
+  // O app carrega dados de forma assíncrona; observa mudanças e re-renderiza.
+  let timer = null;
+  const schedule = () => {
+    clearTimeout(timer);
+    timer = setTimeout(renderOverview, 60);
+  };
+
+  const observer = new MutationObserver(schedule);
+  observer.observe(document.body, {subtree:true, childList:true, characterData:true});
+
+  window.addEventListener('load', schedule, {once:true});
+  setTimeout(renderOverview, 300);
+  setTimeout(renderOverview, 1200);
+})();
