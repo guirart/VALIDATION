@@ -87,3 +87,14 @@ Mantém o fluxo da versão 1.5, mas substitui a navegação por abas horizontais
 ## Versão 1.8 — separação entre evidência e resultado jurídico
 
 Cada ponto passa a ter `evidence_status` e `legal_result`. O backend rejeita contradições como `nao_consta` quando a própria citação do dossiê foi localizada, e impede `atende` sem evidência comprovada. O `verdict` antigo permanece apenas para compatibilidade visual e é derivado dos dois campos novos.
+
+
+## Versão 1.9 — Action, backend e modelo jurídico sincronizados
+
+- `evidence_status` e `legal_result` são obrigatórios no schema da GPT Action;
+- arquivo `GPT_ACTION_SCHEMA_V1.9.yaml` pronto para copiar no editor do GPT;
+- backend retorna `validation_error_details` categorizados por tipo e ponto;
+- correção automática deve usar esses detalhes e ocorrer no máximo uma vez;
+- `nao_atende` não pode ser usado quando a evidência relevante simplesmente `nao_consta`;
+- painel exibe separadamente situação da prova e resultado jurídico;
+- schema, GPT, backend e interface usam os mesmos enums.

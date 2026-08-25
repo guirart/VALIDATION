@@ -59,3 +59,12 @@ Você também pode colar um contrato no GPT e pedir que ele use `createCase` ant
 - O navegador usa sessão própria (`APP_PASSWORD`/cookie); a Action usa Bearer separado.
 - Mantenha o GPT privado se houver dados reais de clientes.
 - O painel continua exigindo revisão humana antes de marcar um caso como concluído.
+
+
+## Atualização obrigatória para v1.9
+
+No editor do GPT, substitua integralmente o schema antigo da Action pelo conteúdo de:
+
+`GPT_ACTION_SCHEMA_V1.9.yaml`
+
+Sem essa atualização, o GPT continuará operando com o contrato antigo e poderá alegar que `evidence_status` e `legal_result` não existem.

@@ -53,3 +53,6 @@
   .sidebar-foot{display:none}
   .workspace>.page{padding:18px 10px 50px}
 }
+
+.evidence-result-row{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.evidence-result-row span{background:#f1f2ec;border:1px solid #d7d9cd;border-radius:999px;padding:6px 10px;font-family:monospace;font-size:10px;color:#555b52}

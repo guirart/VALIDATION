@@ -9,6 +9,26 @@ const AUDIT_RECOMMENDATIONS = new Set(['liberar','corrigir','escalar para revis�
 const AUDIT_STATUSES = new Set(['confirmado','divergente','não encontrado','opinião sem precedente']);
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
 
+function classifyValidationError(message) {
+  const m = String(message || '');
+  const pointMatch = m.match(/ponto\s+(\d+)/i);
+  const point = pointMatch ? Number(pointMatch[1]) : null;
+
+  let category = 'other';
+  if (/citação da MP/i.test(m)) category = 'citation_mp';
+  else if (/citação do contrato/i.test(m)) category = 'citation_contract';
+  else if (/evidence_status|evidência/i.test(m)) category = 'evidence';
+  else if (/legal_result|contradiz|não pode ser|coerência/i.test(m)) category = 'consistency';
+  else if (/auditoria|finding/i.test(m)) category = 'audit';
+  else if (/classificação/i.test(m)) category = 'classification';
+  else if (/points|ponto .*ausente|duplicado|número de ponto|veredito inválido|referência legal|título ausente|raciocínio ausente/i.test(m)) category = 'schema';
+
+  const correctable = ['schema','citation_mp','citation_contract','evidence','consistency','audit','classification'].includes(category);
+
+  return { category, point, message: m, correctable };
+}
+
+
 function action(req) {
   return String(req.query?.action || '').trim();
 }
@@ -126,7 +146,10 @@ async function gptAnalysis(req,res){
   if(!requireActionAuth(req,res))return; if(req.method!=='POST')return json(res,405,{error:'Método não permitido'});
   const body=await readJson(req), caseId=String(body.case_id||'').trim(); if(!caseId||!body.analyst||!body.audit)return json(res,400,{error:'case_id, analyst e audit são obrigatórios'});
   const rows=await db(`cases?id=eq.${encodeURIComponent(caseId)}&select=*&limit=1`); if(!rows.length)return json(res,404,{error:'Caso não encontrado'}); const c=rows[0];
-  const analystCheck=verifyAnalysis(body.analyst,c.contract_text), auditCheck=verifyAudit(body.audit,analystCheck.analysis), validationErrors=[...analystCheck.errors,...auditCheck.errors];
+  const analystCheck=verifyAnalysis(body.analyst,c.contract_text);
+  const auditCheck=verifyAudit(body.audit,analystCheck.analysis);
+  const validationErrors=[...analystCheck.errors,...auditCheck.errors];
+  const validationErrorDetails=validationErrors.map(classifyValidationError);
   const recommendation=AUDIT_RECOMMENDATIONS.has(body.audit.recommendation)?body.audit.recommendation:'escalar para revisão humana aprofundada';
   // Quality gate mede integridade técnica, não resultado favorável do caso.
 // Uma análise "inconclusiva" pode passar tecnicamente e ainda exigir revisão humana.
@@ -144,8 +167,8 @@ const qualityGate =
   const [analysisRow]=await db('analyses',{method:'POST',body:JSON.stringify({case_id:caseId,analyst_json:analystCheck.analysis,audit_json:body.audit,final_classification:finalClassification,auditor_recommendation:recommendation,quality_gate:qualityGate,validation_errors:validationErrors,legal_source_version:process.env.LEGAL_SOURCE_VERSION||null,memorandum_version:process.env.MEMORANDUM_VERSION||null,model_name:'ChatGPT Custom GPT via Action'})});
   const status=qualityGate?'aguardando-revisao':'requer-correcao';
   await db(`cases?id=eq.${encodeURIComponent(caseId)}`,{method:'PATCH',body:JSON.stringify({status,updated_at:new Date().toISOString()})});
-  await db('audit_logs',{method:'POST',body:JSON.stringify({case_id:caseId,analysis_id:analysisRow.id,event_type:'analysis_submitted_by_gpt_action',payload:{quality_gate:qualityGate,recommendation,validation_errors:validationErrors,quality_gate_reasons:qualityGateReasons}})});
-  return json(res,200,{accepted:true,analysis_id:analysisRow.id,case_id:caseId,status,quality_gate:qualityGate,final_classification:finalClassification,auditor_recommendation:recommendation,validation_errors:validationErrors,quality_gate_reasons:qualityGateReasons,next_step:qualityGate?'Revisão humana obrigatória no app.':'Corrija os itens apontados e reenvie a análise uma única vez; persistindo falha, encaminhe à revisão humana.'});
+  await db('audit_logs',{method:'POST',body:JSON.stringify({case_id:caseId,analysis_id:analysisRow.id,event_type:'analysis_submitted_by_gpt_action',payload:{quality_gate:qualityGate,recommendation,validation_errors:validationErrors,validation_error_details:validationErrorDetails,quality_gate_reasons:qualityGateReasons}})});
+  return json(res,200,{accepted:true,analysis_id:analysisRow.id,case_id:caseId,status,quality_gate:qualityGate,final_classification:finalClassification,auditor_recommendation:recommendation,validation_errors:validationErrors,validation_error_details:validationErrorDetails,quality_gate_reasons:qualityGateReasons,next_step:qualityGate?'Revisão humana obrigatória no app.':'Corrija os itens apontados e reenvie a análise uma única vez; persistindo falha, encaminhe à revisão humana.'});
 }
 
 async function sourceStatus(req,res){

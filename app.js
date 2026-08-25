@@ -166,7 +166,7 @@ function pointCardsHtml(a){
           <div class="evidence-box"><div class="evidence-label">NA MP — ${esc(p?.legal_reference||item.legal_reference)}</div><blockquote>${p?.mp_quote?`“${esc(p.mp_quote)}”`:'Nenhuma citação gravada.'}</blockquote>${p?.mp_quote_verified===true?'<small class="verified">✓ verificada pelo backend</small>':p?.mp_quote_verified===false?'<small class="not-verified">✕ não verificada</small>':''}</div>
           <div class="evidence-box"><div class="evidence-label">NO CONTRATO / LAUDO</div><blockquote>${p?.contract_quote?`“${esc(p.contract_quote)}”`:'Não consta no documento analisado.'}</blockquote>${p?.contract_quote_verified===true?'<small class="verified">✓ verificada pelo backend</small>':p?.contract_quote_verified===false?'<small class="not-verified">✕ não verificada</small>':''}</div>
         </div>
-        <p class="reasoning"><b>Por quê ${esc(label)}:</b> ${esc(p?.reasoning||item.description)}</p>
+        ${p?.evidence_status||p?.legal_result?`<div class="evidence-result-row"><span><b>Prova:</b> ${esc(p?.evidence_status||'—')}</span><span><b>Resultado jurídico:</b> ${esc(p?.legal_result||'—')}</span></div>`:''}<p class="reasoning"><b>Por quê ${esc(label)}:</b> ${esc(p?.reasoning||item.description)}</p>
         ${f?`<div class="audit-line"><b>Auditoria:</b> ${esc(f.status)}${f.reason?` — ${esc(f.reason)}`:''}</div>`:''}
       </div>
     </details>`

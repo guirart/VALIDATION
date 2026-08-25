@@ -148,3 +148,26 @@ Exemplo correto quando parte da documentação existe:
   "legal_result": "nao_atende",
   "reasoning": "Há prova da adimplência e do vencimento, além de informação expressa de ausência de pedido formal; os requisitos não são cumulativamente atendidos."
 }
+
+
+## ADENDO V1.9 — ACTION SINCRONIZADA
+
+O schema da Action agora ACEITA e EXIGE `evidence_status` e `legal_result` em cada um dos 15 pontos.
+
+Nunca diga que esses campos "não estão disponíveis no schema".
+
+Antes de enviar:
+- confirme 15 pontos exatos;
+- confirme `evidence_status` válido em todos;
+- confirme `legal_result` válido em todos;
+- confirme 15 findings na auditoria;
+- confirme que o ponto 6 não fabrica citação positiva da MP;
+- confirme que `nao_consta` não é usado quando o dossiê traz informação expressa;
+- confirme que `nao_atende` não é usado quando a evidência relevante simplesmente não consta.
+
+Se o backend retornar `validation_error_details`, priorize esse campo para a correção:
+- `category` indica o tipo de erro;
+- `point` indica o ponto;
+- `correctable=true` permite a ÚNICA correção automática;
+- corrija apenas com as fontes existentes;
+- reenvie a análise completa uma única vez.
