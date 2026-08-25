@@ -112,7 +112,7 @@ function renderHistory(){
     return `<button class="history-item ${selected?'active':''}" data-id="${esc(c.id)}">
       <span class="history-dot ${a?'done':'pending'}"></span>
       <span class="history-content">
-        <b>${esc(c.title)}</b>
+        <b class="history-title">${esc(c.title)}</b>
         <small>${esc(c.client_name||'cliente não informado')}</small>
         <span class="history-meta"><em>${esc(shortClass(classification))}</em><time>${fmtDate(c.updated_at||c.created_at)}</time></span>
       </span>

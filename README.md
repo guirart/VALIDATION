@@ -275,3 +275,11 @@ validation_debug, failed_points, contract_sha256 e versões.
 - Tema claro: botões bege e paleta pastel; remove caixas pretas dos controles.
 - Tema escuro permanece opcional.
 - Sem migração de banco.
+
+
+## UI patch 3.6.2 — legibilidade
+- Corrige títulos brancos/ilegíveis no histórico do modo claro.
+- O título usa agora a classe `history-title` e contraste preto explícito.
+- Remove a faixa preta residual do scrollbar lateral.
+- Mantém cartões bege/creme e estados em tons pastéis.
+- Não altera o validador jurídico v3.6.
