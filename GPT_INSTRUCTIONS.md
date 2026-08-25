@@ -232,3 +232,16 @@ Conflito de identidade do caso:
 - não trate o conflito como simples detalhe;
 - a classificação global deve ser no máximo `inconclusivo` enquanto a identidade do dossiê não for saneada, salvo quando a divergência for claramente apenas um rótulo administrativo sem impacto no conteúdo analisado;
 - nunca combine fatos de dois casos diferentes.
+
+
+## V2.7 — REGRA DEFINITIVA DO PONTO 12
+
+No ponto 12:
+1. Primeiro procure dispositivo expresso da MP que realmente sustente a conclusão.
+2. Se houver, use citação literal em `mp_quote`.
+3. Somente se a conclusão depender de algo que a MP efetivamente NÃO prevê de forma expressa:
+   - `legal_reference` deve declarar "silêncio normativo" ou "ausência de previsão expressa";
+   - `mp_quote` deve ficar vazio ou usar marcador como "Sem previsão expressa na MP";
+   - `reasoning` deve explicar explicitamente qual questão não está disciplinada.
+4. Nunca use silêncio normativo quando houver artigo aplicável.
+5. Nunca use paráfrase como se fosse citação literal.

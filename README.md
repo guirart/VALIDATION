@@ -154,3 +154,15 @@ O cabeçalho institucional permanece visível durante a rolagem das páginas. A 
 Os pontos 6 e 12 agora aceitam citação literal da MP quando houver dispositivo expresso aplicável e aceitam silêncio normativo apenas quando esse silêncio for declarado de forma explícita. Isso corrige o falso bloqueio do quality gate sem afrouxar a validação.
 
 Também foi acrescentado alerta visual quando o cliente cadastrado não é localizado literalmente no dossiê, para reduzir risco de mistura entre casos.
+
+
+## Versão 2.7 — ponto 12 corrigido
+
+A validação normativa foi centralizada.
+
+Para os pontos 6 e 12:
+- citação literal válida é aceita normalmente;
+- silêncio normativo só é aceito quando referência jurídica + raciocínio + mp_quote são coerentes com ausência de previsão expressa;
+- não existe mais estado híbrido em que o backend exige simultaneamente silêncio e citação literal.
+
+Nos demais 13 pontos, a regra continua rígida: exige-se citação literal verificável quando o ponto usa fundamento normativo positivo.
