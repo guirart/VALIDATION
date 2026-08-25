@@ -170,3 +170,14 @@
     min-height: var(--veredicta-header-height);
   }
 }
+
+.identity-warning{
+  margin:0 22px 14px;
+  padding:11px 13px;
+  border:1px solid #e0c7a4;
+  border-left:4px solid #b47b2c;
+  background:#fff8eb;
+  color:#6a522e;
+  border-radius:6px;
+  line-height:1.45;
+}

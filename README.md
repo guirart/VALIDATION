@@ -147,3 +147,10 @@ Correção de permissão:
 
 ## Versão 2.5 — cabeçalho fixo
 O cabeçalho institucional permanece visível durante a rolagem das páginas. A marca Veredicta, a identificação da MP, a logo institucional da OAB e as ações do cabeçalho não desaparecem ao rolar análises ou o formulário de novo caso.
+
+
+## Versão 2.6 — validação correta dos pontos 6 e 12
+
+Os pontos 6 e 12 agora aceitam citação literal da MP quando houver dispositivo expresso aplicável e aceitam silêncio normativo apenas quando esse silêncio for declarado de forma explícita. Isso corrige o falso bloqueio do quality gate sem afrouxar a validação.
+
+Também foi acrescentado alerta visual quando o cliente cadastrado não é localizado literalmente no dossiê, para reduzir risco de mistura entre casos.

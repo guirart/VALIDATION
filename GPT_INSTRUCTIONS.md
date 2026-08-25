@@ -217,3 +217,18 @@ Somente nos pontos 6 e 12, quando juridicamente verdadeiro que não existe previ
 
 Se houver dispositivo expresso aplicável ao ponto 6 ou 12, use a citação literal normalmente.
 Nos pontos 1–5, 7–11 e 13–15, silêncio normativo não substitui citação literal exigível.
+
+
+## V2.6 — REGRA DE CITAÇÃO E CONFLITO DE IDENTIDADE
+
+Nos pontos 6 e 12:
+- se houver dispositivo expresso aplicável, use citação literal da MP normalmente;
+- somente use silêncio normativo quando não houver previsão expressa aplicável;
+- nunca use silêncio normativo para evitar procurar um dispositivo existente.
+
+Conflito de identidade do caso:
+- compare título/cliente do cadastro com os nomes, propriedade e partes efetivamente presentes no dossiê;
+- se houver incompatibilidade material (ex.: cadastro de um cliente/propriedade e instrumento de outro), marque CONFLITO DOCUMENTAL;
+- não trate o conflito como simples detalhe;
+- a classificação global deve ser no máximo `inconclusivo` enquanto a identidade do dossiê não for saneada, salvo quando a divergência for claramente apenas um rótulo administrativo sem impacto no conteúdo analisado;
+- nunca combine fatos de dois casos diferentes.

@@ -129,6 +129,15 @@ async function openCase(id,rerenderTabs=true){
 }
 function shortClass(v=''){return v.replace('parcialmente enquadrável','parcial').replace('não enquadrável','não enquadrável')}
 
+function identityWarning(c){
+  const text = norm(c?.contract_text || '');
+  const client = norm(c?.client_name || '');
+  if(!client || client.length < 4 || !text) return '';
+  if(text.includes(client)) return '';
+  return `<div class="identity-warning"><b>⚠ Verificação de identidade:</b> o nome do cliente cadastrado não foi localizado literalmente no texto do dossiê. Confira se o contrato pertence ao caso correto antes da revisão jurídica.</div>`;
+}
+
+
 function pointsMap(a){return new Map(((a?.analyst_json?.points)||[]).map(p=>[Number(p.point??p.number),p]))}
 function findingsMap(a){return new Map(((a?.audit_json?.findings)||[]).map(f=>[Number(f.point),f]))}
 function countVerdicts(a){
@@ -189,7 +198,7 @@ function renderCase(){
     <div class="case-head">
       <div><h3>${esc(c.title)}</h3><div class="source-line">caso ${esc(c.id)} · ${esc(c.client_name||'cliente não informado')} · ${esc(c.status)}</div></div>
       <button id="analyze-btn" class="btn btn-outline">${a?'reanalisar no GPT':'analisar no GPT'}</button>
-    </div>`;
+    </div>${identityWarning(c)}`;
   if(a){
     html+=`<div class="final-class"><span>CLASSIFICAÇÃO FINAL</span><strong>${esc(a.final_classification)}</strong></div>
     <div class="summary-box"><p><b>Resumo:</b> ${esc(aj.summary||au.summary||'')}</p><p><b>Auditoria:</b> ${esc(a.auditor_recommendation||'—')} · quality gate ${a.quality_gate?'liberado':'bloqueado'}</p></div>
