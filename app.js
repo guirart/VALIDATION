@@ -83,7 +83,7 @@ function renderStats(){
   $('#stats').innerHTML=[
     ['AGENTES CONFIGURADOS','2','analista + auditor'],
     ['FONTES DE REFERÊNCIA','2','MP integral + memorando'],
-    ['CONTRATOS TESTADOS',String(cases.length),`${analyzed} com análise gravada`],
+    ['CASOS CADASTRADOS',String(cases.length),`${analyzed} com análise gravada`],
     ['REVISÕES HUMANAS',String(reviewed),`${pending} casos pendentes/em análise`]
   ].map(x=>`<div class="stat-card"><span>${x[0]}</span><b>${x[1]}</b><small>${x[2]}</small></div>`).join('');
   $('#tests-note').textContent=`${cases.length} caso${cases.length===1?'':'s'} nesta instância — navegue pelo histórico lateral`;
@@ -206,12 +206,12 @@ async function openInGpt(c){
 }
 
 $('#case-form').addEventListener('submit',async e=>{
-  e.preventDefault();const btn=e.submitter;btn.disabled=true;btn.textContent='Salvando…';$('#save-status').textContent='';
+  e.preventDefault();const btn=e.submitter;btn.disabled=true;btn.textContent='Cadastrando…';$('#save-status').textContent='';
   try{
     const out=await api('/api/cases',{method:'POST',body:JSON.stringify({title:$('#title').value,client_name:$('#client-name').value,contract_text:$('#contract-text').value})});
     e.target.reset();$('#save-status').textContent='salvo';await loadCases();await openCase(out.case.id);
     document.querySelector('.tabs-shell')?.scrollIntoView({behavior:'smooth',block:'start'});
-  }catch(err){alert(err.message)}finally{btn.disabled=false;btn.textContent='Salvar caso'}
+  }catch(err){alert(err.message)}finally{btn.disabled=false;btn.textContent='Cadastrar caso'}
 });
 
 function resolutionStateKey(){return `veredicta_resolution_${selectedId||'global'}`}

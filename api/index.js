@@ -96,39 +96,7 @@ async function cases(req,res) {
     return json(res,200,{cases:rows});
   }
   if(req.method==='POST'){
-    const body=await readJson(req); if(!body.title||!body.contract_text)return json(res,400,{error:'Título e texto do contrato são obrigatórios'});
-    const [row]=await db('cases',{method:'POST',body:JSON.stringify({title:String(body.title).slice(0,180),client_name:String(body.client_name||'').slice(0,180),contract_text:String(body.contract_text),status:'pendente'})});
-    return json(res,201,{case:row});
-  }
-  return json(res,405,{error:'Método não permitido'});
-}
-
-async function config(req,res){
-  if(!requireAuth(req,res))return; if(req.method!=='GET')return json(res,405,{error:'Método não permitido'});
-  return json(res,200,{custom_gpt_url:process.env.CUSTOM_GPT_URL||'',supabase:supabaseConfigStatus()});
-}
-
-async function review(req,res){
-  if(!requireAuth(req,res))return; if(req.method!=='POST')return json(res,405,{error:'Método não permitido'});
-  const body=await readJson(req);
-  if(!body.case_id||!body.analysis_id||!body.reviewer_name||!['aprovado','devolver'].includes(body.decision))return json(res,400,{error:'Dados de revisão incompletos'});
-  const [r]=await db('reviews',{method:'POST',body:JSON.stringify({case_id:body.case_id,analysis_id:body.analysis_id,reviewer_name:String(body.reviewer_name).slice(0,180),reviewer_oab:String(body.reviewer_oab||'').slice(0,80),decision:body.decision,notes:String(body.notes||'')})});
-  await db(`cases?id=eq.${body.case_id}`,{method:'PATCH',body:JSON.stringify({status:body.decision==='aprovado'?'concluido':'requer-correcao'})});
-  await db('audit_logs',{method:'POST',body:JSON.stringify({case_id:body.case_id,analysis_id:body.analysis_id,event_type:'human_review',payload:r})});
-  return json(res,200,{review:r});
-}
-
-async function gptCases(req,res){
-  if(!requireActionAuth(req,res))return;
-  if(req.method==='GET'){
-    const status=String(req.query?.status||'').trim(); const filter=status&&ALLOWED_STATUS.has(status)?`&status=eq.${encodeURIComponent(status)}`:'';
-    const rows=await db(`cases?select=id,title,client_name,status,created_at,updated_at${filter}&order=created_at.desc&limit=50`); return json(res,200,{cases:rows});
-  }
-  if(req.method==='POST'){
-    const body=await readJson(req); if(!body.title||!body.contract_text)return json(res,400,{error:'title e contract_text são obrigatórios'});
-    const [row]=await db('cases',{method:'POST',body:JSON.stringify({title:String(body.title).slice(0,180),client_name:String(body.client_name||'').slice(0,180),contract_text:String(body.contract_text),status:'pendente'})});
-    await db('audit_logs',{method:'POST',body:JSON.stringify({case_id:row.id,event_type:'case_created_by_gpt_action',payload:{title:row.title}})});
-    return json(res,201,{case:{id:row.id,title:row.title,client_name:row.client_name,status:row.status}});
+    return json(res,405,{error:'Criação de casos pelo GPT desativada. Cadastre o caso no app Veredicta.'});
   }
   return json(res,405,{error:'Método não permitido'});
 }

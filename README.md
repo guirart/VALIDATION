@@ -98,3 +98,23 @@ Cada ponto passa a ter `evidence_status` e `legal_result`. O backend rejeita con
 - `nao_atende` não pode ser usado quando a evidência relevante simplesmente `nao_consta`;
 - painel exibe separadamente situação da prova e resultado jurídico;
 - schema, GPT, backend e interface usam os mesmos enums.
+
+
+## Versão 2.0 — modo de produção
+
+Separação rígida de responsabilidades:
+
+APP VEREDICTA
+- cadastra casos reais;
+- armazena contrato/dossiê;
+- exibe histórico e análise;
+- permite revisão humana.
+
+GPT VEREDICTA
+- somente leitura dos casos existentes;
+- executa análise dos 15 pontos;
+- executa auditoria adversarial;
+- grava somente a análise.
+
+O GPT não possui mais Action para criar caso.
+Mesmo que uma chamada POST `gpt-cases` seja tentada manualmente, o backend retorna 405.

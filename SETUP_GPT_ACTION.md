@@ -68,3 +68,12 @@ No editor do GPT, substitua integralmente o schema antigo da Action pelo conteú
 `GPT_ACTION_SCHEMA_V1.9.yaml`
 
 Sem essa atualização, o GPT continuará operando com o contrato antigo e poderá alegar que `evidence_status` e `legal_result` não existem.
+
+
+## Atualização v2.0
+
+Substitua integralmente o schema da Action pelo conteúdo de:
+`GPT_ACTION_SCHEMA_V2.0.yaml`
+
+A Action de produção NÃO oferece criação de casos.
+O POST disponível aceita somente `action=gpt-analysis`.
