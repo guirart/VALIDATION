@@ -90,3 +90,29 @@
   .new-case-actions{flex-direction:column-reverse}
   .new-case-actions .btn{width:100%;text-align:center}
 }
+
+
+/* v2.3 — identidade institucional no cabeçalho */
+.appbar{position:relative}
+.institutional-logo-wrap{
+  margin-left:auto;
+  margin-right:18px;
+  height:48px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:4px 10px;
+  border-radius:5px;
+  background:#f4f4f2;
+}
+.institutional-logo{
+  display:block;
+  width:auto;
+  height:38px;
+  max-width:135px;
+  object-fit:contain;
+}
+@media(max-width:760px){
+  .institutional-logo-wrap{height:40px;margin-right:8px;padding:3px 6px}
+  .institutional-logo{height:31px;max-width:105px}
+}
