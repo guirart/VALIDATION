@@ -131,3 +131,6 @@ Fluxo:
 - após salvar, o app retorna ao painel com `?case=<UUID>` e abre automaticamente o caso recém-criado.
 
 O GPT continua sem permissão para criar ou editar casos.
+
+## Versão 2.2 — citações seguras
+O validador mantém correspondência literal da MP e amplia a exceção controlada de silêncio normativo aos pontos 6 e 12. A exceção exige referência explícita à ausência normativa e não autoriza paráfrase ou citação inventada.

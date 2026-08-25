@@ -1,11 +1,12 @@
 {
   "name": "veredicta-mp1376-app",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vercel dev",
-    "check": "node --check api/index.js && node --check lib/http.js && node --check lib/supabase.js && node --check lib/legal.js && node --check lib/actionAuth.js && node --check app.js"
+    "check": "node --check api/index.js && node --check lib/http.js && node --check lib/supabase.js && node --check lib/legal.js && node --check lib/actionAuth.js && node --check app.js",
+    "test:citations": "node tests/citation-policy.test.mjs"
   },
   "devDependencies": {
     "vercel": "latest"

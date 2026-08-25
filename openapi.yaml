@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Veredicta API
-  version: "2.0.0"
+  version: "2.2.0"
   description: API de produção do Veredicta. O GPT apenas consulta casos existentes e envia análises auditadas.
 
 servers:
@@ -177,7 +177,7 @@ components:
           type: string
         mp_quote:
           type: string
-          description: Citação literal da MP. No ponto 6 pode ser vazio ou marcador explícito de silêncio normativo.
+          description: Citação literal da MP. Somente nos pontos 6 e 12, quando não houver previsão expressa aplicável, pode ser vazio ou marcador explícito de silêncio normativo.
         contract_quote:
           type: string
           description: Citação literal do contrato/dossiê ou marcador explícito de ausência documental.
