@@ -66,13 +66,23 @@ $('#logout').addEventListener('click',async()=>{await fetch('/api/auth',{method:
 $('#refresh').addEventListener('click',async()=>{await loadCases(true)});
 $('#sidebar-refresh')?.addEventListener('click',async()=>{await loadCases(true)});
 $('#case-search')?.addEventListener('input',()=>renderHistory());
-$('#sidebar-new')?.addEventListener('click',()=>document.querySelector('#new-case-section')?.scrollIntoView({behavior:'smooth',block:'start'}));
 
 async function loadConfig(){try{const out=await api('/api/config');customGptUrl=out.custom_gpt_url||''}catch{customGptUrl=''}}
 async function loadCases(keep=false){
   const out=await api('/api/cases');cases=out.cases||[];
   renderStats();renderTabs();
-  if(selectedId && cases.some(c=>c.id===selectedId)){await openCase(selectedId,false)}
+
+  const requestedCase = new URLSearchParams(window.location.search).get('case');
+  if(requestedCase && cases.some(c=>c.id===requestedCase)){
+    selectedId=requestedCase;
+    await openCase(requestedCase,false);
+    if(!keep){
+      const clean = new URL(window.location.href);
+      clean.searchParams.delete('case');
+      history.replaceState({},'',clean.pathname + clean.search + clean.hash);
+    }
+  }
+  else if(selectedId && cases.some(c=>c.id===selectedId)){await openCase(selectedId,false)}
   else if(cases.length){await openCase(cases[0].id,false)}
   else{selectedId=null;selectedCase=null;renderEmptyCase();renderResolution()}
 }
@@ -205,14 +215,6 @@ async function openInGpt(c){
   else alert('Comando copiado. Abra o seu GPT Veredicta e cole o comando. Configure CUSTOM_GPT_URL na Vercel para abrir automaticamente.');
 }
 
-$('#case-form').addEventListener('submit',async e=>{
-  e.preventDefault();const btn=e.submitter;btn.disabled=true;btn.textContent='Cadastrando…';$('#save-status').textContent='';
-  try{
-    const out=await api('/api/cases',{method:'POST',body:JSON.stringify({title:$('#title').value,client_name:$('#client-name').value,contract_text:$('#contract-text').value})});
-    e.target.reset();$('#save-status').textContent='salvo';await loadCases();await openCase(out.case.id);
-    document.querySelector('.tabs-shell')?.scrollIntoView({behavior:'smooth',block:'start'});
-  }catch(err){alert(err.message)}finally{btn.disabled=false;btn.textContent='Cadastrar caso'}
-});
 
 function resolutionStateKey(){return `veredicta_resolution_${selectedId||'global'}`}
 function loadResolutionState(){try{return JSON.parse(localStorage.getItem(resolutionStateKey())||'{}')}catch{return {}}}

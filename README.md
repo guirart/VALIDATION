@@ -118,3 +118,16 @@ GPT VEREDICTA
 
 O GPT não possui mais Action para criar caso.
 Mesmo que uma chamada POST `gpt-cases` seja tentada manualmente, o backend retorna 405.
+
+
+## Versão 2.1 — novo caso em página separada
+
+O cadastro deixou de aparecer no meio das análises.
+
+Fluxo:
+- painel principal (`/`) = histórico, análises, checklist e revisão;
+- botão `+ Novo caso` = abre `/new-case.html`;
+- página `new-case.html` = cadastro exclusivo do caso/dossiê;
+- após salvar, o app retorna ao painel com `?case=<UUID>` e abre automaticamente o caso recém-criado.
+
+O GPT continua sem permissão para criar ou editar casos.

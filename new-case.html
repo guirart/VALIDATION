@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Novo caso — Veredicta</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div id="login" class="login-screen hidden">
+    <form id="login-form" class="login-card">
+      <div class="micro">ACESSO INTERNO</div>
+      <h1>Veredicta</h1>
+      <p>Entre para cadastrar um novo caso.</p>
+      <input id="password" type="password" placeholder="Senha do app" autocomplete="current-password" required />
+      <button class="btn btn-dark">Entrar</button>
+      <p id="login-error" class="error"></p>
+    </form>
+  </div>
+
+  <div id="new-case-app" class="hidden">
+    <header class="appbar">
+      <div class="brand-wrap">
+        <a class="brand brand-link" href="/">VEREDICTA</a>
+        <span class="brand-sub">Cadastro de novo caso</span>
+      </div>
+      <div class="appbar-actions">
+        <a class="link-btn nav-link" href="/">voltar ao painel</a>
+        <button id="logout" class="link-btn">sair</button>
+      </div>
+    </header>
+
+    <main class="new-case-page">
+      <div class="new-case-breadcrumb">
+        <a href="/">Casos e análises</a>
+        <span>›</span>
+        <b>Novo caso</b>
+      </div>
+
+      <section class="new-case-hero">
+        <div>
+          <div class="micro">NOVO CASO</div>
+          <h1>Cadastrar contrato ou dossiê</h1>
+          <p>O caso será salvo no Veredicta. Depois do cadastro, o GPT poderá apenas ler esse conteúdo, analisá-lo e gravar a análise — nunca alterar os fatos do caso.</p>
+        </div>
+        <a class="btn btn-outline" href="/">Cancelar</a>
+      </section>
+
+      <section class="new-case-card">
+        <div class="new-case-security">
+          <div class="security-icon">✓</div>
+          <div>
+            <b>Fonte de verdade protegida</b>
+            <p>O texto salvo aqui será a base documental do caso. O GPT não possui permissão para criar, editar ou substituir este conteúdo.</p>
+          </div>
+        </div>
+
+        <form id="new-case-form">
+          <div class="form-grid">
+            <label class="field">
+              <span>NOME DO CASO / CONTRATO</span>
+              <input id="title" required maxlength="180" placeholder="Ex.: Fazenda Boa Esperança — Custeio 2024/2025" />
+            </label>
+
+            <label class="field">
+              <span>CLIENTE / PRODUTOR / COOPERATIVA</span>
+              <input id="client-name" maxlength="180" placeholder="Ex.: Valdemar José de Oliveira" />
+            </label>
+          </div>
+
+          <label class="field">
+            <span>TEXTO DO CONTRATO / DOSSIÊ</span>
+            <textarea id="contract-text" required rows="22" placeholder="Cole aqui o contrato, laudos, extratos e demais informações que formarão o dossiê do caso..."></textarea>
+          </label>
+
+          <div class="case-guidance">
+            <b>Antes de salvar</b>
+            <p>Inclua somente fatos e documentos que efetivamente façam parte do dossiê. Não complete lacunas por suposição. Informações ausentes devem permanecer ausentes para que o Veredicta possa identificá-las corretamente.</p>
+          </div>
+
+          <div class="new-case-actions">
+            <a class="btn btn-outline" href="/">Cancelar</a>
+            <button id="save-case" class="btn btn-dark" type="submit">Cadastrar caso</button>
+          </div>
+
+          <p id="save-status" class="save-status"></p>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="/new-case.js"></script>
+</body>
+</html>

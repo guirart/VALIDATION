@@ -56,3 +56,37 @@
 
 .evidence-result-row{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
 .evidence-result-row span{background:#f1f2ec;border:1px solid #d7d9cd;border-radius:999px;padding:6px 10px;font-family:monospace;font-size:10px;color:#555b52}
+
+
+/* v2.1 — cadastro de caso em página separada */
+.sidebar-new-link{display:block;text-align:center;text-decoration:none}
+.brand-link{color:inherit;text-decoration:none}
+.nav-link{display:inline-flex;align-items:center;color:inherit}
+.new-case-page{max-width:980px;margin:0 auto;padding:38px 24px 70px}
+.new-case-breadcrumb{display:flex;gap:8px;align-items:center;font-family:monospace;font-size:11px;color:#7d806f;margin-bottom:28px}
+.new-case-breadcrumb a{color:#555b52}
+.new-case-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:22px}
+.new-case-hero h1{font-family:Georgia,serif;font-size:34px;font-weight:400;margin:6px 0 10px}
+.new-case-hero p{max-width:700px;line-height:1.55;color:#64695f;margin:0}
+.new-case-card{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:0 10px 35px rgba(0,0,0,.035)}
+.new-case-security{display:grid;grid-template-columns:34px 1fr;gap:12px;padding:17px 22px;background:#f3f6ef;border-bottom:1px solid var(--line)}
+.security-icon{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#e1eee2;color:#3d7148;font-weight:bold}
+.new-case-security b{font-family:Georgia,serif;font-size:16px;font-weight:400}
+.new-case-security p{margin:5px 0 0;color:#666b60;font-size:12px;line-height:1.45}
+#new-case-form{padding:24px 26px 28px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.case-guidance{margin-top:18px;padding:13px 15px;background:#faf8f2;border-left:3px solid var(--gold);color:#62665d}
+.case-guidance b{font-family:monospace;font-size:10px;letter-spacing:.07em;color:#765c23}
+.case-guidance p{margin:6px 0 0;line-height:1.5}
+.new-case-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+.save-status{margin:12px 0 0;text-align:right;font-family:monospace;font-size:11px}
+.save-status.success{color:var(--green)}
+.save-status.failure{color:var(--red)}
+@media(max-width:700px){
+  .new-case-page{padding:24px 12px 50px}
+  .new-case-hero{flex-direction:column}
+  .form-grid{grid-template-columns:1fr}
+  #new-case-form{padding:18px 16px 22px}
+  .new-case-actions{flex-direction:column-reverse}
+  .new-case-actions .btn{width:100%;text-align:center}
+}

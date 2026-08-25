@@ -45,7 +45,7 @@
         </div>
         <div id="case-history" class="case-history"></div>
         <div class="sidebar-foot">
-          <button id="sidebar-new" class="btn btn-dark">+ Novo caso</button>
+          <a id="sidebar-new" class="btn btn-dark sidebar-new-link" href="/new-case.html">+ Novo caso</a>
         </div>
       </aside>
 
@@ -69,34 +69,6 @@
             <h3>Nenhum caso selecionado</h3>
             <p>Crie um contrato abaixo ou selecione uma aba.</p>
           </div>
-        </div>
-      </section>
-
-      <section id="new-case-section" class="section">
-        <div class="section-title-row">
-          <h2>Cadastrar novo caso</h2>
-          <span class="mono-note">o caso fica salvo no Veredicta e poderá ser analisado pelo GPT</span>
-        </div>
-        <div class="form-card">
-          <div class="attachment-tip"><b>Tem o contrato em PDF?</b> Nesta versão, cole o texto extraído ou o conteúdo do dossiê. O GPT analisará exatamente o que estiver salvo no caso.</div>
-          <form id="case-form">
-            <label class="field">
-              <span>NOME DO CONTRATO / INSTITUIÇÃO</span>
-              <input id="title" required placeholder="Ex.: Custeio Pronamp — Banco Rural Alfa" />
-            </label>
-            <label class="field">
-              <span>CLIENTE / PRODUTOR / COOPERATIVA</span>
-              <input id="client-name" placeholder="Ex.: João Carlos Ferreira" />
-            </label>
-            <label class="field">
-              <span>TEXTO DO CONTRATO / DOSSIÊ</span>
-              <textarea id="contract-text" required rows="12" placeholder="Cole aqui o contrato, laudo e demais elementos relevantes do dossiê..."></textarea>
-            </label>
-            <div class="form-actions">
-              <button class="btn btn-dark" type="submit">Cadastrar caso</button>
-              <span id="save-status" class="mono-note"></span>
-            </div>
-          </form>
         </div>
       </section>
 
