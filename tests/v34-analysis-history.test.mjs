@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const api=fs.readFileSync(new URL('../api/index.js',import.meta.url),'utf8');
+const schema=fs.readFileSync(new URL('../GPT_ACTION_SCHEMA_V3.4.yaml',import.meta.url),'utf8');
+assert.match(api,/gptAnalysisHistory/);
+assert.match(api,/gptAnalysisDetail/);
+assert.match(api,/validation_debug/);
+assert.match(api,/failed_points/);
+assert.match(schema,/listarHistoricoAnalisesVeredicta/);
+assert.match(schema,/buscarDetalheAnaliseVeredicta/);
+console.log('v3.4 analysis history: OK');

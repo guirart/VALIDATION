@@ -8,8 +8,8 @@ const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','re
 const AUDIT_RECOMMENDATIONS = new Set(['liberar','corrigir','escalar para revisão humana aprofundada']);
 const AUDIT_STATUSES = new Set(['confirmado','divergente','não encontrado','opinião sem precedente']);
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
-const APP_VERSION = '3.3.0';
-const VALIDATOR_VERSION = '3.3.0';
+const APP_VERSION = '3.4.0';
+const VALIDATOR_VERSION = '3.4.0';
 
 function stageLog(stage, meta={}) {
   try {
@@ -617,6 +617,83 @@ async function testImportUi(req,res){
   }
 }
 
+
+async function gptAnalysisHistory(req,res){
+  if(!requireActionAuth(req,res)) return;
+  if(req.method!=='GET') return json(res,405,{error:'Método não permitido'});
+
+  const caseId=String(req.query?.case_id||'').trim();
+  if(!caseId) return json(res,400,{
+    ok:false,error:'case_id é obrigatório',
+    app_version:APP_VERSION,validator_version:VALIDATOR_VERSION
+  });
+
+  const rows=await db(
+    `analyses?case_id=eq.${encodeURIComponent(caseId)}&select=id,case_id,final_classification,quality_gate,auditor_recommendation,created_at&order=created_at.desc`
+  );
+
+  return json(res,200,{
+    ok:true,case_id:caseId,analyses:rows,
+    app_version:APP_VERSION,validator_version:VALIDATOR_VERSION
+  });
+}
+
+async function gptAnalysisDetail(req,res){
+  if(!requireActionAuth(req,res)) return;
+  if(req.method!=='GET') return json(res,405,{error:'Método não permitido'});
+
+  const analysisId=String(req.query?.id||'').trim();
+  if(!analysisId) return json(res,400,{
+    ok:false,error:'id da análise é obrigatório',
+    app_version:APP_VERSION,validator_version:VALIDATOR_VERSION
+  });
+
+  const rows=await db(
+    `analyses?id=eq.${encodeURIComponent(analysisId)}&select=id,case_id,analyst_json,audit_json,final_classification,quality_gate,auditor_recommendation,created_at&limit=1`
+  );
+
+  if(!rows.length) return json(res,404,{
+    ok:false,error:'Análise não encontrada',analysis_id:analysisId,
+    app_version:APP_VERSION,validator_version:VALIDATOR_VERSION
+  });
+
+  const a=rows[0];
+
+  const logs=await db(
+    `audit_logs?analysis_id=eq.${encodeURIComponent(analysisId)}&event_type=eq.analysis_submitted&select=id,payload,created_at&order=created_at.desc&limit=1`
+  );
+
+  const payload=logs?.[0]?.payload || {};
+
+  return json(res,200,{
+    ok:true,
+    analysis:{
+      id:a.id,
+      case_id:a.case_id,
+      analyst:a.analyst_json,
+      audit:a.audit_json,
+      final_classification:a.final_classification,
+      quality_gate:a.quality_gate,
+      auditor_recommendation:a.auditor_recommendation,
+      created_at:a.created_at
+    },
+    validation:{
+      validation_errors:payload.validation_errors||[],
+      validation_error_details:payload.validation_error_details||[],
+      quality_gate_reasons:payload.quality_gate_reasons||[],
+      validation_debug:payload.validation_debug||[],
+      failed_points:payload.failed_points||[]
+    },
+    integrity:{
+      contract_sha256:payload.contract_sha256||null,
+      app_version:payload.app_version||APP_VERSION,
+      validator_version:payload.validator_version||VALIDATOR_VERSION
+    },
+    app_version:APP_VERSION,
+    validator_version:VALIDATOR_VERSION
+  });
+}
+
 async function sourceStatus(req,res){
   if(!requireActionAuth(req,res))return; if(req.method!=='GET')return json(res,405,{error:'Método não permitido'});
   return json(res,200,{
@@ -641,6 +718,8 @@ export default async function handler(req,res){
       case 'gpt-case': return await gptCase(req,res);
       case 'gpt-analysis': return await gptAnalysis(req,res);
       case 'source-status': return await sourceStatus(req,res);
+      case 'gpt-analysis-history': return await gptAnalysisHistory(req,res);
+      case 'gpt-analysis-detail': return await gptAnalysisDetail(req,res);
       case 'test-import': return await testImport(req,res);
       case 'test-import-ui': return await testImportUi(req,res);
       default: return json(res,404,{error:'Ação não encontrada'});

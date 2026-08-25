@@ -246,3 +246,14 @@ Nova infraestrutura exclusivamente de teste:
 4. Atualize a Action com `GPT_ACTION_SCHEMA_V3.3.yaml`.
 5. Importe `VEREDICTA_40_CASOS_IMPORT.json`.
 6. Depois da importação, recomenda-se voltar `TEST_IMPORT_ENABLED=false`.
+
+
+## Versão 3.4 — histórico e diagnóstico de análises
+
+Novas operações somente leitura:
+- GET /api/gpt/analysis-history?case_id=...
+- GET /api/gpt/analysis-detail?id=...
+
+A consulta detalhada retorna analyst_json, audit_json e o diagnóstico salvo:
+validation_errors, validation_error_details, quality_gate_reasons,
+validation_debug, failed_points, contract_sha256 e versões.

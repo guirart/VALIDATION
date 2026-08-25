@@ -41,6 +41,14 @@
     {
       "source": "/api/test-import",
       "destination": "/api?action=test-import-ui"
+    },
+    {
+      "source": "/api/gpt/analysis-history",
+      "destination": "/api?action=gpt-analysis-history"
+    },
+    {
+      "source": "/api/gpt/analysis-detail",
+      "destination": "/api?action=gpt-analysis-detail"
     }
   ],
   "headers": [

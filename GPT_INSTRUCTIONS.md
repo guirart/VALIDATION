@@ -298,3 +298,14 @@ Regras:
 5. Nunca utilize esta Action para criar casos reais.
 6. Depois da importação, use GET LOOP para analisar os UUIDs retornados.
 7. Se a API retornar que `TEST_IMPORT_ENABLED` está desativado, pare e informe o usuário; não tente contornar a proteção.
+
+
+## V3.4 — LEITURA DE ANÁLISES ARMAZENADAS
+
+Para diagnóstico de regressão, não faça novo POST quando o usuário pedir investigação de análises anteriores.
+
+Use listarHistoricoAnalisesVeredicta(case_id) e buscarDetalheAnaliseVeredicta(id).
+
+O detalhe armazenado é a fonte primária para mp_quote, legal_reference,
+validation_debug, literal_quote_found, validation_error_details,
+failed_points, quality_gate, hash e versões.

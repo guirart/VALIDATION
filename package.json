@@ -1,6 +1,6 @@
 {
   "name": "veredicta-mp1376-app",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,7 +15,8 @@
     "test:ui31": "node tests/v31-ui.test.mjs",
     "test:theme": "node tests/v32-theme.test.mjs",
     "test:light-contrast": "node tests/v321-light-contrast.test.mjs",
-    "test:v33": "node tests/v33-test-import.test.mjs"
+    "test:v33": "node tests/v33-test-import.test.mjs",
+    "test:v34": "node tests/v34-analysis-history.test.mjs"
   },
   "devDependencies": {
     "vercel": "latest"
