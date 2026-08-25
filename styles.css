@@ -2041,3 +2041,245 @@ html.sidebar-collapsed .main-content{
   right:-3px;
   cursor:col-resize;
 }
+
+
+/* =========================================================
+   SIDEBAR 3.6.5 — FIX REAL DO LAYOUT FIXO
+   A estrutura real usa .history-sidebar position:fixed e
+   .workspace > .page com margin-left/width.
+   ========================================================= */
+
+:root{
+  --veredicta-sidebar-width:304px;
+  --veredicta-active-sidebar-width:var(--veredicta-sidebar-width);
+  --veredicta-sidebar-collapsed-width:52px;
+  --veredicta-resizer-width:10px;
+}
+
+/* Sidebar expandida: usa a largura escolhida. */
+.history-sidebar{
+  width:var(--veredicta-active-sidebar-width) !important;
+  min-width:var(--veredicta-active-sidebar-width) !important;
+  max-width:var(--veredicta-active-sidebar-width) !important;
+  transition:none !important;
+}
+
+/* Painel principal acompanha EXATAMENTE a largura ativa da lateral. */
+.workspace > .page{
+  width:calc(100% - var(--veredicta-active-sidebar-width)) !important;
+  margin-left:var(--veredicta-active-sidebar-width) !important;
+  max-width:none !important;
+  transition:none !important;
+}
+
+/* Separador real, fixado na borda da sidebar. */
+.sidebar-resizer{
+  display:block !important;
+  position:fixed !important;
+  top:var(--veredicta-header-height) !important;
+  bottom:0 !important;
+  left:calc(var(--veredicta-active-sidebar-width) - 5px) !important;
+  width:var(--veredicta-resizer-width) !important;
+  min-width:var(--veredicta-resizer-width) !important;
+  height:auto !important;
+  z-index:2500 !important;
+  cursor:col-resize !important;
+  touch-action:none !important;
+  background:transparent !important;
+}
+
+.sidebar-resizer::before{
+  content:"";
+  position:absolute;
+  top:0;
+  bottom:0;
+  left:4px;
+  width:2px;
+  border-radius:999px;
+  background:#cdbd9f;
+  opacity:.35;
+}
+
+.sidebar-resizer:hover::before,
+.sidebar-resizer:focus-visible::before,
+html.sidebar-resizing .sidebar-resizer::before{
+  width:3px;
+  left:3px;
+  background:#a98b5c;
+  opacity:.9;
+}
+
+.sidebar-resizer-grip{
+  position:absolute !important;
+  top:50% !important;
+  left:50% !important;
+  width:4px !important;
+  height:54px !important;
+  transform:translate(-50%,-50%) !important;
+  border-radius:999px !important;
+  background:#b89d72 !important;
+  opacity:.7 !important;
+}
+
+/* Cabeçalho lateral estável. */
+.sidebar-head{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:8px !important;
+}
+
+.sidebar-title-block{
+  min-width:0;
+}
+
+.sidebar-head-actions{
+  display:flex !important;
+  align-items:center !important;
+  gap:6px !important;
+  flex:0 0 auto;
+}
+
+.sidebar-collapse-btn{
+  width:32px !important;
+  height:32px !important;
+  min-width:32px !important;
+  padding:0 !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  border-radius:7px !important;
+  cursor:pointer !important;
+}
+
+.sidebar-collapse-icon{
+  font-size:20px !important;
+  line-height:1 !important;
+}
+
+/* =========================
+   MINIMIZADO
+   ========================= */
+
+/* Mantém um trilho de 52px para o botão continuar recuperável. */
+html.sidebar-collapsed{
+  --veredicta-active-sidebar-width:var(--veredicta-sidebar-collapsed-width) !important;
+}
+
+html.sidebar-collapsed .history-sidebar{
+  width:var(--veredicta-sidebar-collapsed-width) !important;
+  min-width:var(--veredicta-sidebar-collapsed-width) !important;
+  max-width:var(--veredicta-sidebar-collapsed-width) !important;
+  overflow:hidden !important;
+  border-right:1px solid #d8cbb8 !important;
+}
+
+html.sidebar-collapsed .history-sidebar .sidebar-search,
+html.sidebar-collapsed .history-sidebar .case-history,
+html.sidebar-collapsed .history-sidebar .sidebar-foot,
+html.sidebar-collapsed .history-sidebar .sidebar-title-block,
+html.sidebar-collapsed .history-sidebar #sidebar-refresh{
+  display:none !important;
+}
+
+html.sidebar-collapsed .history-sidebar .sidebar-head{
+  display:flex !important;
+  align-items:flex-start !important;
+  justify-content:center !important;
+  width:52px !important;
+  height:auto !important;
+  padding:12px 0 !important;
+  background:transparent !important;
+  border:0 !important;
+}
+
+html.sidebar-collapsed .history-sidebar .sidebar-head-actions{
+  display:flex !important;
+  justify-content:center !important;
+  width:100% !important;
+}
+
+html.sidebar-collapsed .history-sidebar #sidebar-collapse{
+  display:inline-flex !important;
+  visibility:visible !important;
+  pointer-events:auto !important;
+  width:36px !important;
+  height:36px !important;
+}
+
+/* Não há arraste enquanto recolhido; basta expandir primeiro. */
+html.sidebar-collapsed .sidebar-resizer{
+  display:none !important;
+}
+
+/* Painel direito realmente ocupa o espaço liberado. */
+html.sidebar-collapsed .workspace > .page{
+  width:calc(100% - var(--veredicta-sidebar-collapsed-width)) !important;
+  margin-left:var(--veredicta-sidebar-collapsed-width) !important;
+}
+
+/* Light: trilho e botão coerentes com o pastel. */
+html[data-theme="light"].sidebar-collapsed .history-sidebar{
+  background:#f2eadf !important;
+  border-right-color:#dfd1bd !important;
+}
+
+html[data-theme="light"] .sidebar-collapse-btn{
+  background:#eee1ce !important;
+  border:1px solid #d5c0a2 !important;
+  color:#4b4036 !important;
+}
+
+html[data-theme="light"] .sidebar-collapse-btn:hover{
+  background:#e5d3b8 !important;
+  border-color:#c3a77f !important;
+}
+
+/* Dark preservado. */
+html[data-theme="dark"] .sidebar-resizer::before{
+  background:#5f5a51;
+}
+
+html[data-theme="dark"] .sidebar-resizer-grip{
+  background:#817667 !important;
+}
+
+/* Arraste sem atraso. */
+html.sidebar-resizing .history-sidebar,
+html.sidebar-resizing .workspace > .page{
+  transition:none !important;
+}
+
+/* Mobile: não usa divisor vertical. */
+@media(max-width:700px){
+  :root{
+    --veredicta-active-sidebar-width:0px;
+  }
+
+  .sidebar-resizer{
+    display:none !important;
+  }
+
+  .history-sidebar{
+    width:100% !important;
+    min-width:100% !important;
+    max-width:100% !important;
+  }
+
+  .workspace > .page,
+  html.sidebar-collapsed .workspace > .page{
+    width:100% !important;
+    margin-left:0 !important;
+  }
+
+  html.sidebar-collapsed .history-sidebar{
+    width:52px !important;
+    min-width:52px !important;
+    max-width:52px !important;
+    position:fixed !important;
+    top:var(--veredicta-header-height) !important;
+    left:0 !important;
+    height:52px !important;
+    z-index:2500 !important;
+  }
+}

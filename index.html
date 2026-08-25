@@ -38,17 +38,17 @@
     <div class="workspace">
       <aside class="history-sidebar">
         <div class="sidebar-head">
-          <div>
+          <div class="sidebar-title-block">
             <div class="micro">HISTÓRICO</div>
             <h2>Análises</h2>
-        <div class="sidebar-layout-controls" aria-label="Controles do histórico">
-<button id="sidebar-collapse" class="sidebar-collapse-btn" type="button" aria-expanded="true" title="Minimizar histórico">
-            <span class="sidebar-collapse-icon" aria-hidden="true">‹</span>
-            <span class="sidebar-collapse-label">Minimizar histórico</span>
-          </button>
-        </div>
           </div>
-          <button id="sidebar-refresh" class="sidebar-icon" title="Atualizar">↻</button>
+          <div class="sidebar-head-actions">
+            <button id="sidebar-collapse" class="sidebar-collapse-btn" type="button"
+                    aria-expanded="true" title="Minimizar histórico" aria-label="Minimizar histórico">
+              <span class="sidebar-collapse-icon" aria-hidden="true">‹</span>
+            </button>
+            <button id="sidebar-refresh" class="sidebar-icon" title="Atualizar" aria-label="Atualizar histórico">↻</button>
+          </div>
         </div>
         <div class="sidebar-search">
           <input id="case-search" placeholder="Buscar caso..." />
@@ -59,7 +59,7 @@
         </div>
       </aside>
       <div id="sidebar-resizer" class="sidebar-resizer" role="separator" aria-orientation="vertical"
-           aria-label="Redimensionar histórico" aria-valuemin="220" aria-valuemax="560" tabindex="0">
+           aria-label="Redimensionar histórico" aria-valuemin="240" aria-valuemax="620" tabindex="0">
         <span class="sidebar-resizer-grip" aria-hidden="true"></span>
       </div>
 

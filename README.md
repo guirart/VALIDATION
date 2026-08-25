@@ -300,3 +300,12 @@ validation_debug, failed_points, contract_sha256 e versões.
 - Ao minimizar, a sidebar passa a largura 0 e o painel de análise ocupa o espaço liberado.
 - Fica apenas uma pequena aba para reabrir o histórico.
 - Não altera o validador jurídico.
+
+
+## UI 3.6.5 — correção do layout real da sidebar
+- Corrige a implementação para a variável real `--veredicta-sidebar-width`.
+- A divisória agora fica fixa na borda da sidebar e redimensiona lateral e conteúdo simultaneamente.
+- O arraste funciona segurando o botão esquerdo do mouse.
+- Minimizar mantém um trilho de 52px com botão de reabrir sempre acessível.
+- O painel direito ocupa imediatamente o espaço liberado.
+- Não altera o validador jurídico.

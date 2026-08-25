@@ -296,62 +296,69 @@ initTheme();
 
 
 
-// SIDEBAR_RESIZE_V364
+
+
+// SIDEBAR_RESIZE_V365 — usa a variável REAL do layout fixo.
 (function initResizableHistorySidebar(){
   const root = document.documentElement;
   const sidebar = document.querySelector('.history-sidebar');
+  const page = document.querySelector('.workspace > .page');
   const resizer = document.querySelector('#sidebar-resizer');
   const collapseBtn = document.querySelector('#sidebar-collapse');
 
-  if (!sidebar || !resizer || !collapseBtn) return;
+  if (!sidebar || !page || !resizer || !collapseBtn) return;
 
   const MIN = 240;
-  const MAX = 560;
-  const DEFAULT = 342;
-  const STORAGE_WIDTH = 'veredicta-sidebar-width';
-  const STORAGE_COLLAPSED = 'veredicta-sidebar-collapsed';
+  const MAX = 620;
+  const DEFAULT = 304;
+  const COLLAPSED = 52;
 
-  const clamp = (n) => Math.min(MAX, Math.max(MIN, Number(n) || DEFAULT));
+  const STORAGE_WIDTH = 'veredicta-sidebar-width-v365';
+  const STORAGE_COLLAPSED = 'veredicta-sidebar-collapsed-v365';
 
-  function currentWidth(){
-    const raw = getComputedStyle(root).getPropertyValue('--sidebar-width');
+  const clamp = (value) => Math.min(MAX, Math.max(MIN, Number(value) || DEFAULT));
+
+  function expandedWidth(){
+    const raw = getComputedStyle(root).getPropertyValue('--veredicta-sidebar-width');
     return clamp(parseFloat(raw));
   }
 
-  function setWidth(width, persist=true){
+  function setExpandedWidth(width, persist=true){
     const next = clamp(width);
+    root.style.setProperty('--veredicta-sidebar-width', `${next}px`);
     root.style.setProperty('--sidebar-width', `${next}px`);
     resizer.setAttribute('aria-valuenow', String(Math.round(next)));
     if (persist) localStorage.setItem(STORAGE_WIDTH, String(next));
   }
 
+  function applyLayout(){
+    const collapsed = root.classList.contains('sidebar-collapsed');
+
+    if (collapsed) {
+      root.style.setProperty('--veredicta-active-sidebar-width', `${COLLAPSED}px`);
+    } else {
+      root.style.setProperty('--veredicta-active-sidebar-width', `${expandedWidth()}px`);
+    }
+  }
+
   function setCollapsed(collapsed, persist=true){
     root.classList.toggle('sidebar-collapsed', collapsed);
-
     collapseBtn.setAttribute('aria-expanded', String(!collapsed));
+    collapseBtn.setAttribute('aria-label', collapsed ? 'Expandir histórico' : 'Minimizar histórico');
     collapseBtn.title = collapsed ? 'Expandir histórico' : 'Minimizar histórico';
 
     const icon = collapseBtn.querySelector('.sidebar-collapse-icon');
-    const label = collapseBtn.querySelector('.sidebar-collapse-label');
-
     if (icon) icon.textContent = collapsed ? '›' : '‹';
-    if (label) label.textContent = collapsed ? 'Abrir histórico' : 'Minimizar histórico';
 
-    resizer.setAttribute('aria-hidden', String(collapsed));
+    applyLayout();
 
     if (persist) {
       localStorage.setItem(STORAGE_COLLAPSED, collapsed ? '1' : '0');
     }
-
-    // Força recálculo imediato do layout para o painel direito
-    // ocupar o espaço liberado.
-    requestAnimationFrame(() => {
-      window.dispatchEvent(new Event('resize'));
-    });
   }
 
   const storedWidth = Number(localStorage.getItem(STORAGE_WIDTH));
-  setWidth(Number.isFinite(storedWidth) && storedWidth > 0 ? storedWidth : DEFAULT, false);
+  setExpandedWidth(Number.isFinite(storedWidth) && storedWidth > 0 ? storedWidth : DEFAULT, false);
   setCollapsed(localStorage.getItem(STORAGE_COLLAPSED) === '1', false);
 
   collapseBtn.addEventListener('click', () => {
@@ -365,26 +372,23 @@ initTheme();
 
   function finishDrag(){
     if (!dragging) return;
-
     dragging = false;
     root.classList.remove('sidebar-resizing');
     document.body.style.removeProperty('cursor');
     document.body.style.removeProperty('user-select');
 
     if (activePointerId !== null) {
-      try {
-        resizer.releasePointerCapture?.(activePointerId);
-      } catch {}
+      try { resizer.releasePointerCapture?.(activePointerId); } catch {}
     }
 
-    localStorage.setItem(STORAGE_WIDTH, String(currentWidth()));
+    localStorage.setItem(STORAGE_WIDTH, String(expandedWidth()));
     activePointerId = null;
   }
 
   resizer.addEventListener('pointerdown', (event) => {
     if (root.classList.contains('sidebar-collapsed')) return;
 
-    // Mouse: SOMENTE botão esquerdo.
+    // No mouse, somente botão esquerdo inicia o redimensionamento.
     if (event.pointerType === 'mouse' && event.button !== 0) return;
 
     dragging = true;
@@ -403,8 +407,9 @@ initTheme();
   resizer.addEventListener('pointermove', (event) => {
     if (!dragging || event.pointerId !== activePointerId) return;
 
-    const delta = event.clientX - startX;
-    setWidth(startWidth + delta, false);
+    const next = clamp(startWidth + (event.clientX - startX));
+    setExpandedWidth(next, false);
+    applyLayout(); // Redimensiona sidebar E painel direito durante o arraste.
   });
 
   resizer.addEventListener('pointerup', (event) => {
@@ -415,23 +420,22 @@ initTheme();
   resizer.addEventListener('pointercancel', finishDrag);
   resizer.addEventListener('lostpointercapture', finishDrag);
 
-  // Acessibilidade: setas continuam disponíveis no separador,
-  // mas não há botões visuais de +/-.
+  // Alternativa acessível via teclado no próprio separador.
   resizer.addEventListener('keydown', (event) => {
     if (root.classList.contains('sidebar-collapsed')) return;
 
-    if (event.key === 'ArrowLeft') {
+    let next = null;
+    if (event.key === 'ArrowLeft') next = expandedWidth() - 16;
+    if (event.key === 'ArrowRight') next = expandedWidth() + 16;
+    if (event.key === 'Home') next = MIN;
+    if (event.key === 'End') next = MAX;
+
+    if (next !== null) {
       event.preventDefault();
-      setWidth(currentWidth() - 16);
-    } else if (event.key === 'ArrowRight') {
-      event.preventDefault();
-      setWidth(currentWidth() + 16);
-    } else if (event.key === 'Home') {
-      event.preventDefault();
-      setWidth(MIN);
-    } else if (event.key === 'End') {
-      event.preventDefault();
-      setWidth(MAX);
+      setExpandedWidth(next);
+      applyLayout();
     }
   });
+
+  applyLayout();
 })();
