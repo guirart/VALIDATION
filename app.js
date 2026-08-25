@@ -178,7 +178,7 @@ function pointCardsHtml(a){
     const p=pm.get(item.point);const f=fm.get(item.point);const v=p?verdictClass(p.verdict):'ausente';
     const label=p?verdictLabel(p.verdict,p.display_label):'pendente';
     const hidden=currentFilter!=='all'&&currentFilter!==v?' checkpoint-hidden':'';
-    return `<details class="checkpoint${hidden}" data-verdict="${v}" data-point="${item.point}">
+    return `<details class="checkpoint${hidden}" data-verdict="${v}">
       <summary><span class="cp-num">${String(item.point).padStart(2,'0')}</span><span class="cp-title">${esc(p?.title||item.title)}${p?.display_label?` — ${esc(p.display_label)}`:''}</span><span class="pill v-${v}">${esc(label)}</span><span class="chev">›</span></summary>
       <div class="cp-body">
         <div class="evidence-grid">
@@ -192,196 +192,62 @@ function pointCardsHtml(a){
   }).join('')}</div>`;
 }
 
-function classificationUiMeta(value=''){
-  const n=norm(value);
-  if(n==='enquadravel') return {key:'eligible',icon:'✓',title:'ENQUADRÁVEL',subtitle:'Os requisitos analisados apresentam suporte documental compatível com o enquadramento.'};
-  if(n.includes('parcialmente')) return {key:'partial',icon:'◐',title:'PARCIALMENTE ENQUADRÁVEL',subtitle:'Há elementos favoráveis, mas permanecem requisitos ou provas incompletos.'};
-  if(n==='inconclusivo') return {key:'uncertain',icon:'?',title:'INCONCLUSIVO',subtitle:'A documentação disponível não permite uma conclusão jurídica segura.'};
-  if(n.includes('nao enquadravel')) return {key:'rejected',icon:'×',title:'NÃO ENQUADRÁVEL',subtitle:'Há requisito impeditivo ou incompatibilidade relevante com o enquadramento.'};
-  return {key:'neutral',icon:'•',title:String(value||'SEM CLASSIFICAÇÃO').toUpperCase(),subtitle:'Classificação não identificada.'};
-}
-
-function primaryIssueForAnalysis(a){
-  const pm=pointsMap(a);
-  const preferred=['atencao','ausente','parcial'];
-  for(const wanted of preferred){
-    for(const item of CHECKLIST_15){
-      const p=pm.get(item.point);
-      if(p && verdictClass(p.verdict)===wanted){
-        const reasoning=String(p.reasoning||'').trim();
-        if(reasoning){
-          return {
-            point:item.point,
-            title:item.title,
-            text:reasoning.length>320?reasoning.slice(0,317).trimEnd()+'…':reasoning
-          };
-        }
-      }
-    }
-  }
-  const summary=String(a?.analyst_json?.summary||a?.audit_json?.summary||'').trim();
-  return summary?{point:null,title:'Síntese da conclusão',text:summary.length>320?summary.slice(0,317).trimEnd()+'…':summary}:null;
-}
-
-function resultHeroHtml(a){
-  const meta=classificationUiMeta(a?.final_classification||'');
+function classificationHeroHtml(a){
+  const final=String(a?.final_classification||'').trim();
+  const n=norm(final);
   const c=countVerdicts(a);
-  const issue=primaryIssueForAnalysis(a);
-  return `<section class="case-result-hero result-${meta.key}">
-    <div class="result-identity">
-      <div class="result-icon" aria-hidden="true">${esc(meta.icon)}</div>
-      <div>
-        <div class="result-eyebrow">CLASSIFICAÇÃO FINAL</div>
-        <h2>${esc(meta.title)}</h2>
-        <p>${esc(meta.subtitle)}</p>
+
+  let key='neutral', icon='•', subtitle='Classificação final da análise.';
+  if(n==='enquadravel'){
+    key='eligible'; icon='✓';
+    subtitle='Requisitos analisados compatíveis com o enquadramento.';
+  }else if(n.includes('parcialmente')){
+    key='partial'; icon='◐';
+    subtitle='Há elementos favoráveis, mas permanecem pontos parciais.';
+  }else if(n==='inconclusivo'){
+    key='uncertain'; icon='?';
+    subtitle='A documentação disponível não permite conclusão jurídica segura.';
+  }else if(n.includes('nao enquadravel')){
+    key='rejected'; icon='×';
+    subtitle='Há requisito impeditivo ou incompatibilidade relevante.';
+  }
+
+  return `<section class="final-class final-class-hero final-class-${key}">
+    <div class="final-class-main">
+      <div class="final-class-icon" aria-hidden="true">${esc(icon)}</div>
+      <div class="final-class-copy">
+        <div class="label">CLASSIFICAÇÃO FINAL</div>
+        <strong>${esc(final||'—')}</strong>
+        <small>${esc(subtitle)}</small>
       </div>
     </div>
-    <div class="result-counts">
-      <div><strong>${c.atinge}</strong><span>atendidos</span></div>
-      <div><strong>${c.parcial}</strong><span>parciais</span></div>
-      <div><strong>${c.atencao}</strong><span>atenção</span></div>
-      <div><strong>${c.ausente}</strong><span>não consta</span></div>
-    </div>
-    ${issue?`<div class="result-primary-issue">
-      <div class="result-eyebrow">${issue.point?`PRINCIPAL QUESTÃO · PONTO ${String(issue.point).padStart(2,'0')}`:'PRINCIPAL QUESTÃO'}</div>
-      <p>${esc(issue.text)}</p>
-      ${issue.point?`<button type="button" class="result-jump-btn" data-jump-point="${issue.point}">Ir ao ponto ${issue.point}</button>`:''}
-    </div>`:''}
-  </section>`;
-}
-
-function overview15Html(a){
-  const pm=pointsMap(a);
-  return `<section class="points-overview">
-    <div class="points-overview-head">
-      <strong>VISÃO GERAL DOS 15 PONTOS</strong>
-      <span>clique para abrir o ponto</span>
-    </div>
-    <div class="points-overview-grid">
-      ${CHECKLIST_15.map(item=>{
-        const p=pm.get(item.point);
-        const v=p?verdictClass(p.verdict):'ausente';
-        return `<button type="button" class="point-mini point-mini-${v}" data-jump-point="${item.point}" title="${esc(item.title)}">
-          <span>${String(item.point).padStart(2,'0')}</span><i aria-hidden="true"></i>
-        </button>`;
-      }).join('')}
+    <div class="final-class-stats" aria-label="Resumo dos 15 pontos">
+      <div><b>${c.atinge}</b><span>atendidos</span></div>
+      <div><b>${c.parcial}</b><span>parciais</span></div>
+      <div><b>${c.atencao}</b><span>atenção</span></div>
+      <div><b>${c.ausente}</b><span>não consta</span></div>
     </div>
   </section>`;
 }
-
-function dossierDocuments(c){
-  const text=String(c?.contract_text||'');
-  const n=norm(text);
-  const docs=[];
-  const add=(label,detail='Referência documental identificada no dossiê')=>{
-    if(!docs.some(d=>d.label===label))docs.push({label,detail});
-  };
-
-  // O próprio contract_text é sempre o dossiê atualmente analisado.
-  add('Dossiê / instrumento analisado','Texto integral armazenado neste caso');
-
-  if(/\blaudo\b/i.test(text)) add(/laudo agron[oô]mico/i.test(text)?'Laudo técnico agronômico':'Laudo técnico');
-  if(/notas? de comercializa[cç][aã]o/i.test(text)) add('Notas de comercialização');
-  if(/nota[s]? fiscal|nf['’]?s|\bnf\b/i.test(text)) add('Notas fiscais');
-  if(/ap[oó]lice|seguro rural/i.test(text)) add('Apólice / documentação de seguro rural');
-  if(/\bproagro\b/i.test(text)) add('Documentação Proagro');
-  if(/certid[aã]o/i.test(text)) add('Certidão mencionada no dossiê');
-  if(/matr[ií]cula/i.test(text)) add('Matrícula / documentação de garantia');
-  if(/extrato/i.test(text)) add('Extrato mencionado no dossiê');
-  if(/declara[cç][aã]o da institui[cç][aã]o|declara[cç][aã]o banc[aá]ria/i.test(text)) add('Declaração da instituição financeira');
-  if(/\bcpr\b/i.test(text)) add('Cédula de Produto Rural (CPR)');
-  if(/aditivo/i.test(text)) add('Aditivo contratual');
-
-  return docs.slice(0,10);
-}
-
-function caseRailHtml(c,a){
-  const docs=dossierDocuments(c);
-  const rows=[
-    ['Cliente',c.client_name||'—'],
-    ['Status',c.status||'—'],
-    ['Caso',c.external_test_id||c.title||'—'],
-    ['Análise',fmtDate(a?.created_at)],
-  ];
-  const tech=[
-    ['UUID',c.id],
-    ['Analysis ID',a?.id||'—'],
-    ['Validador',a?.validator_version||'—'],
-    ['Fonte',a?.legal_source_version||'—'],
-  ];
-  return `<aside class="case-info-rail">
-    <section class="rail-card">
-      <div class="rail-card-head"><span>DOCUMENTOS DO DOSSIÊ</span><span class="rail-count">${docs.length}</span></div>
-      <div class="documents-list">
-        ${docs.map(d=>`<div class="document-row"><span class="document-icon">▱</span><div><strong>${esc(d.label)}</strong><small>${esc(d.detail)}</small></div></div>`).join('')}
-      </div>
-    </section>
-    <section class="rail-card">
-      <div class="rail-card-head"><span>INFORMAÇÕES DO CASO</span></div>
-      <dl class="case-information-list">
-        ${rows.map(([k,v])=>`<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}
-      </dl>
-    </section>
-    <details class="rail-card technical-details">
-      <summary>Detalhes técnicos</summary>
-      <dl class="case-information-list">
-        ${tech.map(([k,v])=>`<div><dt>${esc(k)}</dt><dd class="technical-value">${esc(v)}</dd></div>`).join('')}
-      </dl>
-    </details>
-  </aside>`;
-}
-
-function bindOverviewNavigation(){
-  $$('[data-jump-point]').forEach(btn=>btn.addEventListener('click',()=>{
-    const n=Number(btn.dataset.jumpPoint);
-    const target=$(`.checkpoint[data-point="${n}"]`) || $$('.checkpoint').find(el=>el.querySelector('.cp-num')?.textContent.trim()===String(n).padStart(2,'0'));
-    if(target){
-      target.open=true;
-      target.scrollIntoView({behavior:'smooth',block:'center'});
-      target.classList.add('point-focus-pulse');
-      setTimeout(()=>target.classList.remove('point-focus-pulse'),1000);
-    }
-  }));
-}
-
 
 function renderCase(){
   const c=selectedCase;if(!c)return renderEmptyCase();
   const a=latest(c.analyses||[]);const aj=a?.analyst_json||{};const au=a?.audit_json||{};
-
   let html=`<article class="analysis-sheet">
     <div class="case-head">
       <div><h3>${esc(c.title)}</h3><div class="source-line">caso ${esc(c.id)} · ${esc(c.client_name||'cliente não informado')} · ${esc(c.status)}</div></div>
       <button id="analyze-btn" class="btn btn-outline">${a?'reanalisar no GPT':'analisar no GPT'}</button>
     </div>${identityWarning(c)}`;
-
   if(a){
-    html+=`${resultHeroHtml(a)}
-    <div class="case-overview-layout">
-      <div class="case-overview-main">
-        ${overview15Html(a)}
-        <div class="summary-box compact-summary">
-          <p><b>Resumo:</b> ${esc(aj.summary||au.summary||'')}</p>
-          <p><b>Auditoria:</b> ${esc(a.auditor_recommendation||'—')} · validação automática ${a.quality_gate?'concluída':'bloqueada'}</p>
-        </div>
-        ${gridHtml(a)}
-        ${filterBarHtml(a)}
-        ${pointCardsHtml(a)}
-      </div>
-      ${caseRailHtml(c,a)}
-    </div>
-    <div class="report-foot">análise ${esc(a.id)} · fonte ${esc(a.legal_source_version||'não informada')} · memorando ${esc(a.memorandum_version||'não informado')} · criada em ${fmtDate(a.created_at)}</div>`;
+    html+=classificationHeroHtml(a);
   }else{
     html+=`<div class="no-analysis"><h4>Ainda não analisado</h4><p>O caso está salvo. Clique em <b>analisar no GPT</b>; o GPT buscará o contrato pela Action, fará os 15 pontos + auditoria e gravará o resultado aqui.</p><code>Analise o caso ${esc(c.id)}.</code></div>`;
   }
-
   html+='</article>';
   $('#case-view').innerHTML=html;
-
   $('#analyze-btn')?.addEventListener('click',()=>openInGpt(c));
   $$('.filter-chip').forEach(b=>b.addEventListener('click',()=>{currentFilter=b.dataset.filter;renderCase()}));
   $$('[data-expand]').forEach(b=>b.addEventListener('click',()=>{$$('.checkpoint:not(.checkpoint-hidden)').forEach(d=>d.open=b.dataset.expand==='1')}));
-  bindOverviewNavigation();
 }
 function renderEmptyCase(){
   $('#case-view').innerHTML='<div class="empty-card"><h3>Nenhum caso cadastrado</h3><p>Use o formulário abaixo para criar o primeiro contrato.</p></div>';

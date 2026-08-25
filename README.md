@@ -311,18 +311,24 @@ validation_debug, failed_points, contract_sha256 e versões.
 - Não altera o validador jurídico.
 
 
-## UI 3.6.6 — visão executiva do caso
-- Card de classificação final com destaque específico para enquadrável, parcial, inconclusivo e não enquadrável.
-- Exibe automaticamente a principal questão/impedimento a partir dos pontos analisados.
-- Visão compacta e clicável dos 15 pontos com navegação para o checklist.
-- Rail lateral com Documentos do Dossiê, Informações do Caso e Detalhes Técnicos recolhíveis.
-- Documentos são exibidos somente quando existentes nos dados/attachments ou explicitamente listados no texto do dossiê.
-- Mantém a sidebar redimensionável da v3.6.5 e não altera o validador jurídico.
+## UI 3.6.8 — retorno ao template anterior
+- Restaura integralmente o template visual da v3.6.5.
+- Mantém a sidebar redimensionável por arraste e minimização recuperável.
+- Remove as alterações de visão executiva das v3.6.6 e v3.6.7.
+- Não altera o validador jurídico.
 
 
-## UI 3.6.7 — correção real da visão executiva
-- Integra o card de resultado, visão dos 15 pontos e rail lateral diretamente em `renderCase()`.
-- Corrige a falha da v3.6.6, que buscava estado inexistente em `window.currentCase/window.currentAnalysis`.
-- Documentos e informações agora usam `selectedCase` e a análise mais recente já carregada pelo aplicativo.
-- A visão dos 15 pontos navega para os cards reais do checklist.
+## UI 3.6.9 — classificação final destacada
+- Mantém integralmente o template anterior da v3.6.8.
+- Destaca somente o bloco de classificação final.
+- Não adiciona visão executiva, documentos, cards ou novos painéis.
+- Não altera lógica, API ou validador jurídico.
+
+
+## UI 3.7.0 — classificação final em destaque
+- Mantém o template original da v3.6.9.
+- Altera somente o bloco de classificação final.
+- Adiciona ícone contextual e contadores dos 15 pontos no próprio bloco.
+- Cores distintas para enquadrável, parcialmente enquadrável, inconclusivo e não enquadrável.
+- Não adiciona documentos, painéis extras ou nova visão de checklist.
 - Não altera o validador jurídico.
