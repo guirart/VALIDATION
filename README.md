@@ -166,3 +166,17 @@ Para os pontos 6 e 12:
 - não existe mais estado híbrido em que o backend exige simultaneamente silêncio e citação literal.
 
 Nos demais 13 pontos, a regra continua rígida: exige-se citação literal verificável quando o ponto usa fundamento normativo positivo.
+
+
+## Versão 2.8.0 — diagnóstico e integridade
+
+Correções:
+- o marcador `Sem previsão expressa na MP` passa a ser reconhecido pelo validador de silêncio normativo;
+- `source-status` informa `app_version` e `validator_version`;
+- `gpt-case` retorna `contract_sha256`;
+- o envio da análise exige `source_contract_sha256`;
+- hash divergente rejeita a análise antes da gravação;
+- o retorno do quality gate inclui `validation_debug` dos pontos 6 e 12 com cada condição booleana;
+- logs registram versão, hash e diagnóstico.
+
+Esta versão permite descobrir exatamente por que um ponto foi recusado e impede mistura de dossiês.

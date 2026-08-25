@@ -245,3 +245,23 @@ No ponto 12:
    - `reasoning` deve explicar explicitamente qual questão não está disciplinada.
 4. Nunca use silêncio normativo quando houver artigo aplicável.
 5. Nunca use paráfrase como se fosse citação literal.
+
+
+## V2.8 — PROTOCOLO DE INTEGRIDADE DO CASO
+
+Antes de analisar:
+1. consulte `source-status`;
+2. confirme `app_version` e `validator_version`;
+3. busque o caso pelo UUID usando `gpt-case`;
+4. registre o `contract_sha256` retornado;
+5. analise SOMENTE o `contract_text` retornado naquela consulta.
+
+Ao enviar a análise:
+- envie obrigatoriamente `source_contract_sha256` com exatamente o hash recebido em `gpt-case`;
+- se o backend retornar 409 por hash divergente, NÃO tente corrigir a análise antiga: busque novamente o caso e pare o fluxo atual;
+- nunca combine informações de outro caso ou de execução anterior.
+
+Pontos 6 e 12:
+- o marcador `Sem previsão expressa na MP` é válido SOMENTE quando a referência e o raciocínio também declaram claramente silêncio/ausência de previsão normativa;
+- se houver citação literal aplicável, prefira a citação literal;
+- consulte `validation_debug` se o quality gate rejeitar esses pontos, em vez de adivinhar qual condição falhou.

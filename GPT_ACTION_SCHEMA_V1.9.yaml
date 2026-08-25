@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Veredicta API
-  version: "1.9.0"
+  version: "2.8.0"
   description: API do Veredicta para criação de casos, consulta de casos e envio de análise jurídica auditada.
 
 servers:
@@ -287,11 +287,16 @@ components:
       type: object
       required:
         - case_id
+        - source_contract_sha256
         - analyst
         - audit
       properties:
         case_id:
           type: string
+
+        source_contract_sha256:
+          type: string
+          description: SHA-256 do contract_text retornado pela consulta gpt-case. Impede análise baseada em dossiê diferente ou desatualizado.
         analyst:
           $ref: "#/components/schemas/Analyst"
         audit:
@@ -326,6 +331,35 @@ components:
           type: array
           items:
             type: string
+        app_version:
+          type: string
+
+        validator_version:
+          type: string
+
+        contract_sha256:
+          type: string
+
+        validation_debug:
+          type: array
+          items:
+            type: object
+            properties:
+              point:
+                type: integer
+              literal_quote_found:
+                type: boolean
+              silence_allowed:
+                type: boolean
+              legal_reference_silence:
+                type: boolean
+              reasoning_silence:
+                type: boolean
+              quote_silence:
+                type: boolean
+              result:
+                type: boolean
+
         next_step:
           type: string
 

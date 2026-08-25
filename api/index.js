@@ -8,6 +8,8 @@ const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','re
 const AUDIT_RECOMMENDATIONS = new Set(['liberar','corrigir','escalar para revisão humana aprofundada']);
 const AUDIT_STATUSES = new Set(['confirmado','divergente','não encontrado','opinião sem precedente']);
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
+const APP_VERSION = '2.8.0';
+const VALIDATOR_VERSION = '2.8.0';
 
 function classifyValidationError(message) {
   const m = String(message || '');
@@ -162,13 +164,59 @@ async function gptCase(req,res){
   const rows=await db(`cases?id=eq.${encodeURIComponent(id)}&select=id,title,client_name,contract_text,status,created_at,updated_at&limit=1`); if(!rows.length)return json(res,404,{error:'Caso não encontrado'});
   await db(`cases?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:JSON.stringify({status:'em-analise',updated_at:new Date().toISOString()})});
   await db('audit_logs',{method:'POST',body:JSON.stringify({case_id:id,event_type:'case_fetched_by_gpt_action',payload:{}})});
-  return json(res,200,{case:{...rows[0],status:'em-analise'},legal_source_version:process.env.LEGAL_SOURCE_VERSION||null,memorandum_version:process.env.MEMORANDUM_VERSION||null});
+  return json(res,200,{
+    case:{...rows[0],status:'em-analise'},
+    contract_sha256:sha(rows[0].contract_text),
+    app_version:APP_VERSION,
+    validator_version:VALIDATOR_VERSION,
+    legal_source_version:process.env.LEGAL_SOURCE_VERSION||null,
+    memorandum_version:process.env.MEMORANDUM_VERSION||null
+  });
 }
 
 async function gptAnalysis(req,res){
   if(!requireActionAuth(req,res))return; if(req.method!=='POST')return json(res,405,{error:'Método não permitido'});
-  const body=await readJson(req), caseId=String(body.case_id||'').trim(); if(!caseId||!body.analyst||!body.audit)return json(res,400,{error:'case_id, analyst e audit são obrigatórios'});
-  const rows=await db(`cases?id=eq.${encodeURIComponent(caseId)}&select=*&limit=1`); if(!rows.length)return json(res,404,{error:'Caso não encontrado'}); const c=rows[0];
+  const body=await readJson(req), caseId=String(body.case_id||'').trim();
+  if(!caseId||!body.analyst||!body.audit||!body.source_contract_sha256){
+    return json(res,400,{error:'case_id, source_contract_sha256, analyst e audit são obrigatórios'});
+  }
+
+  const rows=await db(`cases?id=eq.${encodeURIComponent(caseId)}&select=*&limit=1`);
+  if(!rows.length)return json(res,404,{error:'Caso não encontrado'});
+  const c=rows[0];
+
+  const currentContractSha256=sha(c.contract_text);
+  const suppliedContractSha256=String(body.source_contract_sha256||'').trim().toLowerCase();
+
+  if(suppliedContractSha256 !== currentContractSha256){
+    await db('audit_logs',{
+      method:'POST',
+      body:JSON.stringify({
+        case_id:caseId,
+        event_type:'analysis_rejected_contract_hash_mismatch',
+        payload:{
+          supplied_contract_sha256:suppliedContractSha256,
+          current_contract_sha256:currentContractSha256,
+          app_version:APP_VERSION,
+          validator_version:VALIDATOR_VERSION
+        }
+      })
+    });
+
+    return json(res,409,{
+      accepted:false,
+      case_id:caseId,
+      status:'requer-correcao',
+      quality_gate:false,
+      error:'A análise não corresponde ao dossiê atual do caso.',
+      app_version:APP_VERSION,
+      validator_version:VALIDATOR_VERSION,
+      supplied_contract_sha256:suppliedContractSha256,
+      current_contract_sha256:currentContractSha256,
+      next_step:'Busque novamente o caso pelo Veredicta e refaça a análise somente com o dossiê retornado.'
+    });
+  }
+
   const analystCheck=verifyAnalysis(body.analyst,c.contract_text);
   const auditCheck=verifyAudit(body.audit,analystCheck.analysis);
   const validationErrors=[...analystCheck.errors,...auditCheck.errors];
@@ -190,13 +238,49 @@ const qualityGate =
   const [analysisRow]=await db('analyses',{method:'POST',body:JSON.stringify({case_id:caseId,analyst_json:analystCheck.analysis,audit_json:body.audit,final_classification:finalClassification,auditor_recommendation:recommendation,quality_gate:qualityGate,validation_errors:validationErrors,legal_source_version:process.env.LEGAL_SOURCE_VERSION||null,memorandum_version:process.env.MEMORANDUM_VERSION||null,model_name:'ChatGPT Custom GPT via Action'})});
   const status=qualityGate?'aguardando-revisao':'requer-correcao';
   await db(`cases?id=eq.${encodeURIComponent(caseId)}`,{method:'PATCH',body:JSON.stringify({status,updated_at:new Date().toISOString()})});
-  await db('audit_logs',{method:'POST',body:JSON.stringify({case_id:caseId,analysis_id:analysisRow.id,event_type:'analysis_submitted_by_gpt_action',payload:{quality_gate:qualityGate,recommendation,validation_errors:validationErrors,validation_error_details:validationErrorDetails,quality_gate_reasons:qualityGateReasons}})});
-  return json(res,200,{accepted:true,analysis_id:analysisRow.id,case_id:caseId,status,quality_gate:qualityGate,final_classification:finalClassification,auditor_recommendation:recommendation,validation_errors:validationErrors,validation_error_details:validationErrorDetails,quality_gate_reasons:qualityGateReasons,next_step:qualityGate?'Revisão humana obrigatória no app.':'Corrija os itens apontados e reenvie a análise uma única vez; persistindo falha, encaminhe à revisão humana.'});
+  await db('audit_logs',{method:'POST',body:JSON.stringify({case_id:caseId,analysis_id:analysisRow.id,event_type:'analysis_submitted_by_gpt_action',payload:{
+      quality_gate:qualityGate,
+      recommendation,
+      validation_errors:validationErrors,
+      validation_error_details:validationErrorDetails,
+      quality_gate_reasons:qualityGateReasons,
+      validation_debug:analystCheck.validation_debug,
+      contract_sha256:currentContractSha256,
+      app_version:APP_VERSION,
+      validator_version:VALIDATOR_VERSION
+    }})});
+  return json(res,200,{
+    accepted:true,
+    analysis_id:analysisRow.id,
+    case_id:caseId,
+    status,
+    quality_gate:qualityGate,
+    final_classification:finalClassification,
+    auditor_recommendation:recommendation,
+    validation_errors:validationErrors,
+    validation_error_details:validationErrorDetails,
+    quality_gate_reasons:qualityGateReasons,
+    validation_debug:analystCheck.validation_debug,
+    contract_sha256:currentContractSha256,
+    app_version:APP_VERSION,
+    validator_version:VALIDATOR_VERSION,
+    next_step:qualityGate
+      ?'Revisão humana obrigatória no app.'
+      :'Corrija os itens apontados e reenvie a análise uma única vez; persistindo falha, encaminhe à revisão humana.'
+  });
 }
 
 async function sourceStatus(req,res){
   if(!requireActionAuth(req,res))return; if(req.method!=='GET')return json(res,405,{error:'Método não permitido'});
-  return json(res,200,{legal_source_version:process.env.LEGAL_SOURCE_VERSION||null,memorandum_version:process.env.MEMORANDUM_VERSION||null,mp_sha256:sha(mpText),memorandum_sha256:sha(memoText),instruction:'O GPT deve usar as cópias da MP e do memorando anexadas como Knowledge e conferir as versões.'});
+  return json(res,200,{
+    app_version:APP_VERSION,
+    validator_version:VALIDATOR_VERSION,
+    legal_source_version:process.env.LEGAL_SOURCE_VERSION||null,
+    memorandum_version:process.env.MEMORANDUM_VERSION||null,
+    mp_sha256:sha(mpText),
+    memorandum_sha256:sha(memoText),
+    instruction:'O GPT deve usar as cópias da MP e do memorando anexadas como Knowledge, conferir as versões e usar o contract_sha256 retornado por gpt-case no envio da análise.'
+  });
 }
 
 export default async function handler(req,res){
