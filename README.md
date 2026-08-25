@@ -185,3 +185,19 @@ Esta versão permite descobrir exatamente por que um ponto foi recusado e impede
 ## Versão 2.9 — autenticação por cabeçalho personalizado
 
 A integração passa a preferir `X-Veredicta-Key`, evitando ambiguidades do modo Bearer no editor de GPT Actions. Bearer permanece como fallback. Respostas 401 incluem apenas diagnóstico booleano sobre presença dos headers, nunca o valor das chaves.
+
+
+## Versão 3.0 — diagnóstico completo e histórico lateral fixo
+
+Diagnóstico:
+- cada POST `gpt-analysis` registra etapas seguras no log;
+- respostas 400 indicam `stage`, `field` e `received_fields` quando aplicável;
+- quality gate retorna `failed_points`, `validation_error_details` e `validation_debug`;
+- logs nunca registram conteúdo do contrato nem valores de chaves.
+
+Interface:
+- lateral permanece fixa;
+- botões e estrutura da lateral não se movem;
+- somente a caixa interna do histórico de casos possui rolagem;
+- conteúdo principal rola independentemente da lateral;
+- cabeçalho institucional continua fixo.

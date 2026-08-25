@@ -181,3 +181,115 @@
   border-radius:6px;
   line-height:1.45;
 }
+
+
+/* v3.0 — lateral fixa; somente o histórico interno rola */
+:root{
+  --veredicta-header-height: 76px;
+  --veredicta-sidebar-width: 304px;
+}
+
+body{
+  overflow-x:hidden;
+}
+
+.app-shell,
+.layout,
+.dashboard-layout{
+  min-height:calc(100vh - var(--veredicta-header-height));
+}
+
+/* A coluna lateral não acompanha o scroll da página */
+.sidebar{
+  position:fixed !important;
+  top:var(--veredicta-header-height);
+  left:0;
+  bottom:0;
+  width:var(--veredicta-sidebar-width);
+  height:auto;
+  z-index:900;
+  overflow:hidden !important;
+  display:flex;
+  flex-direction:column;
+  box-sizing:border-box;
+}
+
+/* Topo/botões da lateral permanecem parados */
+.sidebar > *{
+  flex-shrink:0;
+}
+
+/* Apenas a área que contém os casos pode deslizar */
+#case-list,
+.case-list,
+.sidebar-cases,
+.sidebar-history{
+  flex:1 1 auto !important;
+  min-height:0;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+  padding-bottom:18px;
+}
+
+/* Scroll discreto apenas dentro do histórico */
+#case-list::-webkit-scrollbar,
+.case-list::-webkit-scrollbar,
+.sidebar-cases::-webkit-scrollbar,
+.sidebar-history::-webkit-scrollbar{
+  width:8px;
+}
+#case-list::-webkit-scrollbar-thumb,
+.case-list::-webkit-scrollbar-thumb,
+.sidebar-cases::-webkit-scrollbar-thumb,
+.sidebar-history::-webkit-scrollbar-thumb{
+  background:#3a3a37;
+  border-radius:999px;
+}
+#case-list::-webkit-scrollbar-track,
+.case-list::-webkit-scrollbar-track,
+.sidebar-cases::-webkit-scrollbar-track,
+.sidebar-history::-webkit-scrollbar-track{
+  background:transparent;
+}
+
+/* Conteúdo principal começa depois da lateral fixa */
+.main,
+.main-content,
+.content,
+.dashboard-main{
+  margin-left:var(--veredicta-sidebar-width);
+  width:calc(100% - var(--veredicta-sidebar-width));
+  box-sizing:border-box;
+}
+
+/* Cabeçalho continua acima de tudo */
+.appbar{
+  z-index:1100 !important;
+}
+
+@media(max-width:900px){
+  :root{
+    --veredicta-sidebar-width:260px;
+  }
+}
+
+@media(max-width:700px){
+  .sidebar{
+    position:relative !important;
+    top:auto;
+    left:auto;
+    bottom:auto;
+    width:100%;
+    max-height:44vh;
+  }
+
+  .main,
+  .main-content,
+  .content,
+  .dashboard-main{
+    margin-left:0;
+    width:100%;
+  }
+}

@@ -1,6 +1,6 @@
 {
   "name": "veredicta-mp1376-app",
-  "version": "2.9.0",
+  "version": "3.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,7 +10,8 @@
     "test:citation-modes": "node tests/citation-modes.test.mjs",
     "test:point12": "node tests/point12-policy.test.mjs",
     "test:v28": "node tests/v28-integrity.test.mjs",
-    "test:auth": "node tests/auth-header.test.mjs"
+    "test:auth": "node tests/auth-header.test.mjs",
+    "test:v30": "node tests/v30-diagnostics.test.mjs"
   },
   "devDependencies": {
     "vercel": "latest"
