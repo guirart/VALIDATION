@@ -309,3 +309,10 @@ Use listarHistoricoAnalisesVeredicta(case_id) e buscarDetalheAnaliseVeredicta(id
 O detalhe armazenado é a fonte primária para mp_quote, legal_reference,
 validation_debug, literal_quote_found, validation_error_details,
 failed_points, quality_gate, hash e versões.
+
+
+## V3.5 — REGRESSÃO P11/P12
+
+O quality gate distingue citação literal, silêncio normativo e silêncio documental.
+No ponto 11, `mp_quote=""` só pode representar ausência do dossiê sob condições conservadoras.
+Paráfrases normativas continuam inválidas como citação.

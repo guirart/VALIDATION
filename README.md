@@ -257,3 +257,13 @@ Novas operações somente leitura:
 A consulta detalhada retorna analyst_json, audit_json e o diagnóstico salvo:
 validation_errors, validation_error_details, quality_gate_reasons,
 validation_debug, failed_points, contract_sha256 e versões.
+
+
+## Versão 3.5 — regressão dos pontos 11 e 12
+
+- Corrige o falso negativo de silêncio no TEST-001/P12 reconhecendo "não contém previsão expressa".
+- Trata ausência documental no P11 separadamente de silêncio normativo.
+- Mantém citações não literais como erro.
+- Ignora apenas markup Markdown de apresentação na comparação literal.
+- `validation_debug` passa a incluir todos os 15 pontos.
+- Não exige migração de banco.

@@ -90,3 +90,8 @@ A atualização é necessária porque `source_contract_sha256` passou a ser obri
 Substitua o schema da Action por `GPT_ACTION_SCHEMA_V3.3.yaml`.
 
 A nova operação `importarCasosSinteticosVeredicta` só funciona se `TEST_IMPORT_ENABLED=true` na Vercel.
+
+
+## Atualização v3.5
+Depois do deploy, substitua o schema completo da Action por `GPT_ACTION_SCHEMA_V3.5.yaml`.
+Não é necessária migração do Supabase.

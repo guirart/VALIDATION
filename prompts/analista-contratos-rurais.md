@@ -169,3 +169,12 @@ Antes de qualquer análise, leia integralmente:
   técnico correto que ignore, por exemplo, o ponto 5 (ausência de
   obrigação bancária) ou o ponto 10 (limites cumulativos) pode induzir o
   cliente a uma expectativa que a MP não garante.
+
+
+## REGRA V3.5 — CITAÇÕES E AUSÊNCIA DOCUMENTAL
+
+- Nunca componha, complete ou reconstrua `mp_quote` de memória.
+- Se houver fundamento normativo positivo, copie somente trecho literal existente na MP.
+- Ponto 11: se a utilização/contratação da linha adicional do art. 2º não constar no dossiê, use `mp_quote=""`, declare "silêncio do dossiê" ou "ausência documental no dossiê" em `legal_reference`, registre em `reasoning` que a modalidade não consta e não deve ser presumida, e use `legal_result=inconclusivo` ou `nao_aplicavel`.
+- Pontos 6 e 12: silêncio normativo só é permitido quando a MP realmente não contém previsão expressa sobre o subtema. A frase "A MP não contém previsão expressa..." é reconhecida.
+- Markdown como `*caput*` é apenas apresentação e não altera o matching literal material.
