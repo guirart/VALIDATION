@@ -226,3 +226,23 @@ O Veredicta agora possui dois temas:
 Há um botão no cabeçalho para alternância. A preferência fica salva em `localStorage` e é reaplicada ao abrir o painel e a página de novo caso.
 
 O tema claro preserva a lateral escura fixa e o conteúdo principal claro. O tema escuro mantém o visual institucional grafite/dourado da v3.1.
+
+
+## Versão 3.3 — importação controlada de casos sintéticos
+
+Nova infraestrutura exclusivamente de teste:
+- `POST /api/gpt/test-import` para GPT Action;
+- `POST /api/test-import` para a página interna `/test-import.html`;
+- proteção `TEST_IMPORT_ENABLED=true`;
+- campos `synthetic`, `environment` e `external_test_id`;
+- idempotência por `external_test_id`;
+- adoção de casos manuais existentes pelo mesmo título sem substituir o dossiê;
+- casos sintéticos recebem selo TESTE no histórico.
+
+### Ordem de deploy
+1. Execute `supabase/migration_v3_3_test_import.sql` no SQL Editor do Supabase.
+2. Configure `TEST_IMPORT_ENABLED=true` somente durante a importação da bateria.
+3. Faça deploy.
+4. Atualize a Action com `GPT_ACTION_SCHEMA_V3.3.yaml`.
+5. Importe `VEREDICTA_40_CASOS_IMPORT.json`.
+6. Depois da importação, recomenda-se voltar `TEST_IMPORT_ENABLED=false`.

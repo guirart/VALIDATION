@@ -277,3 +277,24 @@ O valor deve ser exatamente o mesmo de `GPT_ACTION_API_KEY` no ambiente Producti
 Não inclua prefixo `Bearer` no valor da chave quando usar cabeçalho personalizado.
 
 O backend mantém suporte a Authorization Bearer apenas para compatibilidade.
+
+
+## V3.3 — IMPORT LOOP DE TESTES
+
+A operação `importarCasosSinteticosVeredicta` existe somente para infraestrutura de testes.
+
+Ela NÃO é uma função normal de cadastro do Veredicta.
+
+Só utilize quando o usuário escrever expressamente algo como:
+- "importar bateria de testes"
+- "executar import loop"
+- "cadastrar casos sintéticos de teste"
+
+Regras:
+1. `environment` deve ser exatamente `test`.
+2. Todo caso deve ter `external_test_id` único no padrão `VEREDICTA-TEST-###`.
+3. Nunca envie gabarito, classificação esperada ou resposta jurídica no `contract_text`.
+4. A importação é idempotente: casos já existentes são ignorados ou adotados pelo mesmo título.
+5. Nunca utilize esta Action para criar casos reais.
+6. Depois da importação, use GET LOOP para analisar os UUIDs retornados.
+7. Se a API retornar que `TEST_IMPORT_ENABLED` está desativado, pare e informe o usuário; não tente contornar a proteção.

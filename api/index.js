@@ -8,8 +8,8 @@ const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','re
 const AUDIT_RECOMMENDATIONS = new Set(['liberar','corrigir','escalar para revisão humana aprofundada']);
 const AUDIT_STATUSES = new Set(['confirmado','divergente','não encontrado','opinião sem precedente']);
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
-const APP_VERSION = '3.0.0';
-const VALIDATOR_VERSION = '3.0.0';
+const APP_VERSION = '3.3.0';
+const VALIDATOR_VERSION = '3.3.0';
 
 function stageLog(stage, meta={}) {
   try {
@@ -432,6 +432,191 @@ async function gptAnalysis(req,res){
   });
 }
 
+
+function testImportEnabled() {
+  return String(process.env.TEST_IMPORT_ENABLED || '').toLowerCase() === 'true';
+}
+
+function normalizeTestCaseInput(input, index) {
+  const externalTestId = String(input?.external_test_id || '').trim();
+  const title = String(input?.title || '').trim();
+  const clientName = String(input?.client_name || '').trim();
+  const contractText = String(input?.contract_text || '').trim();
+
+  if (!/^VEREDICTA-TEST-\d{3,4}$/.test(externalTestId)) {
+    throw new Error(`caso ${index + 1}: external_test_id inválido`);
+  }
+  if (!title || !contractText) {
+    throw new Error(`caso ${index + 1}: title e contract_text são obrigatórios`);
+  }
+  if ('expected_result' in (input || {}) || 'expected_classification' in (input || {})) {
+    throw new Error(`caso ${index + 1}: gabarito não pode ser importado para o dossiê`);
+  }
+
+  return {
+    external_test_id: externalTestId,
+    title: title.slice(0,180),
+    client_name: clientName.slice(0,180),
+    contract_text: contractText
+  };
+}
+
+async function importSyntheticCases(body) {
+  if (!testImportEnabled()) {
+    const err = new Error('Importação de testes desativada. Configure TEST_IMPORT_ENABLED=true.');
+    err.statusCode = 403;
+    throw err;
+  }
+
+  if (body?.environment !== 'test') {
+    const err = new Error('environment deve ser exatamente "test".');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const batchId = String(body?.batch_id || '').trim();
+  const list = Array.isArray(body?.cases) ? body.cases : [];
+  if (!batchId) {
+    const err = new Error('batch_id é obrigatório.');
+    err.statusCode = 400;
+    throw err;
+  }
+  if (!list.length || list.length > 50) {
+    const err = new Error('cases deve conter entre 1 e 50 casos.');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const normalized = list.map(normalizeTestCaseInput);
+  const results = [];
+
+  for (const item of normalized) {
+    // 1) Idempotência por external_test_id.
+    let existing = await db(
+      `cases?external_test_id=eq.${encodeURIComponent(item.external_test_id)}&select=id,title,client_name,status,synthetic,environment,external_test_id&limit=1`
+    );
+
+    if (existing.length) {
+      results.push({
+        external_test_id:item.external_test_id,
+        case_id:existing[0].id,
+        title:existing[0].title,
+        status:'skipped_existing_id'
+      });
+      continue;
+    }
+
+    // 2) Adoção segura de teste cadastrado manualmente pelo mesmo título.
+    existing = await db(
+      `cases?title=eq.${encodeURIComponent(item.title)}&select=id,title,client_name,status,synthetic,environment,external_test_id&limit=1`
+    );
+
+    if (existing.length) {
+      const adopted = existing[0];
+      await db(`cases?id=eq.${encodeURIComponent(adopted.id)}`,{
+        method:'PATCH',
+        body:JSON.stringify({
+          synthetic:true,
+          environment:'test',
+          external_test_id:item.external_test_id
+        })
+      });
+      await db('audit_logs',{
+        method:'POST',
+        body:JSON.stringify({
+          case_id:adopted.id,
+          event_type:'synthetic_case_adopted_by_test_import',
+          payload:{batch_id:batchId,external_test_id:item.external_test_id}
+        })
+      });
+      results.push({
+        external_test_id:item.external_test_id,
+        case_id:adopted.id,
+        title:adopted.title,
+        status:'adopted_existing_title'
+      });
+      continue;
+    }
+
+    // 3) Criação de caso exclusivamente sintético.
+    const [row] = await db('cases',{
+      method:'POST',
+      body:JSON.stringify({
+        title:item.title,
+        client_name:item.client_name,
+        contract_text:item.contract_text,
+        synthetic:true,
+        environment:'test',
+        external_test_id:item.external_test_id,
+        status:'pendente'
+      })
+    });
+
+    await db('audit_logs',{
+      method:'POST',
+      body:JSON.stringify({
+        case_id:row.id,
+        event_type:'synthetic_case_imported',
+        payload:{batch_id:batchId,external_test_id:item.external_test_id}
+      })
+    });
+
+    results.push({
+      external_test_id:item.external_test_id,
+      case_id:row.id,
+      title:row.title,
+      contract_sha256:sha(row.contract_text),
+      status:'created'
+    });
+  }
+
+  return {
+    ok:true,
+    environment:'test',
+    batch_id:batchId,
+    total:list.length,
+    created:results.filter(x=>x.status==='created').length,
+    adopted:results.filter(x=>x.status==='adopted_existing_title').length,
+    skipped:results.filter(x=>x.status==='skipped_existing_id').length,
+    cases:results,
+    app_version:APP_VERSION
+  };
+}
+
+async function testImport(req,res){
+  if(!requireActionAuth(req,res)) return;
+  if(req.method!=='POST') return json(res,405,{error:'Método não permitido'});
+
+  try {
+    const body=await readJson(req);
+    const result=await importSyntheticCases(body);
+    return json(res,200,result);
+  } catch(e) {
+    return json(res,e.statusCode||500,{
+      ok:false,
+      error:e.message,
+      app_version:APP_VERSION
+    });
+  }
+}
+
+async function testImportUi(req,res){
+  if(!requireAuth(req,res)) return;
+  if(req.method!=='POST') return json(res,405,{error:'Método não permitido'});
+
+  try {
+    const body=await readJson(req);
+    const result=await importSyntheticCases(body);
+    return json(res,200,result);
+  } catch(e) {
+    return json(res,e.statusCode||500,{
+      ok:false,
+      error:e.message,
+      app_version:APP_VERSION
+    });
+  }
+}
+
 async function sourceStatus(req,res){
   if(!requireActionAuth(req,res))return; if(req.method!=='GET')return json(res,405,{error:'Método não permitido'});
   return json(res,200,{
@@ -456,6 +641,8 @@ export default async function handler(req,res){
       case 'gpt-case': return await gptCase(req,res);
       case 'gpt-analysis': return await gptAnalysis(req,res);
       case 'source-status': return await sourceStatus(req,res);
+      case 'test-import': return await testImport(req,res);
+      case 'test-import-ui': return await testImportUi(req,res);
       default: return json(res,404,{error:'Ação não encontrada'});
     }
   } catch(e) { return json(res,500,{error:e.message}); }

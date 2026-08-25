@@ -5,6 +5,9 @@ create table if not exists public.cases (
   title text not null,
   client_name text,
   contract_text text not null,
+  synthetic boolean not null default false,
+  environment text not null default 'production' check (environment in ('production','test')),
+  external_test_id text unique,
   status text not null default 'pendente' check (status in ('pendente','em-analise','aguardando-revisao','requer-correcao','concluido','erro')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -45,6 +48,8 @@ create table if not exists public.audit_logs (
   created_at timestamptz not null default now()
 );
 
+create index if not exists idx_cases_synthetic on public.cases(synthetic);
+create index if not exists idx_cases_environment on public.cases(environment);
 create index if not exists idx_analyses_case_id on public.analyses(case_id);
 create index if not exists idx_reviews_case_id on public.reviews(case_id);
 create index if not exists idx_audit_logs_case_id on public.audit_logs(case_id);

@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Veredicta — Importação de Testes</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div id="login" class="login-screen hidden">
+    <form id="login-form" class="login-card">
+      <div class="micro">AMBIENTE INTERNO</div>
+      <h1>Veredicta</h1>
+      <p>Importador de casos sintéticos.</p>
+      <input id="password" type="password" placeholder="Senha do app" required />
+      <button class="btn btn-dark">Entrar</button>
+      <p id="login-error" class="error"></p>
+    </form>
+  </div>
+
+  <div id="test-import-app" class="hidden">
+    <header class="appbar">
+      <div class="brand-wrap">
+        <a class="brand brand-link" href="/">VEREDICTA</a>
+        <span class="brand-sub">Ambiente de testes</span>
+      </div>
+      <div class="institutional-logo-wrap">
+        <img class="institutional-logo" src="/assets/oab-minas-gerais.png" alt="OAB Minas Gerais" />
+      </div>
+      <div class="appbar-actions">
+        <button id="theme-toggle" class="theme-toggle" type="button">☾ Escuro</button>
+        <a class="link-btn" href="/">painel</a>
+        <button id="logout" class="link-btn">sair</button>
+      </div>
+    </header>
+
+    <main class="new-case-page test-import-page">
+      <div class="new-case-breadcrumb"><a href="/">Painel</a><span>›</span><b>Importação de testes</b></div>
+
+      <section class="new-case-hero">
+        <div>
+          <div class="micro">SOMENTE TESTES</div>
+          <h1>Importar casos sintéticos</h1>
+          <p>Esta rota não faz parte do fluxo normal de casos reais. Ela só funciona quando <code>TEST_IMPORT_ENABLED=true</code> na Vercel.</p>
+        </div>
+      </section>
+
+      <section class="new-case-card">
+        <div class="new-case-security">
+          <div class="security-icon">T</div>
+          <div>
+            <b>Proteção contra mistura com produção</b>
+            <p>Todos os registros importados recebem <code>synthetic=true</code>, <code>environment=test</code> e um <code>external_test_id</code> único.</p>
+          </div>
+        </div>
+
+        <form id="test-import-form">
+          <label class="field">
+            <span>JSON DA BATERIA</span>
+            <textarea id="test-json" rows="24" required placeholder='{"environment":"test","batch_id":"...","cases":[...]}'></textarea>
+          </label>
+          <div class="case-guidance">
+            <b>Importação idempotente</b>
+            <p>Se o external_test_id já existir, o caso será ignorado. Se houver caso manual com o mesmo título, ele será apenas marcado como sintético, sem substituir seu dossiê.</p>
+          </div>
+          <div class="new-case-actions">
+            <button id="import-btn" class="btn btn-dark" type="submit">Importar bateria</button>
+          </div>
+          <pre id="import-result" class="test-import-result"></pre>
+        </form>
+      </section>
+    </main>
+  </div>
+  <script type="module" src="/test-import.js"></script>
+</body>
+</html>

@@ -14,7 +14,8 @@
     "test:v30": "node tests/v30-diagnostics.test.mjs",
     "test:ui31": "node tests/v31-ui.test.mjs",
     "test:theme": "node tests/v32-theme.test.mjs",
-    "test:light-contrast": "node tests/v321-light-contrast.test.mjs"
+    "test:light-contrast": "node tests/v321-light-contrast.test.mjs",
+    "test:v33": "node tests/v33-test-import.test.mjs"
   },
   "devDependencies": {
     "vercel": "latest"

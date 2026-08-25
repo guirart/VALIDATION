@@ -33,6 +33,14 @@
     {
       "source": "/api/gpt/source-status",
       "destination": "/api?action=source-status"
+    },
+    {
+      "source": "/api/gpt/test-import",
+      "destination": "/api?action=test-import"
+    },
+    {
+      "source": "/api/test-import",
+      "destination": "/api?action=test-import-ui"
     }
   ],
   "headers": [

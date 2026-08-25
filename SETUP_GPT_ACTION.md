@@ -84,3 +84,9 @@ O POST disponível aceita somente `action=gpt-analysis`.
 Substitua o schema da Action pelo arquivo `GPT_ACTION_SCHEMA_V2.8.yaml`.
 
 A atualização é necessária porque `source_contract_sha256` passou a ser obrigatório no envio da análise.
+
+
+## Atualização obrigatória v3.3
+Substitua o schema da Action por `GPT_ACTION_SCHEMA_V3.3.yaml`.
+
+A nova operação `importarCasosSinteticosVeredicta` só funciona se `TEST_IMPORT_ENABLED=true` na Vercel.
