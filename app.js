@@ -119,12 +119,13 @@ function renderHistory(){
     const a=latest(c.analyses);
     const selected=c.id===selectedId;
     const classification=a?.final_classification||'ainda não analisado';
-    return `<button class="history-item ${selected?'active':''}" data-id="${esc(c.id)}">
+    const classCss=historyClassificationClass(classification);
+    return `<button class="history-item ${classCss} ${selected?'active':''}" data-id="${esc(c.id)}">
       <span class="history-dot ${a?'done':'pending'}"></span>
       <span class="history-content">
         <b class="history-title">${esc(c.title)}</b>
         <small>${esc(c.client_name||'cliente não informado')}</small>
-        <span class="history-meta"><em>${esc(shortClass(classification))}</em><time>${fmtDate(c.updated_at||c.created_at)}</time></span>
+        <span class="history-meta"><em class="${classCss}">${esc(shortClass(classification))}</em><time>${fmtDate(c.updated_at||c.created_at)}</time></span>
       </span>
     </button>`;
   }).join(''):`<div class="history-empty">Nenhum caso encontrado.</div>`;

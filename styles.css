@@ -2642,3 +2642,206 @@ html[data-theme="dark"] .history-meta em.history-class-uncertain{
   border-color:#5f507d !important;
   -webkit-text-fill-color:#c6b3e8 !important;
 }
+
+
+/* =========================================================
+   V3.7.3 — FIX DAS CORES NOS SELETORES REAIS
+   O frontend usa .pill.v-atinge / v-parcial / v-atencao.
+   ========================================================= */
+
+/* ---------- STATUS DOS PONTOS: CORES ÚNICAS E CONSISTENTES ---------- */
+
+/* ATINGE / ATENDE = VERDE */
+.pill.v-atinge,
+.memo-cell .pill.v-atinge,
+.checkpoint .pill.v-atinge,
+.checkpoint[data-verdict="atinge"] .pill,
+html[data-theme="light"] .pill.v-atinge,
+html[data-theme="light"] .memo-cell .pill.v-atinge,
+html[data-theme="light"] .checkpoint .pill.v-atinge{
+  background:#dcfce7 !important;
+  color:#15803d !important;
+  border:1px solid #4ade80 !important;
+  box-shadow:none !important;
+}
+
+/* PARCIAL = AMARELO */
+.pill.v-parcial,
+.memo-cell .pill.v-parcial,
+.checkpoint .pill.v-parcial,
+.checkpoint[data-verdict="parcial"] .pill,
+html[data-theme="light"] .pill.v-parcial,
+html[data-theme="light"] .memo-cell .pill.v-parcial,
+html[data-theme="light"] .checkpoint .pill.v-parcial{
+  background:#fef9c3 !important;
+  color:#854d0e !important;
+  border:1px solid #facc15 !important;
+  box-shadow:none !important;
+}
+
+/* ATENÇÃO = VERMELHO */
+.pill.v-atencao,
+.memo-cell .pill.v-atencao,
+.checkpoint .pill.v-atencao,
+.checkpoint[data-verdict="atencao"] .pill,
+html[data-theme="light"] .pill.v-atencao,
+html[data-theme="light"] .memo-cell .pill.v-atencao,
+html[data-theme="light"] .checkpoint .pill.v-atencao{
+  background:#fee2e2 !important;
+  color:#b91c1c !important;
+  border:1px solid #ef4444 !important;
+  box-shadow:none !important;
+}
+
+/* AUSENTE continua neutro */
+.pill.v-ausente,
+html[data-theme="light"] .pill.v-ausente{
+  background:#eee9e1 !important;
+  color:#746c62 !important;
+  border:1px solid #ddd4c8 !important;
+  box-shadow:none !important;
+}
+
+/* Filter chips também seguem a mesma semântica quando selecionados */
+.filter-chip[data-filter="atinge"].active{
+  background:#dcfce7 !important;
+  color:#15803d !important;
+  border-color:#4ade80 !important;
+}
+.filter-chip[data-filter="parcial"].active{
+  background:#fef9c3 !important;
+  color:#854d0e !important;
+  border-color:#facc15 !important;
+}
+.filter-chip[data-filter="atencao"].active{
+  background:#fee2e2 !important;
+  color:#b91c1c !important;
+  border-color:#ef4444 !important;
+}
+
+/* Contadores do hero seguem exatamente a mesma paleta */
+.final-class-stats > div:nth-child(1) b{
+  color:#15803d !important;
+}
+.final-class-stats > div:nth-child(2) b{
+  color:#a16207 !important;
+}
+.final-class-stats > div:nth-child(3) b{
+  color:#b91c1c !important;
+}
+.final-class-stats > div:nth-child(4) b{
+  color:#57534e !important;
+}
+
+/* ---------- HISTÓRICO: CLASSIFICAÇÃO ---------- */
+
+/* ENQUADRÁVEL = VERDE */
+.history-item.history-class-eligible .history-meta em,
+.history-meta em.history-class-eligible{
+  background:#dcfce7 !important;
+  color:#15803d !important;
+  border:1px solid #4ade80 !important;
+  -webkit-text-fill-color:#15803d !important;
+}
+.history-item.history-class-eligible .history-dot{
+  background:#22c55e !important;
+}
+.history-item.history-class-eligible.active{
+  border-color:#4ade80 !important;
+  box-shadow:inset 4px 0 0 #22c55e !important;
+}
+
+/* NÃO ENQUADRÁVEL = VERMELHO */
+.history-item.history-class-rejected .history-meta em,
+.history-meta em.history-class-rejected{
+  background:#fee2e2 !important;
+  color:#b91c1c !important;
+  border:1px solid #ef4444 !important;
+  -webkit-text-fill-color:#b91c1c !important;
+}
+.history-item.history-class-rejected .history-dot{
+  background:#ef4444 !important;
+}
+.history-item.history-class-rejected.active{
+  border-color:#ef4444 !important;
+  box-shadow:inset 4px 0 0 #dc2626 !important;
+}
+
+/* PARCIALMENTE ENQUADRÁVEL = AMARELO */
+.history-item.history-class-partial .history-meta em,
+.history-meta em.history-class-partial{
+  background:#fef9c3 !important;
+  color:#854d0e !important;
+  border:1px solid #facc15 !important;
+  -webkit-text-fill-color:#854d0e !important;
+}
+.history-item.history-class-partial .history-dot{
+  background:#eab308 !important;
+}
+.history-item.history-class-partial.active{
+  border-color:#facc15 !important;
+  box-shadow:inset 4px 0 0 #eab308 !important;
+}
+
+/* INCONCLUSIVO = ROXO */
+.history-item.history-class-uncertain .history-meta em,
+.history-meta em.history-class-uncertain{
+  background:#ede9fe !important;
+  color:#6d28d9 !important;
+  border:1px solid #a78bfa !important;
+  -webkit-text-fill-color:#6d28d9 !important;
+}
+.history-item.history-class-uncertain .history-dot{
+  background:#8b5cf6 !important;
+}
+.history-item.history-class-uncertain.active{
+  border-color:#a78bfa !important;
+  box-shadow:inset 4px 0 0 #8b5cf6 !important;
+}
+
+/* Neutral */
+.history-item.history-class-neutral .history-meta em,
+.history-meta em.history-class-neutral{
+  background:#ece7df !important;
+  color:#696159 !important;
+  border:1px solid #d4cbc0 !important;
+  -webkit-text-fill-color:#696159 !important;
+}
+
+/* Mantém o fundo geral dos cards claro; só borda/ponto/badge carregam a cor */
+html[data-theme="light"] .history-item.history-class-eligible,
+html[data-theme="light"] .history-item.history-class-rejected,
+html[data-theme="light"] .history-item.history-class-partial,
+html[data-theme="light"] .history-item.history-class-uncertain{
+  color:#2e2925 !important;
+}
+
+/* ---------- DARK MODE ---------- */
+html[data-theme="dark"] .pill.v-atinge{
+  background:#183a25 !important;
+  color:#86efac !important;
+  border-color:#22c55e !important;
+}
+html[data-theme="dark"] .pill.v-parcial{
+  background:#403715 !important;
+  color:#fde047 !important;
+  border-color:#eab308 !important;
+}
+html[data-theme="dark"] .pill.v-atencao{
+  background:#452020 !important;
+  color:#fca5a5 !important;
+  border-color:#ef4444 !important;
+}
+
+html[data-theme="dark"] .history-item.history-class-eligible .history-meta em{
+  background:#183a25 !important;color:#86efac !important;border-color:#22c55e !important;-webkit-text-fill-color:#86efac !important;
+}
+html[data-theme="dark"] .history-item.history-class-rejected .history-meta em{
+  background:#452020 !important;color:#fca5a5 !important;border-color:#ef4444 !important;-webkit-text-fill-color:#fca5a5 !important;
+}
+html[data-theme="dark"] .history-item.history-class-partial .history-meta em{
+  background:#403715 !important;color:#fde047 !important;border-color:#eab308 !important;-webkit-text-fill-color:#fde047 !important;
+}
+html[data-theme="dark"] .history-item.history-class-uncertain .history-meta em{
+  background:#302350 !important;color:#c4b5fd !important;border-color:#8b5cf6 !important;-webkit-text-fill-color:#c4b5fd !important;
+}

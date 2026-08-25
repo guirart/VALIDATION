@@ -350,3 +350,12 @@ validation_debug, failed_points, contract_sha256 e versões.
 - Histórico: enquadrável verde, não enquadrável vermelho, parcialmente enquadrável amarelo e inconclusivo roxo.
 - O pontinho e a borda do item ativo acompanham a classificação no histórico.
 - Mantém comparativo, checklist, classificação destacada e validador jurídico intactos.
+
+
+## UI 3.7.3 — correção definitiva das cores
+- Corrige os seletores para os badges reais `.pill.v-atinge`, `.pill.v-parcial` e `.pill.v-atencao`.
+- ATINGE/ATENDE fica sempre verde, PARCIAL sempre amarelo e ATENÇÃO sempre vermelho.
+- Injeta a classe real da classificação nos cards e badges do histórico.
+- Histórico: enquadrável verde, não enquadrável vermelho, parcialmente enquadrável amarelo e inconclusivo roxo.
+- Pontos e bordas do item ativo acompanham a classificação.
+- Mantém comparativo, checklist, hero de classificação e validador jurídico intactos.
