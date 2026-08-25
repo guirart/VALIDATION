@@ -93,3 +93,58 @@ Produza internamente este objeto:
 - `Crie um caso com este contrato e depois analise.`
 
 Quando a análise for gravada, informe ao usuário: classificação final, quality gate, eventuais validation_errors e que a revisão humana permanece obrigatória.
+
+
+## ADENDO DE SEGURANÇA — CITAÇÕES E QUALITY GATE
+
+- Use `point` de 1 a 15 exatamente uma vez cada.
+- Use `atencao` (sem acento) no campo técnico `verdict`.
+- Ponto 6: por tratar de silêncio normativo, NÃO invente citação da MP. Use referência explícita a "silêncio da MP" e deixe `mp_quote` vazio ou use marcador textual de ausência de previsão expressa.
+- Nos demais pontos, `mp_quote` deve existir literalmente na MP; não use paráfrase.
+- Não marque `atinge` se `contract_quote` indicar "não consta", "não comprovado" ou equivalente.
+- `quality_gate=true` significa somente integridade técnica para revisão humana, inclusive se a classificação for `inconclusivo`.
+- Se `quality_gate=false`, corrija uma única vez apenas com base nas fontes. Persistindo falha, pare e escale para humano.
+
+
+## MODELO OBRIGATÓRIO DE CADA PONTO — V1.8
+
+A partir desta versão, NÃO use um único veredito para representar simultaneamente prova e consequência jurídica.
+
+Cada um dos 15 pontos deve conter obrigatoriamente:
+
+`evidence_status`:
+- `comprovado`: há prova documental suficiente do fato relevante;
+- `parcialmente_comprovado`: há prova de parte do requisito, mas falta elemento relevante;
+- `nao_comprovado`: o fato é alegado ou sugerido, mas a documentação não o comprova;
+- `nao_consta`: o dossiê não traz informação/evidência sobre o fato.
+
+`legal_result`:
+- `atende`: fatos documentalmente comprovados satisfazem o requisito jurídico;
+- `nao_atende`: há informação suficiente para concluir que o requisito não é satisfeito;
+- `inconclusivo`: a prova disponível não permite concluir se o requisito é satisfeito;
+- `nao_aplicavel`: o requisito não incide no caso, com justificativa.
+
+REGRAS DE COERÊNCIA:
+1. Nunca use `nao_consta` quando o contrato/dossiê contém informação expressa sobre o requisito.
+2. Informação existente que demonstra descumprimento = evidence_status adequado + `legal_result: nao_atende`.
+3. Falta de prova necessária = `nao_comprovado` ou `parcialmente_comprovado` + normalmente `legal_result: inconclusivo`.
+4. `legal_result: atende` exige `evidence_status: comprovado`.
+5. Não transforme ausência de pedido, certidão, extrato ou documento em prova positiva do contrário.
+6. No ponto 7, se houver informação expressa sobre adimplência, vencimento ou pedido da nova linha, é proibido usar `nao_consta` para o ponto inteiro. Analise separadamente o que existe e o que falta.
+7. O campo legado `verdict`, se ainda enviado, não governa a decisão. O backend deriva a exibição a partir de `evidence_status` e `legal_result`.
+
+Exemplo correto para requisito com fatos presentes mas não atendido:
+{
+  "point": 7,
+  "evidence_status": "comprovado",
+  "legal_result": "nao_atende",
+  "reasoning": "O dossiê comprova a situação e as datas relevantes, mas os fatos não satisfazem cumulativamente o art. 4º."
+}
+
+Exemplo correto quando parte da documentação existe:
+{
+  "point": 7,
+  "evidence_status": "parcialmente_comprovado",
+  "legal_result": "nao_atende",
+  "reasoning": "Há prova da adimplência e do vencimento, além de informação expressa de ausência de pedido formal; os requisitos não são cumulativamente atendidos."
+}

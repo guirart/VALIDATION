@@ -15,12 +15,15 @@ function action(req) {
 
 function verifyAudit(audit, analyst) {
   const errors = [];
-  if (!audit || typeof audit !== 'object') return { valid:false, errors:['auditoria ausente'] };
+  if (!audit || typeof audit !== 'object') return { valid:false, errors:['auditoria ausente'], allConfirmed:false, classificationsMatch:false };
+
   if (!AUDIT_RECOMMENDATIONS.has(audit.recommendation)) errors.push('recomendação de auditoria inválida');
   if (!FINAL_CLASSES.has(audit.final_classification)) errors.push('classificação final da auditoria inválida');
+
   const findings = Array.isArray(audit.findings) ? audit.findings : [];
   if (!Array.isArray(audit.findings)) errors.push('findings da auditoria ausente');
   if (findings.length !== 15) errors.push(`auditoria deve conter 15 findings; recebidos ${findings.length}`);
+
   const seen = new Set();
   for (const f of findings) {
     const point = Number(f.point);
@@ -28,13 +31,25 @@ function verifyAudit(audit, analyst) {
     if (seen.has(point)) errors.push(`ponto ${point} duplicado na auditoria`);
     seen.add(point);
     if (!AUDIT_STATUSES.has(f.status)) errors.push(`status de auditoria inválido no ponto ${point}`);
+    if (!String(f.reason || '').trim()) errors.push(`fundamentação ausente na auditoria do ponto ${point}`);
   }
+  for (let n=1;n<=15;n++) if(!seen.has(n)) errors.push(`ponto ${n} ausente na auditoria`);
+
+  const allConfirmed = findings.length === 15 && findings.every(f => f.status === 'confirmado');
+  const classificationsMatch = audit.final_classification === analyst.final_classification;
+
   if (audit.recommendation === 'liberar') {
     const notConfirmed = findings.filter(f => f.status !== 'confirmado').map(f => f.point);
     if (notConfirmed.length) errors.push(`auditoria não pode liberar com pontos não confirmados: ${notConfirmed.join(', ')}`);
-    if (audit.final_classification !== analyst.final_classification) errors.push('auditoria liberou com classificação divergente do analista');
+    if (!classificationsMatch) errors.push('auditoria liberou com classificação divergente do analista');
   }
-  return { valid: errors.length === 0, errors };
+
+  return {
+    valid: errors.length === 0,
+    errors: [...new Set(errors)],
+    allConfirmed,
+    classificationsMatch
+  };
 }
 
 async function auth(req,res) {
@@ -113,13 +128,24 @@ async function gptAnalysis(req,res){
   const rows=await db(`cases?id=eq.${encodeURIComponent(caseId)}&select=*&limit=1`); if(!rows.length)return json(res,404,{error:'Caso não encontrado'}); const c=rows[0];
   const analystCheck=verifyAnalysis(body.analyst,c.contract_text), auditCheck=verifyAudit(body.audit,analystCheck.analysis), validationErrors=[...analystCheck.errors,...auditCheck.errors];
   const recommendation=AUDIT_RECOMMENDATIONS.has(body.audit.recommendation)?body.audit.recommendation:'escalar para revisão humana aprofundada';
-  const qualityGate=analystCheck.valid&&auditCheck.valid&&recommendation==='liberar';
+  // Quality gate mede integridade técnica, não resultado favorável do caso.
+// Uma análise "inconclusiva" pode passar tecnicamente e ainda exigir revisão humana.
+const qualityGate =
+    analystCheck.valid &&
+    auditCheck.valid &&
+    auditCheck.allConfirmed &&
+    auditCheck.classificationsMatch;
   const finalClassification=FINAL_CLASSES.has(body.audit.final_classification)?body.audit.final_classification:analystCheck.analysis.final_classification;
+  const qualityGateReasons = [
+    ...validationErrors,
+    ...(!auditCheck.allConfirmed ? ['auditoria contém findings não confirmados'] : []),
+    ...(!auditCheck.classificationsMatch ? ['classificação da auditoria diverge da classificação do analista'] : [])
+  ];
   const [analysisRow]=await db('analyses',{method:'POST',body:JSON.stringify({case_id:caseId,analyst_json:analystCheck.analysis,audit_json:body.audit,final_classification:finalClassification,auditor_recommendation:recommendation,quality_gate:qualityGate,validation_errors:validationErrors,legal_source_version:process.env.LEGAL_SOURCE_VERSION||null,memorandum_version:process.env.MEMORANDUM_VERSION||null,model_name:'ChatGPT Custom GPT via Action'})});
   const status=qualityGate?'aguardando-revisao':'requer-correcao';
   await db(`cases?id=eq.${encodeURIComponent(caseId)}`,{method:'PATCH',body:JSON.stringify({status,updated_at:new Date().toISOString()})});
-  await db('audit_logs',{method:'POST',body:JSON.stringify({case_id:caseId,analysis_id:analysisRow.id,event_type:'analysis_submitted_by_gpt_action',payload:{quality_gate:qualityGate,recommendation,validation_errors:validationErrors}})});
-  return json(res,200,{accepted:true,analysis_id:analysisRow.id,case_id:caseId,status,quality_gate:qualityGate,final_classification:finalClassification,auditor_recommendation:recommendation,validation_errors:validationErrors,next_step:qualityGate?'Revisão humana obrigatória no app.':'Corrija os itens apontados e reenvie a análise.'});
+  await db('audit_logs',{method:'POST',body:JSON.stringify({case_id:caseId,analysis_id:analysisRow.id,event_type:'analysis_submitted_by_gpt_action',payload:{quality_gate:qualityGate,recommendation,validation_errors:validationErrors,quality_gate_reasons:qualityGateReasons}})});
+  return json(res,200,{accepted:true,analysis_id:analysisRow.id,case_id:caseId,status,quality_gate:qualityGate,final_classification:finalClassification,auditor_recommendation:recommendation,validation_errors:validationErrors,quality_gate_reasons:qualityGateReasons,next_step:qualityGate?'Revisão humana obrigatória no app.':'Corrija os itens apontados e reenvie a análise uma única vez; persistindo falha, encaminhe à revisão humana.'});
 }
 
 async function sourceStatus(req,res){

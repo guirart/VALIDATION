@@ -69,3 +69,21 @@ A interface foi redesenhada para reproduzir o fluxo demonstrado no vídeo de ref
 ## Versão 1.6 — histórico lateral
 
 Mantém o fluxo da versão 1.5, mas substitui a navegação por abas horizontais por uma barra lateral rolável. As análises antigas ficam permanentemente acessíveis à esquerda, com busca, cliente, classificação, status e data. O caso selecionado abre no painel principal com os 15 pontos, evidências, filtros e checklist resolutivo.
+
+
+## Versão 1.7 — segurança jurídica e validação
+
+- valida citações com normalização apenas de formatação, sem fuzzy/semântica;
+- trata o ponto 6 como silêncio normativo sem fabricar citação;
+- corrige o campo técnico `atencao`;
+- usa o número real `point`, verifica duplicados e exige exatamente 1–15;
+- impede `atinge` quando a evidência documental é um marcador de ausência;
+- exige fundamentação em todos os findings da auditoria;
+- quality gate passa a medir integridade técnica (15 pontos confirmados + classificações coerentes), não resultado jurídico favorável;
+- retorna `quality_gate_reasons` separadamente;
+- ponto 7 atualizado para exigir adimplência conforme o texto normativo.
+
+
+## Versão 1.8 — separação entre evidência e resultado jurídico
+
+Cada ponto passa a ter `evidence_status` e `legal_result`. O backend rejeita contradições como `nao_consta` quando a própria citação do dossiê foi localizada, e impede `atende` sem evidência comprovada. O `verdict` antigo permanece apenas para compatibilidade visual e é derivado dos dois campos novos.
