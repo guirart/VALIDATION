@@ -292,3 +292,139 @@ function initTheme(){
 }
 
 initTheme();
+
+
+// SIDEBAR_RESIZE_V363
+(function initResizableHistorySidebar(){
+  const root = document.documentElement;
+  const sidebar = document.querySelector('.history-sidebar');
+  const resizer = document.querySelector('#sidebar-resizer');
+  const collapseBtn = document.querySelector('#sidebar-collapse');
+  const narrowBtn = document.querySelector('#sidebar-narrow');
+  const wideBtn = document.querySelector('#sidebar-wide');
+
+  if (!sidebar || !resizer || !collapseBtn) return;
+
+  const MIN = 240;
+  const MAX = 560;
+  const DEFAULT = 342;
+  const STEP = 36;
+  const STORAGE_WIDTH = 'veredicta-sidebar-width';
+  const STORAGE_COLLAPSED = 'veredicta-sidebar-collapsed';
+
+  const clamp = (n) => Math.min(MAX, Math.max(MIN, Number(n) || DEFAULT));
+
+  function currentWidth(){
+    const raw = getComputedStyle(root).getPropertyValue('--sidebar-width');
+    return clamp(parseFloat(raw));
+  }
+
+  function setWidth(width, persist=true){
+    const next = clamp(width);
+    root.style.setProperty('--sidebar-width', `${next}px`);
+    resizer.setAttribute('aria-valuenow', String(Math.round(next)));
+    if (persist) localStorage.setItem(STORAGE_WIDTH, String(next));
+  }
+
+  function setCollapsed(collapsed, persist=true){
+    root.classList.toggle('sidebar-collapsed', collapsed);
+    collapseBtn.setAttribute('aria-expanded', String(!collapsed));
+    collapseBtn.title = collapsed ? 'Expandir histórico' : 'Minimizar histórico';
+
+    const icon = collapseBtn.querySelector('.sidebar-collapse-icon');
+    const label = collapseBtn.querySelector('.sidebar-collapse-label');
+    if (icon) icon.textContent = collapsed ? '›' : '‹';
+    if (label) label.textContent = collapsed ? 'Abrir' : 'Minimizar';
+
+    resizer.setAttribute('aria-hidden', String(collapsed));
+    if (persist) localStorage.setItem(STORAGE_COLLAPSED, collapsed ? '1' : '0');
+  }
+
+  const storedWidth = Number(localStorage.getItem(STORAGE_WIDTH));
+  setWidth(Number.isFinite(storedWidth) && storedWidth > 0 ? storedWidth : DEFAULT, false);
+  setCollapsed(localStorage.getItem(STORAGE_COLLAPSED) === '1', false);
+
+  collapseBtn.addEventListener('click', () => {
+    setCollapsed(!root.classList.contains('sidebar-collapsed'));
+  });
+
+  narrowBtn?.addEventListener('click', () => {
+    if (root.classList.contains('sidebar-collapsed')) setCollapsed(false);
+    setWidth(currentWidth() - STEP);
+  });
+
+  wideBtn?.addEventListener('click', () => {
+    if (root.classList.contains('sidebar-collapsed')) setCollapsed(false);
+    setWidth(currentWidth() + STEP);
+  });
+
+  let dragging = false;
+  let startX = 0;
+  let startWidth = DEFAULT;
+
+  function endDrag(){
+    if (!dragging) return;
+    dragging = false;
+    root.classList.remove('sidebar-resizing');
+    document.body.style.removeProperty('cursor');
+    document.body.style.removeProperty('user-select');
+    try { resizer.releasePointerCapture?.(activePointerId); } catch {}
+  }
+
+  let activePointerId = null;
+
+  resizer.addEventListener('pointerdown', (event) => {
+    if (root.classList.contains('sidebar-collapsed')) return;
+    if (event.button !== 0 && event.pointerType === 'mouse') return;
+
+    dragging = true;
+    activePointerId = event.pointerId;
+    startX = event.clientX;
+    startWidth = sidebar.getBoundingClientRect().width;
+    root.classList.add('sidebar-resizing');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    resizer.setPointerCapture?.(event.pointerId);
+  });
+
+  resizer.addEventListener('pointermove', (event) => {
+    if (!dragging || event.pointerId !== activePointerId) return;
+    const delta = event.clientX - startX;
+    setWidth(startWidth + delta, false);
+  });
+
+  resizer.addEventListener('pointerup', (event) => {
+    if (!dragging || event.pointerId !== activePointerId) return;
+    localStorage.setItem(STORAGE_WIDTH, String(currentWidth()));
+    endDrag();
+  });
+
+  resizer.addEventListener('pointercancel', endDrag);
+
+  // Keyboard-accessible resizing.
+  resizer.addEventListener('keydown', (event) => {
+    if (root.classList.contains('sidebar-collapsed')) return;
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      setWidth(currentWidth() - 16);
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      setWidth(currentWidth() + 16);
+    } else if (event.key === 'Home') {
+      event.preventDefault();
+      setWidth(MIN);
+    } else if (event.key === 'End') {
+      event.preventDefault();
+      setWidth(MAX);
+    }
+  });
+
+  // On narrow screens, keep the sidebar usable and avoid stealing most width.
+  function adaptToViewport(){
+    if (window.innerWidth < 760 && !root.classList.contains('sidebar-collapsed')) {
+      setWidth(Math.min(currentWidth(), 300), false);
+    }
+  }
+  window.addEventListener('resize', adaptToViewport, {passive:true});
+  adaptToViewport();
+})();

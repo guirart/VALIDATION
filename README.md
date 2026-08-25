@@ -283,3 +283,12 @@ validation_debug, failed_points, contract_sha256 e versões.
 - Remove a faixa preta residual do scrollbar lateral.
 - Mantém cartões bege/creme e estados em tons pastéis.
 - Não altera o validador jurídico v3.6.
+
+
+## UI 3.6.3 — histórico recolhível e redimensionável
+- O histórico pode ser minimizado/expandido por botão.
+- A divisória pode ser arrastada horizontalmente para ajustar a largura entre 240px e 560px.
+- Botões −/+ fornecem alternativa acessível ao arraste.
+- A largura e o estado recolhido ficam persistidos no navegador.
+- O painel principal cresce automaticamente quando o histórico é reduzido.
+- Não altera o validador jurídico.

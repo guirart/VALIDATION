@@ -1685,3 +1685,214 @@ html[data-theme="light"] .sidebar-foot .btn{
   color:#3e352d !important;
   font-weight:700 !important;
 }
+
+
+/* =========================================================
+   SIDEBAR RESIZE 3.6.3
+   Histórico minimizável e largura controlável.
+   ========================================================= */
+
+:root{
+  --sidebar-width:342px;
+  --sidebar-collapsed-width:54px;
+  --sidebar-resizer-width:8px;
+}
+
+.app-shell,
+.app-layout,
+.dashboard-shell,
+.workspace{
+  /* Apenas a regra correspondente à estrutura real terá efeito. */
+  min-width:0;
+}
+
+.history-sidebar{
+  width:var(--sidebar-width) !important;
+  min-width:var(--sidebar-width) !important;
+  max-width:var(--sidebar-width) !important;
+  flex:0 0 var(--sidebar-width) !important;
+  transition:width .18s ease,min-width .18s ease,max-width .18s ease,flex-basis .18s ease;
+  overflow:hidden;
+}
+
+.sidebar-resizer{
+  position:relative;
+  z-index:8;
+  flex:0 0 var(--sidebar-resizer-width);
+  width:var(--sidebar-resizer-width);
+  min-width:var(--sidebar-resizer-width);
+  cursor:col-resize;
+  touch-action:none;
+  background:transparent;
+  outline:none;
+}
+
+.sidebar-resizer::before{
+  content:"";
+  position:absolute;
+  inset:0 2px;
+  border-radius:999px;
+  background:transparent;
+  transition:background .15s ease;
+}
+
+.sidebar-resizer:hover::before,
+.sidebar-resizer:focus-visible::before,
+.sidebar-resizing .sidebar-resizer::before{
+  background:#cbb997;
+}
+
+.sidebar-resizer-grip{
+  position:absolute;
+  top:50%;
+  left:50%;
+  width:3px;
+  height:46px;
+  transform:translate(-50%,-50%);
+  border-radius:999px;
+  background:#c7b89f;
+  opacity:.7;
+}
+
+html[data-theme="dark"] .sidebar-resizer-grip{
+  background:#756b5f;
+}
+
+html[data-theme="dark"] .sidebar-resizer:hover::before,
+html[data-theme="dark"] .sidebar-resizer:focus-visible::before,
+html[data-theme="dark"].sidebar-resizing .sidebar-resizer::before{
+  background:#524b43;
+}
+
+.sidebar-layout-controls{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-left:auto;
+}
+
+.sidebar-size-btn,
+.sidebar-collapse-btn{
+  min-height:32px;
+  border:1px solid var(--line);
+  border-radius:7px;
+  background:var(--paper-2);
+  color:var(--ink);
+  cursor:pointer;
+  font:inherit;
+}
+
+.sidebar-size-btn{
+  width:32px;
+  padding:0;
+  font-size:18px;
+  line-height:1;
+}
+
+.sidebar-collapse-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:0 9px;
+  font-size:11px;
+}
+
+.sidebar-collapse-icon{
+  font-size:17px;
+  line-height:1;
+}
+
+html[data-theme="light"] .sidebar-size-btn,
+html[data-theme="light"] .sidebar-collapse-btn{
+  background:#eee1ce !important;
+  color:#4b4036 !important;
+  border-color:#d5c0a2 !important;
+}
+
+html[data-theme="light"] .sidebar-size-btn:hover,
+html[data-theme="light"] .sidebar-collapse-btn:hover{
+  background:#e6d3b7 !important;
+  border-color:#c3a77f !important;
+}
+
+/* Collapsed state */
+html.sidebar-collapsed .history-sidebar{
+  width:var(--sidebar-collapsed-width) !important;
+  min-width:var(--sidebar-collapsed-width) !important;
+  max-width:var(--sidebar-collapsed-width) !important;
+  flex-basis:var(--sidebar-collapsed-width) !important;
+}
+
+html.sidebar-collapsed .sidebar-resizer{
+  display:none !important;
+}
+
+html.sidebar-collapsed .history-sidebar .sidebar-search,
+html.sidebar-collapsed .history-sidebar .case-history,
+html.sidebar-collapsed .history-sidebar .sidebar-foot,
+html.sidebar-collapsed .history-sidebar .sidebar-head .micro,
+html.sidebar-collapsed .history-sidebar .sidebar-head h2,
+html.sidebar-collapsed .history-sidebar #sidebar-narrow,
+html.sidebar-collapsed .history-sidebar #sidebar-wide,
+html.sidebar-collapsed .history-sidebar .sidebar-collapse-label{
+  display:none !important;
+}
+
+html.sidebar-collapsed .history-sidebar .sidebar-head{
+  padding:14px 8px !important;
+  display:flex !important;
+  justify-content:center !important;
+  align-items:center !important;
+  border-bottom:0 !important;
+}
+
+html.sidebar-collapsed .history-sidebar .sidebar-layout-controls{
+  margin:0 !important;
+}
+
+html.sidebar-collapsed .history-sidebar .sidebar-collapse-btn{
+  width:38px;
+  height:38px;
+  padding:0 !important;
+  justify-content:center;
+}
+
+html.sidebar-collapsed .history-sidebar .sidebar-collapse-icon{
+  font-size:22px;
+}
+
+/* Main content must be allowed to consume released/gained space. */
+.main-content,
+.case-view,
+.content-panel,
+.dashboard-main{
+  min-width:0 !important;
+  flex:1 1 auto !important;
+}
+
+/* During drag remove animation lag. */
+html.sidebar-resizing .history-sidebar{
+  transition:none !important;
+}
+
+@media (prefers-reduced-motion: reduce){
+  .history-sidebar{
+    transition:none !important;
+  }
+}
+
+@media (max-width:760px){
+  :root{
+    --sidebar-collapsed-width:48px;
+  }
+
+  .sidebar-collapse-label{
+    display:none;
+  }
+
+  .sidebar-collapse-btn{
+    width:34px;
+    padding:0;
+    justify-content:center;
+  }
+}

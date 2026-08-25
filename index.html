@@ -41,6 +41,14 @@
           <div>
             <div class="micro">HISTÓRICO</div>
             <h2>Análises</h2>
+        <div class="sidebar-layout-controls" aria-label="Controles do histórico">
+          <button id="sidebar-narrow" class="sidebar-size-btn" type="button" title="Diminuir histórico" aria-label="Diminuir largura do histórico">−</button>
+          <button id="sidebar-wide" class="sidebar-size-btn" type="button" title="Aumentar histórico" aria-label="Aumentar largura do histórico">+</button>
+          <button id="sidebar-collapse" class="sidebar-collapse-btn" type="button" aria-expanded="true" title="Minimizar histórico">
+            <span class="sidebar-collapse-icon" aria-hidden="true">‹</span>
+            <span class="sidebar-collapse-label">Minimizar</span>
+          </button>
+        </div>
           </div>
           <button id="sidebar-refresh" class="sidebar-icon" title="Atualizar">↻</button>
         </div>
@@ -52,6 +60,10 @@
           <a id="sidebar-new" class="btn btn-dark sidebar-new-link" href="/new-case.html">+ Novo caso</a>
         </div>
       </aside>
+      <div id="sidebar-resizer" class="sidebar-resizer" role="separator" aria-orientation="vertical"
+           aria-label="Redimensionar histórico" aria-valuemin="220" aria-valuemax="560" tabindex="0">
+        <span class="sidebar-resizer-grip" aria-hidden="true"></span>
+      </div>
 
       <main class="page">
       <section id="stats" class="stats-grid"></section>
