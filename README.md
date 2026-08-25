@@ -143,3 +143,7 @@ Correção de permissão:
 - `/api/gpt/cases` / `gpt-cases` permanece somente leitura e rejeita métodos de escrita com 405;
 - o GPT continua sem permissão para criar, editar ou excluir casos;
 - o cadastro em `/new-case.html` volta a funcionar normalmente.
+
+
+## Versão 2.5 — cabeçalho fixo
+O cabeçalho institucional permanece visível durante a rolagem das páginas. A marca Veredicta, a identificação da MP, a logo institucional da OAB e as ações do cabeçalho não desaparecem ao rolar análises ou o formulário de novo caso.

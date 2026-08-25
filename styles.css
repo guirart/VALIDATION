@@ -128,3 +128,45 @@
   font-size:10px;
   line-height:1.45;
 }
+
+
+/* v2.5 — cabeçalho institucional permanentemente visível */
+:root{
+  --veredicta-header-height: 76px;
+}
+
+.appbar{
+  position: sticky !important;
+  top: 0;
+  z-index: 1000;
+  width: 100%;
+  min-height: var(--veredicta-header-height);
+  box-sizing: border-box;
+}
+
+/* Evita que elementos roláveis ou cartões cubram o cabeçalho */
+.sidebar,
+.main,
+.page-shell,
+.case-shell,
+.new-case-shell{
+  position: relative;
+  z-index: 1;
+}
+
+/* A logo institucional permanece dentro da barra fixa */
+.brand-wrap,
+.institutional-logo-wrap,
+.appbar-actions{
+  flex-shrink: 0;
+}
+
+@media(max-width:760px){
+  :root{
+    --veredicta-header-height: 64px;
+  }
+
+  .appbar{
+    min-height: var(--veredicta-header-height);
+  }
+}
