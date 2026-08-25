@@ -134,3 +134,12 @@ O GPT continua sem permissão para criar ou editar casos.
 
 ## Versão 2.2 — citações seguras
 O validador mantém correspondência literal da MP e amplia a exceção controlada de silêncio normativo aos pontos 6 e 12. A exceção exige referência explícita à ausência normativa e não autoriza paráfrase ou citação inventada.
+
+
+## Versão 2.4 — cadastro manual corrigido
+
+Correção de permissão:
+- `/api/cases` usa autenticação da sessão do app e permite POST para cadastro manual;
+- `/api/gpt/cases` / `gpt-cases` permanece somente leitura e rejeita métodos de escrita com 405;
+- o GPT continua sem permissão para criar, editar ou excluir casos;
+- o cadastro em `/new-case.html` volta a funcionar normalmente.

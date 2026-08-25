@@ -116,3 +116,15 @@
   .institutional-logo-wrap{height:40px;margin-right:8px;padding:3px 6px}
   .institutional-logo{height:31px;max-width:105px}
 }
+
+.manual-case-note{
+  margin-top:16px;
+  padding:10px 12px;
+  border-radius:6px;
+  background:#f2f4ef;
+  border:1px solid #d9ddd3;
+  color:#666b60;
+  font-family:monospace;
+  font-size:10px;
+  line-height:1.45;
+}
