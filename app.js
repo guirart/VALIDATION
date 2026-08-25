@@ -43,6 +43,8 @@ function verdictLabel(v,display=''){const n=verdictClass(v); if(display)return d
 
 function visualVerdictClass(p){
   if(!p)return 'ausente';
+  const explicit=norm(p.display_status||'').trim();
+  if(explicit==='atinge'||explicit==='parcial'||explicit==='atencao'||explicit==='nao_consta'||explicit==='nao_se_aplica') return explicit==='nao_se_aplica'||explicit==='nao_consta'?'ausente':explicit;
   const display=norm(p.display_label||'').trim();
 
   // A cor deve seguir o status que o usuário efetivamente vê na tela.
