@@ -359,3 +359,12 @@ validation_debug, failed_points, contract_sha256 e versões.
 - Histórico: enquadrável verde, não enquadrável vermelho, parcialmente enquadrável amarelo e inconclusivo roxo.
 - Pontos e bordas do item ativo acompanham a classificação.
 - Mantém comparativo, checklist, hero de classificação e validador jurídico intactos.
+
+
+## UI 3.7.4 — status visual coerente
+- Corrige o caso em que `display_label="ATENÇÃO"` era exibido com a cor de `verdict="parcial"`.
+- A cor agora segue prioritariamente o rótulo visível da análise.
+- ATINGE/ATENDE = verde, PARCIAL = amarelo, ATENÇÃO = vermelho.
+- Contadores e filtros usam a mesma classificação visual.
+- Mantém as cores do histórico da v3.7.3.
+- Não altera backend, API ou validador jurídico.

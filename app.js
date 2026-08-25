@@ -40,6 +40,20 @@ function fmtDate(s){if(!s)return '—';try{return new Intl.DateTimeFormat('pt-BR
 function norm(v=''){return String(v).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
 function verdictClass(v){const n=norm(v);return ['atinge','parcial','atencao','ausente'].includes(n)?n:'ausente'}
 function verdictLabel(v,display=''){const n=verdictClass(v); if(display)return display; return ({atinge:'atinge',parcial:'parcial',atencao:'atenção',ausente:'não consta'})[n]}
+
+function visualVerdictClass(p){
+  if(!p)return 'ausente';
+  const display=norm(p.display_label||'').trim();
+
+  // A cor deve seguir o status que o usuário efetivamente vê na tela.
+  if(display==='atinge'||display==='atende'||display==='atendido'||display==='atingido') return 'atinge';
+  if(display==='parcial'||display.includes('parcial')) return 'parcial';
+  if(display==='atencao'||display.includes('atencao')) return 'atencao';
+  if(display.includes('nao consta')||display.includes('nao se aplica')||display==='ausente') return 'ausente';
+
+  return verdictClass(p.verdict);
+}
+
 function latest(arr=[]){return [...arr].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0]}
 
 async function api(url, options={}){
@@ -153,7 +167,7 @@ function pointsMap(a){return new Map(((a?.analyst_json?.points)||[]).map(p=>[Num
 function findingsMap(a){return new Map(((a?.audit_json?.findings)||[]).map(f=>[Number(f.point),f]))}
 function countVerdicts(a){
   const pm=pointsMap(a);const c={atinge:0,parcial:0,atencao:0,ausente:0};
-  CHECKLIST_15.forEach(i=>{const p=pm.get(i.point);if(p)c[verdictClass(p.verdict)]++});
+  CHECKLIST_15.forEach(i=>{const p=pm.get(i.point);if(p)c[visualVerdictClass(p)]++});
   return c;
 }
 function gridHtml(a){
@@ -162,7 +176,7 @@ function gridHtml(a){
     <div class="memo15-head"><b>Checklist dos 15 pontos do memorando — status neste contrato</b><span>${counts.atinge} atingidos · ${counts.parcial} parcial · ${counts.atencao} atenção · ${counts.ausente} não consta/não se aplica</span></div>
     <div class="memo-grid">
       ${CHECKLIST_15.map(item=>{
-        const p=pm.get(item.point);const v=p?verdictClass(p.verdict):'ausente';const label=p?verdictLabel(p.verdict,p.display_label):'pendente';
+        const p=pm.get(item.point);const v=p?visualVerdictClass(p):'ausente';const label=p?verdictLabel(p.verdict,p.display_label):'pendente';
         return `<div class="memo-cell"><span class="memo-num">${String(item.point).padStart(2,'0')}</span><span class="memo-title">${esc(item.title)} <i>(${esc(p?.legal_reference||item.legal_reference)})</i></span><span class="pill v-${v}">${esc(label)}</span></div>`
       }).join('')}
       <div class="memo-cell memo-blank"></div>
@@ -186,7 +200,7 @@ function filterBarHtml(a){
 function pointCardsHtml(a){
   const pm=pointsMap(a), fm=findingsMap(a);
   return `<div class="checkpoint-list">${CHECKLIST_15.map(item=>{
-    const p=pm.get(item.point);const f=fm.get(item.point);const v=p?verdictClass(p.verdict):'ausente';
+    const p=pm.get(item.point);const f=fm.get(item.point);const v=p?visualVerdictClass(p):'ausente';
     const label=p?verdictLabel(p.verdict,p.display_label):'pendente';
     const hidden=currentFilter!=='all'&&currentFilter!==v?' checkpoint-hidden':'';
     return `<details class="checkpoint${hidden}" data-verdict="${v}">

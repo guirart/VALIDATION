@@ -2845,3 +2845,87 @@ html[data-theme="dark"] .history-item.history-class-partial .history-meta em{
 html[data-theme="dark"] .history-item.history-class-uncertain .history-meta em{
   background:#302350 !important;color:#c4b5fd !important;border-color:#8b5cf6 !important;-webkit-text-fill-color:#c4b5fd !important;
 }
+
+
+/* =========================================================
+   V3.7.4 — STATUS VISUAL COERENTE
+   A cor segue o rótulo VISÍVEL: ATINGE=verde,
+   PARCIAL=amarelo, ATENÇÃO=vermelho.
+   ========================================================= */
+
+/* ATINGE / ATENDE — VERDE */
+.pill.v-atinge,
+.memo-cell .pill.v-atinge,
+.checkpoint .pill.v-atinge,
+.checkpoint[data-verdict="atinge"] > summary .pill{
+  background:#dcfce7 !important;
+  color:#166534 !important;
+  border:1.5px solid #22c55e !important;
+  box-shadow:0 0 0 1px rgba(34,197,94,.06) !important;
+}
+
+/* PARCIAL — AMARELO */
+.pill.v-parcial,
+.memo-cell .pill.v-parcial,
+.checkpoint .pill.v-parcial,
+.checkpoint[data-verdict="parcial"] > summary .pill{
+  background:#fef9c3 !important;
+  color:#854d0e !important;
+  border:1.5px solid #eab308 !important;
+  box-shadow:0 0 0 1px rgba(234,179,8,.06) !important;
+}
+
+/* ATENÇÃO — VERMELHO */
+.pill.v-atencao,
+.memo-cell .pill.v-atencao,
+.checkpoint .pill.v-atencao,
+.checkpoint[data-verdict="atencao"] > summary .pill{
+  background:#fee2e2 !important;
+  color:#b91c1c !important;
+  border:1.5px solid #ef4444 !important;
+  box-shadow:0 0 0 1px rgba(239,68,68,.08) !important;
+}
+
+/* NÃO CONSTA — CINZA */
+.pill.v-ausente,
+.memo-cell .pill.v-ausente,
+.checkpoint .pill.v-ausente,
+.checkpoint[data-verdict="ausente"] > summary .pill{
+  background:#f0ede8 !important;
+  color:#625c55 !important;
+  border:1px solid #d6cfc6 !important;
+}
+
+/* Filtros ativos usam a mesma semântica */
+.filter-chip[data-filter="atinge"].active{
+  background:#dcfce7 !important;
+  color:#166534 !important;
+  border-color:#22c55e !important;
+}
+.filter-chip[data-filter="parcial"].active{
+  background:#fef9c3 !important;
+  color:#854d0e !important;
+  border-color:#eab308 !important;
+}
+.filter-chip[data-filter="atencao"].active{
+  background:#fee2e2 !important;
+  color:#b91c1c !important;
+  border-color:#ef4444 !important;
+}
+
+/* Contadores do destaque final */
+.final-class-stats > div:nth-child(1) b{color:#16a34a !important;}
+.final-class-stats > div:nth-child(2) b{color:#ca8a04 !important;}
+.final-class-stats > div:nth-child(3) b{color:#dc2626 !important;}
+.final-class-stats > div:nth-child(4) b{color:#57534e !important;}
+
+/* Dark */
+html[data-theme="dark"] .pill.v-atinge{
+  background:#16351f !important;color:#86efac !important;border-color:#22c55e !important;
+}
+html[data-theme="dark"] .pill.v-parcial{
+  background:#3d3414 !important;color:#fde047 !important;border-color:#eab308 !important;
+}
+html[data-theme="dark"] .pill.v-atencao{
+  background:#431d1d !important;color:#fca5a5 !important;border-color:#ef4444 !important;
+}
