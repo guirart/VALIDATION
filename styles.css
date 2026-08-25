@@ -1896,3 +1896,148 @@ html.sidebar-resizing .history-sidebar{
     justify-content:center;
   }
 }
+
+
+/* =========================================================
+   SIDEBAR 3.6.4 — DRAG + COLLAPSE REAL
+   ========================================================= */
+
+/* Não há mais botões visuais de tamanho. */
+#sidebar-narrow,
+#sidebar-wide,
+.sidebar-size-btn{
+  display:none !important;
+}
+
+/* O separador é o único controle de redimensionamento. */
+.sidebar-resizer{
+  cursor:col-resize !important;
+}
+
+/* Ao minimizar, o histórico deixa de consumir largura.
+   O botão fica numa pequena aba flutuante na borda esquerda. */
+html.sidebar-collapsed .history-sidebar{
+  width:0 !important;
+  min-width:0 !important;
+  max-width:0 !important;
+  flex:0 0 0 !important;
+  border-right:0 !important;
+  overflow:visible !important;
+  position:relative;
+}
+
+html.sidebar-collapsed .history-sidebar > *{
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+
+/* Mantém SOMENTE o controle de reabrir visível. */
+html.sidebar-collapsed .history-sidebar .sidebar-head{
+  visibility:visible !important;
+  pointer-events:auto !important;
+  display:block !important;
+  position:absolute !important;
+  left:0 !important;
+  top:14px !important;
+  width:auto !important;
+  height:auto !important;
+  padding:0 !important;
+  margin:0 !important;
+  border:0 !important;
+  background:transparent !important;
+  z-index:30;
+}
+
+html.sidebar-collapsed .history-sidebar .sidebar-head > *{
+  display:none !important;
+}
+
+html.sidebar-collapsed .history-sidebar .sidebar-layout-controls{
+  visibility:visible !important;
+  pointer-events:auto !important;
+  display:block !important;
+  position:absolute !important;
+  left:8px !important;
+  top:0 !important;
+}
+
+html.sidebar-collapsed .history-sidebar .sidebar-layout-controls > *{
+  display:none !important;
+}
+
+html.sidebar-collapsed .history-sidebar #sidebar-collapse{
+  display:inline-flex !important;
+  visibility:visible !important;
+  pointer-events:auto !important;
+  width:38px !important;
+  height:38px !important;
+  min-width:38px !important;
+  padding:0 !important;
+  align-items:center !important;
+  justify-content:center !important;
+  border-radius:8px !important;
+}
+
+html.sidebar-collapsed .history-sidebar #sidebar-collapse .sidebar-collapse-label{
+  display:none !important;
+}
+
+html.sidebar-collapsed .history-sidebar #sidebar-collapse .sidebar-collapse-icon{
+  display:inline !important;
+  visibility:visible !important;
+  font-size:22px !important;
+}
+
+/* O resizer some completamente quando recolhido. */
+html.sidebar-collapsed .sidebar-resizer{
+  display:none !important;
+  width:0 !important;
+  min-width:0 !important;
+  flex-basis:0 !important;
+}
+
+/* O painel direito deve absorver TODO o espaço restante. */
+.main-content,
+.case-view,
+.content-panel,
+.dashboard-main{
+  flex:1 1 0 !important;
+  width:auto !important;
+  max-width:none !important;
+  min-width:0 !important;
+}
+
+/* Se o contêiner usa grid em vez de flex, ajusta também. */
+html.sidebar-collapsed .app-shell,
+html.sidebar-collapsed .app-layout,
+html.sidebar-collapsed .dashboard-shell,
+html.sidebar-collapsed .workspace{
+  grid-template-columns:0 minmax(0,1fr) !important;
+}
+
+/* Em layouts flex, garante que a área principal se estenda. */
+html.sidebar-collapsed .main-content,
+html.sidebar-collapsed .case-view,
+html.sidebar-collapsed .content-panel,
+html.sidebar-collapsed .dashboard-main{
+  flex-grow:1 !important;
+  margin-left:0 !important;
+}
+
+/* Sem atraso visual ao recolher/expandir. */
+html.sidebar-collapsed .history-sidebar,
+html.sidebar-collapsed .main-content{
+  transition:none !important;
+}
+
+/* Área de clique um pouco maior para facilitar o arraste,
+   sem criar uma faixa visual pesada. */
+.sidebar-resizer::after{
+  content:"";
+  position:absolute;
+  top:0;
+  bottom:0;
+  left:-3px;
+  right:-3px;
+  cursor:col-resize;
+}

@@ -292,3 +292,11 @@ validation_debug, failed_points, contract_sha256 e versões.
 - A largura e o estado recolhido ficam persistidos no navegador.
 - O painel principal cresce automaticamente quando o histórico é reduzido.
 - Não altera o validador jurídico.
+
+
+## UI 3.6.4 — sidebar por arraste e minimização real
+- Remove os botões + e −.
+- A largura do histórico é alterada segurando o botão esquerdo do mouse na divisória e arrastando.
+- Ao minimizar, a sidebar passa a largura 0 e o painel de análise ocupa o espaço liberado.
+- Fica apenas uma pequena aba para reabrir o histórico.
+- Não altera o validador jurídico.
