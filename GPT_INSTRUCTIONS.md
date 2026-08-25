@@ -265,3 +265,15 @@ Pontos 6 e 12:
 - o marcador `Sem previsão expressa na MP` é válido SOMENTE quando a referência e o raciocínio também declaram claramente silêncio/ausência de previsão normativa;
 - se houver citação literal aplicável, prefira a citação literal;
 - consulte `validation_debug` se o quality gate rejeitar esses pontos, em vez de adivinhar qual condição falhou.
+
+
+## V2.9 — AUTENTICAÇÃO DA ACTION
+
+A Action usa preferencialmente o cabeçalho personalizado:
+`X-Veredicta-Key`
+
+O valor deve ser exatamente o mesmo de `GPT_ACTION_API_KEY` no ambiente Production da Vercel.
+
+Não inclua prefixo `Bearer` no valor da chave quando usar cabeçalho personalizado.
+
+O backend mantém suporte a Authorization Bearer apenas para compatibilidade.

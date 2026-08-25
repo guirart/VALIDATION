@@ -1,0 +1,368 @@
+openapi: 3.1.0
+info:
+  title: Veredicta API
+  version: "2.8.0"
+  description: API de produção do Veredicta. O GPT apenas consulta casos existentes e envia análises auditadas.
+
+servers:
+  - url: https://validation-six-tawny.vercel.app
+
+paths:
+  /api:
+    get:
+      operationId: consultarVeredicta
+      summary: Consulta fontes jurídicas e casos já cadastrados no Veredicta.
+      parameters:
+        - name: action
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - source-status
+              - gpt-cases
+              - gpt-case
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - pendente
+              - em-analise
+              - aguardando-revisao
+              - requer-correcao
+              - concluido
+              - erro
+        - name: id
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Consulta realizada.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cases:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CaseSummary"
+                  case:
+                    $ref: "#/components/schemas/CaseFull"
+                  legal_source_version:
+                    type: string
+                  memorandum_version:
+                    type: string
+                  mp_sha256:
+                    type: string
+                  memorandum_sha256:
+                    type: string
+                  instruction:
+                    type: string
+        "400":
+          description: Requisição inválida.
+        "401":
+          description: Não autorizado.
+        "404":
+          description: Recurso não encontrado.
+
+    post:
+      operationId: enviarAnaliseVeredicta
+      summary: Envia análise jurídica e auditoria de um caso já existente.
+      parameters:
+        - name: action
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - gpt-analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitAnalysisRequest"
+      responses:
+        "200":
+          description: Análise recebida pelo Veredicta.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalysisResponse"
+        "400":
+          description: Dados inválidos.
+        "401":
+          description: Não autorizado.
+        "404":
+          description: Caso não encontrado.
+        "500":
+          description: Erro interno.
+
+components:
+  schemas:
+    CaseSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        client_name:
+          type: string
+        status:
+          type: string
+        created_at:
+          type: string
+        updated_at:
+          type: string
+
+    CaseFull:
+      allOf:
+        - $ref: "#/components/schemas/CaseSummary"
+        - type: object
+          properties:
+            contract_text:
+              type: string
+
+    AnalystPoint:
+      type: object
+      required:
+        - point
+        - title
+        - legal_reference
+        - evidence_status
+        - legal_result
+        - verdict
+        - display_label
+        - mp_quote
+        - contract_quote
+        - reasoning
+      properties:
+        point:
+          type: integer
+          minimum: 1
+          maximum: 15
+        title:
+          type: string
+        legal_reference:
+          type: string
+        evidence_status:
+          type: string
+          enum:
+            - comprovado
+            - parcialmente_comprovado
+            - nao_comprovado
+            - nao_consta
+        legal_result:
+          type: string
+          enum:
+            - atende
+            - nao_atende
+            - inconclusivo
+            - nao_aplicavel
+        verdict:
+          type: string
+          enum:
+            - atinge
+            - parcial
+            - atencao
+            - ausente
+          description: Campo legado de exibição; deve ser coerente com evidence_status e legal_result.
+        display_label:
+          type: string
+        mp_quote:
+          type: string
+          description: Citação literal da MP. Somente nos pontos 6 e 12, quando não houver previsão expressa aplicável, pode ser vazio ou marcador explícito de silêncio normativo.
+        contract_quote:
+          type: string
+          description: Citação literal do contrato/dossiê ou marcador explícito de ausência documental.
+        reasoning:
+          type: string
+
+    Analyst:
+      type: object
+      required:
+        - final_classification
+        - summary
+        - points
+      properties:
+        final_classification:
+          type: string
+          enum:
+            - enquadrável
+            - parcialmente enquadrável
+            - inconclusivo
+            - não enquadrável
+        summary:
+          type: string
+        points:
+          type: array
+          minItems: 15
+          maxItems: 15
+          items:
+            $ref: "#/components/schemas/AnalystPoint"
+
+    AuditFinding:
+      type: object
+      required:
+        - point
+        - status
+        - reason
+      properties:
+        point:
+          type: integer
+          minimum: 1
+          maximum: 15
+        status:
+          type: string
+          enum:
+            - confirmado
+            - divergente
+            - não encontrado
+            - opinião sem precedente
+        reason:
+          type: string
+
+    Audit:
+      type: object
+      required:
+        - final_classification
+        - recommendation
+        - summary
+        - findings
+      properties:
+        final_classification:
+          type: string
+          enum:
+            - enquadrável
+            - parcialmente enquadrável
+            - inconclusivo
+            - não enquadrável
+        recommendation:
+          type: string
+          enum:
+            - liberar
+            - corrigir
+            - escalar para revisão humana aprofundada
+        summary:
+          type: string
+        findings:
+          type: array
+          minItems: 15
+          maxItems: 15
+          items:
+            $ref: "#/components/schemas/AuditFinding"
+
+    SubmitAnalysisRequest:
+      type: object
+      required:
+        - case_id
+        - source_contract_sha256
+        - analyst
+        - audit
+      properties:
+        case_id:
+          type: string
+
+        source_contract_sha256:
+          type: string
+          description: SHA-256 do contract_text retornado pela consulta gpt-case. Impede análise baseada em dossiê diferente ou desatualizado.
+        analyst:
+          $ref: "#/components/schemas/Analyst"
+        audit:
+          $ref: "#/components/schemas/Audit"
+
+    ValidationErrorDetail:
+      type: object
+      properties:
+        category:
+          type: string
+          enum:
+            - schema
+            - citation_mp
+            - citation_contract
+            - evidence
+            - consistency
+            - audit
+            - classification
+            - other
+        point:
+          type: integer
+        message:
+          type: string
+        correctable:
+          type: boolean
+
+    AnalysisResponse:
+      type: object
+      properties:
+        accepted:
+          type: boolean
+        analysis_id:
+          type: string
+        case_id:
+          type: string
+        status:
+          type: string
+        quality_gate:
+          type: boolean
+        final_classification:
+          type: string
+        auditor_recommendation:
+          type: string
+        validation_errors:
+          type: array
+          items:
+            type: string
+        validation_error_details:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationErrorDetail"
+        quality_gate_reasons:
+          type: array
+          items:
+            type: string
+        app_version:
+          type: string
+
+        validator_version:
+          type: string
+
+        contract_sha256:
+          type: string
+
+        validation_debug:
+          type: array
+          items:
+            type: object
+            properties:
+              point:
+                type: integer
+              literal_quote_found:
+                type: boolean
+              silence_allowed:
+                type: boolean
+              legal_reference_silence:
+                type: boolean
+              reasoning_silence:
+                type: boolean
+              quote_silence:
+                type: boolean
+              result:
+                type: boolean
+
+        next_step:
+          type: string
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+security:
+  - bearerAuth: []

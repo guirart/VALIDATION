@@ -180,3 +180,8 @@ Correções:
 - logs registram versão, hash e diagnóstico.
 
 Esta versão permite descobrir exatamente por que um ponto foi recusado e impede mistura de dossiês.
+
+
+## Versão 2.9 — autenticação por cabeçalho personalizado
+
+A integração passa a preferir `X-Veredicta-Key`, evitando ambiguidades do modo Bearer no editor de GPT Actions. Bearer permanece como fallback. Respostas 401 incluem apenas diagnóstico booleano sobre presença dos headers, nunca o valor das chaves.
