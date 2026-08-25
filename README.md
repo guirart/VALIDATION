@@ -332,3 +332,12 @@ validation_debug, failed_points, contract_sha256 e versões.
 - Cores distintas para enquadrável, parcialmente enquadrável, inconclusivo e não enquadrável.
 - Não adiciona documentos, painéis extras ou nova visão de checklist.
 - Não altera o validador jurídico.
+
+
+## UI 3.7.1 — comparativo restaurado
+- Corrige regressão da v3.7.0 em `renderCase()`.
+- Mantém o novo destaque visual da classificação final.
+- Restaura resumo, grade dos 15 pontos, filtros e quadro comparativo completo.
+- Restaura as evidências “NA MP” × “NO CONTRATO / LAUDO” e seus indicadores de verificação.
+- Mantém o checklist resolutivo e demais partes do template anterior.
+- Não altera API nem validador jurídico.

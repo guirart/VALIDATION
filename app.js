@@ -238,17 +238,29 @@ function renderCase(){
       <div><h3>${esc(c.title)}</h3><div class="source-line">caso ${esc(c.id)} · ${esc(c.client_name||'cliente não informado')} · ${esc(c.status)}</div></div>
       <button id="analyze-btn" class="btn btn-outline">${a?'reanalisar no GPT':'analisar no GPT'}</button>
     </div>${identityWarning(c)}`;
+
   if(a){
     html+=classificationHeroHtml(a);
+    html+=`<div class="summary-box">
+      <p><b>Resumo:</b> ${esc(aj.summary||au.summary||'')}</p>
+      <p><b>Auditoria:</b> ${esc(a.auditor_recommendation||'—')} · quality gate ${a.quality_gate?'liberado':'bloqueado'}</p>
+    </div>
+    ${gridHtml(a)}
+    ${filterBarHtml(a)}
+    ${pointCardsHtml(a)}
+    <div class="report-foot">análise ${esc(a.id)} · fonte ${esc(a.legal_source_version||'não informada')} · memorando ${esc(a.memorandum_version||'não informado')} · criada em ${fmtDate(a.created_at)}</div>`;
   }else{
     html+=`<div class="no-analysis"><h4>Ainda não analisado</h4><p>O caso está salvo. Clique em <b>analisar no GPT</b>; o GPT buscará o contrato pela Action, fará os 15 pontos + auditoria e gravará o resultado aqui.</p><code>Analise o caso ${esc(c.id)}.</code></div>`;
   }
+
   html+='</article>';
   $('#case-view').innerHTML=html;
+
   $('#analyze-btn')?.addEventListener('click',()=>openInGpt(c));
   $$('.filter-chip').forEach(b=>b.addEventListener('click',()=>{currentFilter=b.dataset.filter;renderCase()}));
   $$('[data-expand]').forEach(b=>b.addEventListener('click',()=>{$$('.checkpoint:not(.checkpoint-hidden)').forEach(d=>d.open=b.dataset.expand==='1')}));
 }
+
 function renderEmptyCase(){
   $('#case-view').innerHTML='<div class="empty-card"><h3>Nenhum caso cadastrado</h3><p>Use o formulário abaixo para criar o primeiro contrato.</p></div>';
 }
