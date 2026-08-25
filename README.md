@@ -341,3 +341,12 @@ validation_debug, failed_points, contract_sha256 e versões.
 - Restaura as evidências “NA MP” × “NO CONTRATO / LAUDO” e seus indicadores de verificação.
 - Mantém o checklist resolutivo e demais partes do template anterior.
 - Não altera API nem validador jurídico.
+
+
+## UI 3.7.2 — cores funcionais
+- ATENDE/ATINGE em verde.
+- PARCIAL em amarelo.
+- ATENÇÃO em vermelho.
+- Histórico: enquadrável verde, não enquadrável vermelho, parcialmente enquadrável amarelo e inconclusivo roxo.
+- O pontinho e a borda do item ativo acompanham a classificação no histórico.
+- Mantém comparativo, checklist, classificação destacada e validador jurídico intactos.

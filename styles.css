@@ -2471,3 +2471,174 @@ html.sidebar-resizing .workspace > .page{
     padding-top:12px;
   }
 }
+
+
+/* =========================================================
+   V3.7.2 — CORES DOS STATUS E CLASSIFICAÇÕES DO HISTÓRICO
+   ========================================================= */
+
+/* ---------- STATUS DOS 15 PONTOS ---------- */
+
+/* ATENDE / ATINGE = verde */
+.tag.tag-atinge,
+.tag.atinge,
+.status-atinge,
+[data-verdict="atinge"] .tag,
+[data-status="atinge"],
+.check-item[data-verdict="atinge"] .tag,
+.checkpoint[data-verdict="atinge"] .cp-status,
+.badge-atinge{
+  background:#dff4dc !important;
+  color:#256c2f !important;
+  border-color:#91c98b !important;
+}
+
+/* PARCIAL = amarelo */
+.tag.tag-parcial,
+.tag.parcial,
+.status-parcial,
+[data-verdict="parcial"] .tag,
+[data-status="parcial"],
+.check-item[data-verdict="parcial"] .tag,
+.checkpoint[data-verdict="parcial"] .cp-status,
+.badge-parcial{
+  background:#fff1b8 !important;
+  color:#8a6500 !important;
+  border-color:#e4c84e !important;
+}
+
+/* ATENÇÃO = vermelho */
+.tag.tag-atencao,
+.tag.atencao,
+.status-atencao,
+[data-verdict="atencao"] .tag,
+[data-status="atencao"],
+.check-item[data-verdict="atencao"] .tag,
+.checkpoint[data-verdict="atencao"] .cp-status,
+.badge-atencao{
+  background:#ffdede !important;
+  color:#a32121 !important;
+  border-color:#df7777 !important;
+}
+
+/* Também colore os pequenos indicadores e contadores quando existirem */
+.legend-dot.atinge,
+.dot-atinge,
+.verdict-dot.atinge{
+  background:#39a844 !important;
+}
+
+.legend-dot.parcial,
+.dot-parcial,
+.verdict-dot.parcial{
+  background:#e5bf19 !important;
+}
+
+.legend-dot.atencao,
+.dot-atencao,
+.verdict-dot.atencao{
+  background:#d83232 !important;
+}
+
+/* ---------- HISTÓRICO ---------- */
+
+/* Enquadrável = verde */
+html[data-theme="light"] .history-meta em.history-class-eligible,
+.history-meta em.history-class-eligible{
+  background:#e0f4de !important;
+  color:#276c2e !important;
+  border:1px solid #95c991 !important;
+  -webkit-text-fill-color:#276c2e !important;
+}
+
+/* Não enquadrável = vermelho */
+html[data-theme="light"] .history-meta em.history-class-rejected,
+.history-meta em.history-class-rejected{
+  background:#f8dddd !important;
+  color:#9c2727 !important;
+  border:1px solid #dd8888 !important;
+  -webkit-text-fill-color:#9c2727 !important;
+}
+
+/* Parcialmente enquadrável = amarelo */
+html[data-theme="light"] .history-meta em.history-class-partial,
+.history-meta em.history-class-partial{
+  background:#fff0b5 !important;
+  color:#866200 !important;
+  border:1px solid #dfc44f !important;
+  -webkit-text-fill-color:#866200 !important;
+}
+
+/* Inconclusivo = roxo */
+html[data-theme="light"] .history-meta em.history-class-uncertain,
+.history-meta em.history-class-uncertain{
+  background:#e9e1f7 !important;
+  color:#67489b !important;
+  border:1px solid #bba8dc !important;
+  -webkit-text-fill-color:#67489b !important;
+}
+
+/* Sem classificação / fallback */
+.history-meta em.history-class-neutral{
+  background:#ece7df !important;
+  color:#696159 !important;
+  border:1px solid #d4cbc0 !important;
+}
+
+/* O pontinho à esquerda do card também acompanha a classificação */
+.history-item:has(.history-class-eligible) .history-dot{
+  background:#46a950 !important;
+}
+.history-item:has(.history-class-rejected) .history-dot{
+  background:#d63a3a !important;
+}
+.history-item:has(.history-class-partial) .history-dot{
+  background:#e1bb20 !important;
+}
+.history-item:has(.history-class-uncertain) .history-dot{
+  background:#8056b3 !important;
+}
+
+/* Borda do item selecionado acompanha a classificação */
+.history-item.active:has(.history-class-eligible){
+  border-color:#8cc487 !important;
+  box-shadow:inset 4px 0 0 #4d9c4d !important;
+}
+.history-item.active:has(.history-class-rejected){
+  border-color:#db8b8b !important;
+  box-shadow:inset 4px 0 0 #bf3f3f !important;
+}
+.history-item.active:has(.history-class-partial){
+  border-color:#dec45f !important;
+  box-shadow:inset 4px 0 0 #c7a52a !important;
+}
+.history-item.active:has(.history-class-uncertain){
+  border-color:#b8a6d7 !important;
+  box-shadow:inset 4px 0 0 #7652a5 !important;
+}
+
+/* ---------- DARK MODE ---------- */
+html[data-theme="dark"] .history-meta em.history-class-eligible{
+  background:#263d28 !important;
+  color:#a9d6a8 !important;
+  border-color:#4e7850 !important;
+  -webkit-text-fill-color:#a9d6a8 !important;
+}
+html[data-theme="dark"] .history-meta em.history-class-rejected{
+  background:#422727 !important;
+  color:#efa7a7 !important;
+  border-color:#775050 !important;
+  -webkit-text-fill-color:#efa7a7 !important;
+}
+html[data-theme="dark"] .history-meta em.history-class-partial{
+  background:#443a1d !important;
+  color:#f0d77e !important;
+  border-color:#716331 !important;
+  -webkit-text-fill-color:#f0d77e !important;
+}
+html[data-theme="dark"] .history-meta em.history-class-uncertain{
+  background:#352d47 !important;
+  color:#c6b3e8 !important;
+  border-color:#5f507d !important;
+  -webkit-text-fill-color:#c6b3e8 !important;
+}

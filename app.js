@@ -98,6 +98,16 @@ function renderStats(){
   ].map(x=>`<div class="stat-card"><span>${x[0]}</span><b>${x[1]}</b><small>${x[2]}</small></div>`).join('');
   $('#tests-note').textContent=`${cases.length} caso${cases.length===1?'':'s'} nesta instância — navegue pelo histórico lateral`;
 }
+
+function historyClassificationClass(value=''){
+  const n=norm(value);
+  if(n==='enquadravel') return 'history-class-eligible';
+  if(n.includes('parcialmente')) return 'history-class-partial';
+  if(n==='inconclusivo') return 'history-class-uncertain';
+  if(n.includes('nao enquadravel')) return 'history-class-rejected';
+  return 'history-class-neutral';
+}
+
 function renderHistory(){
   const q=norm($('#case-search')?.value||'');
   const filtered=cases.filter(c=>{
