@@ -1335,3 +1335,236 @@ html[data-theme="light"] .info-icon{
   background:#334261 !important;
   color:#ffffff !important;
 }
+
+
+/* =========================================================
+   v3.3 — MODO CLARO BEGE INSTITUCIONAL
+   Integra o visual aprovado: branco + bege suave + dourado.
+   O modo escuro permanece inalterado.
+   ========================================================= */
+html[data-theme="light"]{
+  --light-bg:#f6f3ec;
+  --light-surface:#ffffff;
+  --light-soft:#f3eee3;
+  --light-soft-2:#eee7da;
+  --light-border:#ddd5c7;
+  --light-border-soft:#e8e1d5;
+  --light-text:#24221f;
+  --light-muted:#777168;
+  --light-gold:#a87a20;
+  --light-gold-soft:#ead7aa;
+  color-scheme:light;
+}
+
+html[data-theme="light"] body,
+html[data-theme="light"] .workspace,
+html[data-theme="light"] .new-case-page{
+  background:var(--light-bg) !important;
+  color:var(--light-text) !important;
+}
+
+/* Cabeçalho: branco quente, sem grandes blocos escuros */
+html[data-theme="light"] .appbar{
+  background:#fbfaf7 !important;
+  border-bottom:1px solid var(--light-border) !important;
+}
+html[data-theme="light"] .brand{ color:#987025 !important; }
+html[data-theme="light"] .brand-sub{ color:#514d46 !important; }
+html[data-theme="light"] .link-btn{
+  background:#fff !important;
+  color:#39352f !important;
+  border-color:var(--light-border) !important;
+}
+html[data-theme="light"] .theme-toggle{
+  background:#f2ede3 !important;
+  color:#302c26 !important;
+  border-color:#ddd4c5 !important;
+}
+
+/* Lateral clara: bege muito suave para separar do conteúdo branco */
+html[data-theme="light"] .history-sidebar,
+html[data-theme="light"] .sidebar-head,
+html[data-theme="light"] .sidebar-search,
+html[data-theme="light"] .sidebar-foot,
+html[data-theme="light"] .case-history{
+  background:#f2eee5 !important;
+  color:var(--light-text) !important;
+}
+html[data-theme="light"] .history-sidebar{
+  border-right:1px solid var(--light-border) !important;
+}
+html[data-theme="light"] .sidebar-head,
+html[data-theme="light"] .sidebar-search,
+html[data-theme="light"] .sidebar-foot{
+  border-color:var(--light-border) !important;
+}
+html[data-theme="light"] .sidebar-head .micro{ color:var(--light-gold) !important; }
+html[data-theme="light"] .sidebar-head h2{ color:#24221f !important; }
+html[data-theme="light"] .sidebar-icon{
+  background:#faf8f3 !important;
+  color:#403b33 !important;
+  border-color:#d8d0c2 !important;
+}
+html[data-theme="light"] .sidebar-search input{
+  background:#fbfaf7 !important;
+  color:#302d28 !important;
+  border-color:#d9d1c4 !important;
+}
+html[data-theme="light"] .sidebar-search input::placeholder{ color:#8e887e !important; }
+html[data-theme="light"] .case-history::-webkit-scrollbar-track{ background:#f2eee5 !important; }
+html[data-theme="light"] .case-history::-webkit-scrollbar-thumb{ background:#c8c0b2 !important; }
+
+html[data-theme="light"] .history-item{
+  background:#f8f5ee !important;
+  border:1px solid #ded6c8 !important;
+  color:#2d2a25 !important;
+  box-shadow:none !important;
+}
+html[data-theme="light"] .history-item:hover{
+  background:#f1eadc !important;
+  border-color:#d2c5ae !important;
+}
+html[data-theme="light"] .history-item.active{
+  background:#eee4d1 !important;
+  border-color:#d4c19b !important;
+  box-shadow:inset 3px 0 0 #b68a35 !important;
+}
+html[data-theme="light"] .history-content b{ color:#27241f !important; }
+html[data-theme="light"] .history-content small,
+html[data-theme="light"] .history-meta time{ color:#777168 !important; }
+html[data-theme="light"] .history-meta em{ color:#987025 !important; }
+html[data-theme="light"] .sidebar-foot .btn{
+  background:#f6f1e7 !important;
+  color:#24211c !important;
+  border:1px solid #d8cdb9 !important;
+}
+html[data-theme="light"] .sidebar-foot .btn:hover{ background:#ece3d2 !important; }
+
+/* Conteúdo principal: branco, com superfícies secundárias em bege claro */
+html[data-theme="light"] .workspace > .page{ color:var(--light-text) !important; }
+html[data-theme="light"] .analysis-sheet,
+html[data-theme="light"] .stats-grid,
+html[data-theme="light"] .resolution-panel,
+html[data-theme="light"] .empty-card,
+html[data-theme="light"] .new-case-card{
+  background:#fff !important;
+  border-color:var(--light-border) !important;
+  color:var(--light-text) !important;
+}
+
+html[data-theme="light"] .info-box{
+  background:#f7f2e8 !important;
+  border-color:#ddd3c1 !important;
+  color:#4f4940 !important;
+}
+html[data-theme="light"] .info-box p{ color:#5f584e !important; }
+html[data-theme="light"] .info-icon{
+  background:#e8dfcf !important;
+  color:#6c5b3c !important;
+}
+
+html[data-theme="light"] .case-head{
+  background:#f4efe5 !important;
+  border-bottom:1px solid #ddd4c5 !important;
+  color:#24221f !important;
+}
+html[data-theme="light"] .case-head h3,
+html[data-theme="light"] .case-head h2,
+html[data-theme="light"] .case-head .case-title,
+html[data-theme="light"] .case-head strong,
+html[data-theme="light"] .case-head b{ color:#28251f !important; }
+html[data-theme="light"] .case-head p,
+html[data-theme="light"] .case-head small,
+html[data-theme="light"] .case-head span,
+html[data-theme="light"] .case-head .mono-note,
+html[data-theme="light"] .case-head .case-meta{ color:#716a60 !important; }
+html[data-theme="light"] .case-head .btn,
+html[data-theme="light"] .case-head .btn-outline{
+  background:#fbfaf7 !important;
+  color:#5e471c !important;
+  border:1px solid #cba75d !important;
+}
+html[data-theme="light"] .case-head .btn:hover,
+html[data-theme="light"] .case-head .btn-outline:hover{ background:#f1e8d8 !important; }
+
+html[data-theme="light"] .final-class{
+  background:#fbfaf7 !important;
+  color:#24221f !important;
+  border-color:var(--light-border-soft) !important;
+}
+html[data-theme="light"] .final-class span{ color:#9a8257 !important; }
+html[data-theme="light"] .final-class strong{ color:#987025 !important; }
+
+/* Checklist: bege apenas nas faixas e vazios, células quase brancas */
+html[data-theme="light"] .memo15{
+  background:#fff !important;
+  border-color:#ddd5c7 !important;
+}
+html[data-theme="light"] .memo15-head{
+  background:#f4efe5 !important;
+  border-color:#ddd5c7 !important;
+}
+html[data-theme="light"] .memo15-head span{ color:#8b7650 !important; }
+html[data-theme="light"] .memo-grid{ background:#fff !important; }
+html[data-theme="light"] .memo-cell{
+  background:#fff !important;
+  border-color:#e3ddd2 !important;
+}
+html[data-theme="light"] .memo-blank{ background:#f0ebe2 !important; }
+html[data-theme="light"] .memo-title{ color:#292621 !important; }
+html[data-theme="light"] .memo-title i,
+html[data-theme="light"] .memo-num{ color:#8a847a !important; }
+html[data-theme="light"] .memo-note{ color:#9a8460 !important; }
+
+/* Comparativo, filtros e evidências */
+html[data-theme="light"] .filterbar{
+  background:#faf8f3 !important;
+  border-color:#e0d9cc !important;
+}
+html[data-theme="light"] .filter-chip{
+  background:#f4efe5 !important;
+  color:#5c554b !important;
+  border-color:#ded5c5 !important;
+}
+html[data-theme="light"] .filter-chip.active{
+  background:#e3bf68 !important;
+  color:#30230c !important;
+  border-color:#d7ad4a !important;
+}
+html[data-theme="light"] .checkpoint{ border-color:#e3ddd2 !important; }
+html[data-theme="light"] .cp-title{ color:#2d2923 !important; }
+html[data-theme="light"] .cp-num,
+html[data-theme="light"] .chev{ color:#8b857b !important; }
+html[data-theme="light"] .evidence-box,
+html[data-theme="light"] .evidence-result-row span{
+  background:#f5f0e7 !important;
+  color:#4d473f !important;
+  border-color:#ded5c7 !important;
+}
+
+html[data-theme="light"] .summary-box{
+  background:#f7f3eb !important;
+  border-color:#e0d8ca !important;
+  color:#625c53 !important;
+}
+html[data-theme="light"] .identity-warning{
+  background:#f6eddb !important;
+  border-color:#ddc99e !important;
+  border-left-color:#b58a37 !important;
+  color:#655431 !important;
+}
+
+/* Novo caso segue a mesma linguagem */
+html[data-theme="light"] .new-case-security,
+html[data-theme="light"] .case-guidance,
+html[data-theme="light"] .manual-case-note{
+  background:#f4efe5 !important;
+  border-color:#ddd4c5 !important;
+  color:#5d574e !important;
+}
+html[data-theme="light"] #new-case-form input,
+html[data-theme="light"] #new-case-form textarea{
+  background:#fff !important;
+  color:#28251f !important;
+  border-color:#d8d0c3 !important;
+}
