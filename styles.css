@@ -1429,3 +1429,87 @@ html[data-theme="light"] .filter-chip{
   color:#62584d !important;
 }
 html[data-theme="light"] .resolve-item input{accent-color:#b99b78 !important;}
+
+
+/* =========================================================
+   v3.6.1 — LIGHT PASTEL COMPLETO + MARCA VETORIAL
+   Remove superfícies escuras do tema claro e substitui o emoji
+   de balança por SVG estável entre Windows/Chrome/macOS.
+   ========================================================= */
+.brand::before{content:none !important;display:none !important}
+.brand{display:inline-flex !important;align-items:center;gap:10px}
+.brand-scales{width:27px;height:27px;flex:0 0 27px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+
+html[data-theme="light"] .history-sidebar,
+html[data-theme="light"] .sidebar-head,
+html[data-theme="light"] .sidebar-search,
+html[data-theme="light"] .sidebar-foot,
+html[data-theme="light"] .case-history{
+  background:#eee5d8 !important;
+  color:#554c43 !important;
+}
+html[data-theme="light"] .history-sidebar{border-right:1px solid #d7c9b7 !important}
+html[data-theme="light"] .sidebar-head,
+html[data-theme="light"] .sidebar-search,
+html[data-theme="light"] .sidebar-foot{border-color:#d9ccbb !important}
+html[data-theme="light"] .history-sidebar h2,
+html[data-theme="light"] .history-sidebar .micro{color:#695d51 !important}
+html[data-theme="light"] .sidebar-search input{
+  background:#f8f2e9 !important;color:#51483f !important;border-color:#d5c5b0 !important;
+}
+html[data-theme="light"] .sidebar-search input::placeholder{color:#9a8d7d !important}
+html[data-theme="light"] .history-item{
+  background:#f5eee4 !important;color:#5b5147 !important;border:1px solid transparent !important;
+}
+html[data-theme="light"] .history-item:hover{background:#eadcca !important;border-color:#dac7ad !important}
+html[data-theme="light"] .history-item.active{
+  background:#e4d2b9 !important;color:#493f36 !important;border-color:#cfb58e !important;box-shadow:inset 3px 0 0 #b99a70 !important;
+}
+html[data-theme="light"] .history-title{color:#4f463d !important}
+html[data-theme="light"] .history-meta em{color:#907455 !important}
+html[data-theme="light"] .history-meta time{color:#8e8275 !important}
+html[data-theme="light"] .case-history::-webkit-scrollbar-track{background:#eee5d8 !important}
+html[data-theme="light"] .case-history::-webkit-scrollbar-thumb{background:#cdbca7 !important;border-radius:8px}
+html[data-theme="light"] .case-history::-webkit-scrollbar-thumb:hover{background:#baa68d !important}
+html[data-theme="light"] .history-dot.done{background:#9eb99a !important}
+html[data-theme="light"] .history-dot.pending{background:#d8b77d !important}
+
+html[data-theme="light"] .theme-toggle,
+html[data-theme="light"] .link-btn,
+html[data-theme="light"] .sidebar-icon,
+html[data-theme="light"] .btn,
+html[data-theme="light"] a.btn,
+html[data-theme="light"] button{
+  background:#eadcc8 !important;color:#554a3f !important;border-color:#d2bea2 !important;box-shadow:none !important;
+}
+html[data-theme="light"] .btn-dark,
+html[data-theme="light"] .sidebar-new-link,
+html[data-theme="light"] .case-head .btn,
+html[data-theme="light"] .case-head .btn-outline{
+  background:#dfccb0 !important;color:#493e34 !important;border-color:#c8ad87 !important;
+}
+html[data-theme="light"] .btn-outline{background:#f4eadc !important;color:#5a5045 !important;border-color:#d7c5ad !important}
+html[data-theme="light"] button:hover,
+html[data-theme="light"] .btn:hover,
+html[data-theme="light"] a.btn:hover,
+html[data-theme="light"] .link-btn:hover,
+html[data-theme="light"] .theme-toggle:hover,
+html[data-theme="light"] .sidebar-icon:hover,
+html[data-theme="light"] .case-head .btn:hover,
+html[data-theme="light"] .case-head .btn-outline:hover{
+  background:#dfceb7 !important;color:#463c33 !important;border-color:#c6ad8c !important;
+}
+html[data-theme="light"] .info-icon{background:#aebbd0 !important;color:#fff !important}
+html[data-theme="light"] .filter-chip.active{background:#d9c59d !important;border-color:#c5ad7f !important;color:#504431 !important}
+html[data-theme="light"] .v-atinge{background:#e2eee0 !important;color:#587056 !important}
+html[data-theme="light"] .v-parcial{background:#f3e8cb !important;color:#806b3e !important}
+html[data-theme="light"] .v-atencao{background:#f3ddd7 !important;color:#8a5e54 !important}
+html[data-theme="light"] .v-ausente{background:#eee9e1 !important;color:#746c62 !important;border-color:#ddd4c8 !important}
+html[data-theme="light"] .audit-line{background:#eef0e7 !important;border-left-color:#aeb79d !important;color:#5e6657 !important}
+html[data-theme="light"] .progress span{background:#9fb99c !important}
+html[data-theme="light"] .resolve-item input{accent-color:#b9a17e !important}
+
+html[data-theme="light"] .institutional-logo-wrap{
+  background:#faf6ef !important;border-color:#dfd2c1 !important;box-shadow:none !important;
+}
+@media(max-width:760px){.brand-scales{width:23px;height:23px;flex-basis:23px}}
