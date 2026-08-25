@@ -386,3 +386,11 @@ O `display_status` é derivado/validado pelo backend e `verdict` permanece somen
 Após o deploy, atualize a GPT Action usando `openapi.yaml` desta versão e atualize as instruções com `GPT_INSTRUCTIONS.md`.
 
 Regressão recomendada antes da bateria completa: TEST-004, TEST-005, TEST-006 e TEST-007.
+
+
+## v3.8.1 — REGRESSION FIX TEST-004
+
+- `verdict` passou a ser efetivamente legado: não reprova mais o quality gate por divergência com a taxonomia nova e é normalizado pelo backend.
+- P5/P12/P15: evento/documento futuro ainda não exigível não deve ser convertido em deficiência documental atual.
+- P15: a data da operação originária não pode substituir a data da futura contratação; a janela legal deve ser registrada sem criar `PARCIAL` apenas porque a contratação futura ainda não ocorreu.
+- Regressão prioritária após deploy: repetir VEREDICTA-TEST-004 antes de avançar para TEST-005.
