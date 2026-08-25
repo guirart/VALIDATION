@@ -89,3 +89,26 @@ boot().catch(err => {
   console.error(err);
   showLogin();
 });
+
+
+function applyTheme(theme){
+  const resolved = theme === 'dark' ? 'dark' : 'light';
+  document.documentElement.dataset.theme = resolved;
+  localStorage.setItem('veredicta-theme', resolved);
+  const btn = document.querySelector('#theme-toggle');
+  if(btn){
+    btn.textContent = resolved === 'dark' ? '☀ Claro' : '☾ Escuro';
+    btn.setAttribute('aria-label', resolved === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro');
+  }
+}
+
+function initTheme(){
+  const saved = localStorage.getItem('veredicta-theme') || 'light';
+  applyTheme(saved);
+  document.querySelector('#theme-toggle')?.addEventListener('click', ()=>{
+    const current = document.documentElement.dataset.theme || 'light';
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+  });
+}
+
+initTheme();

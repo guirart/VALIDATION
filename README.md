@@ -201,3 +201,28 @@ Interface:
 - somente a caixa interna do histórico de casos possui rolagem;
 - conteúdo principal rola independentemente da lateral;
 - cabeçalho institucional continua fixo.
+
+
+## Versão 3.1 — visual dark institucional
+
+A interface foi redesenhada no estilo preto/grafite com acentos dourados.
+
+Correção estrutural da lateral:
+- `.history-sidebar` é fixa na tela;
+- cabeçalho da lateral, busca e botão `+ Novo caso` não se movem;
+- somente `.case-history` possui `overflow-y:auto`;
+- a rolagem da análise ocorre apenas no conteúdo principal;
+- o cabeçalho superior permanece fixo.
+
+O backend e o diagnóstico da v3.0 foram preservados.
+
+
+## Versão 3.2 — tema claro e escuro
+
+O Veredicta agora possui dois temas:
+- Claro
+- Escuro
+
+Há um botão no cabeçalho para alternância. A preferência fica salva em `localStorage` e é reaplicada ao abrir o painel e a página de novo caso.
+
+O tema claro preserva a lateral escura fixa e o conteúdo principal claro. O tema escuro mantém o visual institucional grafite/dourado da v3.1.

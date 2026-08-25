@@ -1,6 +1,6 @@
 {
   "name": "veredicta-mp1376-app",
-  "version": "3.0.0",
+  "version": "3.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,7 +11,9 @@
     "test:point12": "node tests/point12-policy.test.mjs",
     "test:v28": "node tests/v28-integrity.test.mjs",
     "test:auth": "node tests/auth-header.test.mjs",
-    "test:v30": "node tests/v30-diagnostics.test.mjs"
+    "test:v30": "node tests/v30-diagnostics.test.mjs",
+    "test:ui31": "node tests/v31-ui.test.mjs",
+    "test:theme": "node tests/v32-theme.test.mjs"
   },
   "devDependencies": {
     "vercel": "latest"

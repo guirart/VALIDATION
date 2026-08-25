@@ -293,3 +293,973 @@ body{
     width:100%;
   }
 }
+
+
+/* =========================================================
+   v3.1 — VEREDICTA DARK / OAB
+   Referência visual: preto, grafite, dourado e lateral fixa.
+   Só o histórico interno desliza.
+   ========================================================= */
+
+:root{
+  --bg:#0e0f10;
+  --paper:#17191b;
+  --paper-2:#1d1f21;
+  --paper-3:#222426;
+  --ink:#f2f0eb;
+  --muted:#9c9d99;
+  --line:#303235;
+  --line-soft:#27292b;
+
+  --navy:#242f45;
+
+  --gold:#d7a633;
+  --gold-2:#b98b29;
+  --gold-bg:#342a16;
+
+  --green:#a8dd63;
+  --green-bg:#20341a;
+
+  --red:#ef8f64;
+  --red-bg:#3a2019;
+
+  --blue:#72a6ff;
+  --blue-bg:#182840;
+
+  --gray:#a8aaa5;
+  --gray-bg:#252729;
+
+  --veredicta-header-height:76px;
+  --veredicta-sidebar-width:318px;
+
+  color-scheme:dark;
+}
+
+/* Base */
+html, body{
+  background:#0e0f10 !important;
+  color:var(--ink) !important;
+}
+
+body{
+  overflow-x:hidden;
+}
+
+a{color:inherit}
+
+/* ---------- HEADER FIXO ---------- */
+
+.appbar{
+  position:fixed !important;
+  top:0;
+  left:0;
+  right:0;
+  height:var(--veredicta-header-height) !important;
+  min-height:var(--veredicta-header-height) !important;
+  z-index:3000 !important;
+
+  background:#050606 !important;
+  border-bottom:1px solid #292b2c !important;
+  padding:0 24px !important;
+
+  display:flex;
+  align-items:center;
+  gap:20px;
+}
+
+.brand-wrap{
+  display:flex;
+  align-items:center;
+  gap:18px;
+  min-width:0;
+}
+
+.brand{
+  font-family:Georgia,serif !important;
+  font-size:27px !important;
+  letter-spacing:.01em !important;
+  color:var(--gold) !important;
+  text-transform:none;
+  white-space:nowrap;
+}
+
+.brand::before{
+  content:"⚖";
+  margin-right:10px;
+  font-size:25px;
+  vertical-align:1px;
+}
+
+.brand-sub{
+  margin-left:0 !important;
+  color:#d6d5d0 !important;
+  font-size:12px;
+  font-weight:600;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:620px;
+}
+
+.institutional-logo-wrap{
+  margin-left:auto !important;
+  margin-right:8px !important;
+  height:50px !important;
+  min-width:120px;
+  display:flex !important;
+  align-items:center;
+  justify-content:center;
+  padding:4px 10px !important;
+  border:1px solid #303234;
+  border-radius:7px !important;
+  background:#f6f5f1 !important;
+}
+
+.institutional-logo{
+  height:39px !important;
+  width:auto !important;
+  max-width:130px !important;
+}
+
+.appbar-actions{
+  gap:9px !important;
+}
+
+.link-btn{
+  color:#d8d7d2 !important;
+  text-decoration:none !important;
+  border:1px solid #323436 !important;
+  background:#171819 !important;
+  border-radius:6px;
+  padding:8px 11px;
+  font-size:11px;
+}
+
+.link-btn:hover{
+  background:#222426 !important;
+  border-color:#494b4d !important;
+}
+
+/* ---------- WORKSPACE ---------- */
+
+.workspace{
+  display:block !important;
+  min-height:100vh;
+  padding-top:var(--veredicta-header-height);
+  background:
+    radial-gradient(circle at 72% 10%, rgba(215,166,51,.04), transparent 30%),
+    #0e0f10 !important;
+}
+
+/* ---------- SIDEBAR TOTALMENTE FIXA ---------- */
+
+.history-sidebar{
+  position:fixed !important;
+  top:var(--veredicta-header-height) !important;
+  left:0 !important;
+  bottom:0 !important;
+
+  width:var(--veredicta-sidebar-width) !important;
+  height:calc(100vh - var(--veredicta-header-height)) !important;
+
+  z-index:2000 !important;
+
+  display:flex !important;
+  flex-direction:column !important;
+
+  overflow:hidden !important;
+
+  background:#101112 !important;
+  border-right:1px solid #303234 !important;
+  color:#f1efe9 !important;
+}
+
+/* Todas as partes externas ficam imóveis */
+.sidebar-head,
+.sidebar-search,
+.sidebar-foot{
+  flex:0 0 auto !important;
+}
+
+.sidebar-head{
+  padding:19px 18px 14px !important;
+  background:#101112;
+  border-bottom:1px solid #292b2d !important;
+}
+
+.sidebar-head .micro{
+  color:var(--gold) !important;
+  letter-spacing:.12em;
+}
+
+.sidebar-head h2{
+  font-family:Arial,Helvetica,sans-serif !important;
+  font-size:16px !important;
+  font-weight:700 !important;
+  margin:5px 0 0 !important;
+}
+
+.sidebar-icon{
+  border:1px solid #36383a !important;
+  background:#191b1c !important;
+  color:#e5e3dd !important;
+}
+
+.sidebar-search{
+  padding:11px 14px !important;
+  background:#101112;
+  border-bottom:1px solid #292b2d !important;
+}
+
+.sidebar-search input{
+  width:100%;
+  background:#17191a !important;
+  color:#f0eee8 !important;
+  border:1px solid #343638 !important;
+  border-radius:7px !important;
+  padding:10px 11px !important;
+}
+
+.sidebar-search input::placeholder{
+  color:#777a7b;
+}
+
+.sidebar-search input:focus{
+  border-color:var(--gold-2) !important;
+  box-shadow:0 0 0 2px rgba(215,166,51,.09);
+}
+
+/* ESTA É A ÚNICA ÁREA DA LATERAL QUE ROLA */
+.case-history{
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  height:auto !important;
+
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+
+  overscroll-behavior:contain !important;
+  scrollbar-gutter:stable;
+
+  padding:9px 10px 13px !important;
+  background:#101112 !important;
+}
+
+.case-history::-webkit-scrollbar{width:8px}
+.case-history::-webkit-scrollbar-track{background:#101112}
+.case-history::-webkit-scrollbar-thumb{
+  background:#4b4d4e;
+  border-radius:999px;
+}
+.case-history::-webkit-scrollbar-thumb:hover{background:#666869}
+
+/* histórico em formato de cartões */
+.history-item{
+  background:#181a1b !important;
+  border:1px solid #2d3031 !important;
+  border-radius:7px !important;
+  margin:0 0 7px !important;
+  padding:12px 11px !important;
+  color:#dddcd7 !important;
+  transition:.12s ease;
+}
+
+.history-item:hover{
+  background:#1d1f20 !important;
+  border-color:#3b3d3f !important;
+}
+
+.history-item.active{
+  background:#202224 !important;
+  border-color:#4b4430 !important;
+  box-shadow:inset 3px 0 0 var(--gold) !important;
+}
+
+.history-content b{
+  color:#f5f3ed !important;
+  font-size:12px !important;
+}
+
+.history-content small{
+  color:#939693 !important;
+}
+
+.history-meta em{
+  color:#d4ac54 !important;
+}
+
+.history-meta time{
+  color:#7f8280 !important;
+}
+
+.history-dot.done{background:#83c85b !important}
+.history-dot.pending{background:#e3ad37 !important}
+
+.sidebar-foot{
+  padding:13px !important;
+  background:#101112;
+  border-top:1px solid #292b2d !important;
+}
+
+.sidebar-foot .btn{
+  width:100%;
+  background:linear-gradient(180deg,#d9aa42,#c6952e) !important;
+  border:1px solid #dfb451 !important;
+  color:#141310 !important;
+  font-weight:800;
+  box-shadow:none;
+}
+
+.sidebar-foot .btn:hover{
+  filter:brightness(1.06);
+}
+
+/* ---------- CONTEÚDO PRINCIPAL ---------- */
+
+.workspace > .page{
+  width:calc(100% - var(--veredicta-sidebar-width)) !important;
+  max-width:none !important;
+
+  margin-left:var(--veredicta-sidebar-width) !important;
+  margin-right:0 !important;
+
+  padding:26px 28px 80px !important;
+
+  background:transparent !important;
+  color:var(--ink) !important;
+}
+
+/* cards */
+.stats-grid,
+.analysis-sheet,
+.info-box,
+.memo15,
+.resolution-panel,
+.empty-card,
+.new-case-card{
+  background:#181a1b !important;
+  color:var(--ink) !important;
+  border-color:#303234 !important;
+  box-shadow:none !important;
+}
+
+.stats-grid{
+  border-radius:8px !important;
+  overflow:hidden;
+}
+
+.stat-card{
+  border-color:#303234 !important;
+}
+
+.stat-card span{color:var(--gold) !important}
+.stat-card b{color:#f4f2ed !important}
+.stat-card small{color:#929592 !important}
+
+.section h2,
+.case-head h3,
+.no-analysis h4{
+  color:#f4f2ed !important;
+}
+
+.section-sub,
+.mono-note,
+.source-line,
+.info-box p{
+  color:#969996 !important;
+}
+
+.info-box{
+  background:#161819 !important;
+}
+
+.info-icon{
+  background:#2c3a51 !important;
+  color:#9ec5ff !important;
+}
+
+/* caso */
+.analysis-sheet{
+  border:1px solid #303234 !important;
+  border-radius:8px;
+  overflow:hidden;
+}
+
+.case-head{
+  background:#181a1b;
+  border-bottom:1px solid #292b2d;
+}
+
+.btn-dark{
+  background:#111213 !important;
+  border-color:#343638 !important;
+  color:#f4f2ed !important;
+}
+
+.btn-outline{
+  background:#1b1d1e !important;
+  border-color:#3b3d3f !important;
+  color:#e5e3dd !important;
+}
+
+.final-class{
+  background:#181a1b;
+}
+
+.final-class span{
+  color:#a8a28f !important;
+}
+
+.final-class strong{
+  color:var(--gold) !important;
+  font-family:Arial,Helvetica,sans-serif !important;
+  font-size:19px !important;
+  font-weight:800 !important;
+  letter-spacing:.02em;
+}
+
+.summary-box{
+  border-color:#303234 !important;
+  color:#d0d0cb !important;
+  background:#191b1c;
+}
+
+/* checklist 15 pontos */
+.memo15{
+  background:#191b1c !important;
+}
+
+.memo15-head{
+  border-color:#303234 !important;
+  background:#1d1f20;
+}
+
+.memo15-head span{color:#a79c7c !important}
+
+.memo-grid{
+  background:#181a1b;
+}
+
+.memo-cell{
+  border-color:#303234 !important;
+  background:#181a1b !important;
+}
+
+.memo-num{color:#9ca5a2 !important}
+.memo-title{color:#e3e1dc !important}
+.memo-title i{color:#949795 !important}
+.memo-blank{background:#202223 !important}
+.memo-note{color:#aaa38e !important}
+
+.pill{
+  border-radius:4px !important;
+  font-size:10px !important;
+  font-weight:700;
+}
+
+.v-atinge{
+  background:#20341a !important;
+  color:#a8dd63 !important;
+}
+
+.v-parcial{
+  background:#352a15 !important;
+  color:#e5b541 !important;
+}
+
+.v-atencao{
+  background:#3a2019 !important;
+  color:#ef8f64 !important;
+}
+
+.v-ausente{
+  background:#252728 !important;
+  color:#b2b4b0 !important;
+  border:1px solid #3d3f40 !important;
+}
+
+/* filtros e checkpoints */
+.filterbar{
+  border-color:#303234 !important;
+  background:#17191a;
+}
+
+.filter-chip{
+  background:#1e2021 !important;
+  border-color:#3a3c3e !important;
+  color:#c8c7c2 !important;
+}
+
+.filter-chip.active{
+  background:#d2a139 !important;
+  border-color:#d2a139 !important;
+  color:#181611 !important;
+}
+
+.expand-actions button{
+  color:#bdbbb4 !important;
+}
+
+.checkpoint{
+  border-color:#303234 !important;
+}
+
+.cp-num{color:#9ca5a2 !important}
+.cp-title{color:#eceae4 !important}
+.chev{color:#999c99 !important}
+
+.evidence-box{
+  background:#1d1f20 !important;
+  border-color:#343638 !important;
+  color:#d9d8d2 !important;
+}
+
+.evidence-result-row span{
+  background:#222425 !important;
+  border-color:#3a3c3e !important;
+  color:#c9cac5 !important;
+}
+
+/* aviso identidade */
+.identity-warning{
+  background:#302514 !important;
+  border-color:#5d4824 !important;
+  border-left-color:var(--gold) !important;
+  color:#e6c678 !important;
+}
+
+/* resolução */
+.resolution-panel{
+  border:1px solid #303234 !important;
+  border-radius:8px;
+}
+
+/* ---------- PÁGINA NOVO CASO ---------- */
+
+.new-case-page{
+  background:#0e0f10 !important;
+  color:var(--ink) !important;
+}
+
+.new-case-breadcrumb{
+  color:#8f928f !important;
+}
+
+.new-case-breadcrumb a{
+  color:#c4c2bc !important;
+}
+
+.new-case-hero h1{
+  color:#f4f2ed !important;
+}
+
+.new-case-hero p{
+  color:#999c99 !important;
+}
+
+.new-case-card{
+  background:#17191a !important;
+  border-color:#303234 !important;
+}
+
+.new-case-security{
+  background:#1c201b !important;
+  border-color:#303234 !important;
+}
+
+.security-icon{
+  background:#21321f !important;
+  color:#a8dd63 !important;
+}
+
+.new-case-security b{
+  color:#f2f0eb !important;
+}
+
+.new-case-security p{
+  color:#9da09c !important;
+}
+
+#new-case-form input,
+#new-case-form textarea{
+  background:#111314 !important;
+  border:1px solid #353738 !important;
+  color:#efede7 !important;
+}
+
+#new-case-form input:focus,
+#new-case-form textarea:focus{
+  border-color:var(--gold-2) !important;
+  outline:none;
+  box-shadow:0 0 0 2px rgba(215,166,51,.08);
+}
+
+.case-guidance{
+  background:#272113 !important;
+  border-left-color:var(--gold) !important;
+  color:#d4c38f !important;
+}
+
+.case-guidance b{color:#e0b653 !important}
+
+.manual-case-note{
+  background:#1c1e1f !important;
+  border-color:#343638 !important;
+  color:#a5a7a3 !important;
+}
+
+.new-case-actions{
+  border-color:#303234 !important;
+}
+
+/* ---------- LOGIN ---------- */
+
+.login-screen{
+  background:#0b0c0d !important;
+}
+
+.login-card{
+  background:#17191a !important;
+  border:1px solid #353738 !important;
+  color:#f2f0eb !important;
+  box-shadow:0 30px 80px rgba(0,0,0,.35) !important;
+}
+
+.login-card h1{
+  color:var(--gold) !important;
+}
+
+.login-card p{
+  color:#a1a39f !important;
+}
+
+.login-card input{
+  background:#111314 !important;
+  border:1px solid #37393b !important;
+  color:#f4f2ed !important;
+}
+
+/* ---------- RESPONSIVO ---------- */
+
+@media(max-width:1000px){
+  :root{
+    --veredicta-sidebar-width:280px;
+  }
+
+  .brand-sub{
+    max-width:390px;
+  }
+}
+
+@media(max-width:760px){
+  :root{
+    --veredicta-header-height:64px;
+  }
+
+  .brand{
+    font-size:21px !important;
+  }
+
+  .brand-sub{
+    display:none !important;
+  }
+
+  .institutional-logo-wrap{
+    min-width:auto;
+    height:42px !important;
+    padding:3px 7px !important;
+  }
+
+  .institutional-logo{
+    height:32px !important;
+  }
+}
+
+@media(max-width:700px){
+  /* em mobile vira bloco normal para manter usabilidade */
+  .history-sidebar{
+    position:relative !important;
+    top:auto !important;
+    left:auto !important;
+    bottom:auto !important;
+    width:100% !important;
+    height:300px !important;
+  }
+
+  .workspace > .page{
+    width:100% !important;
+    margin-left:0 !important;
+    padding:18px 12px 60px !important;
+  }
+}
+
+
+/* =========================================================
+   v3.2 — TEMA OPCIONAL CLARO / ESCURO
+   Padrão: claro. Escolha persistida em localStorage.
+   ========================================================= */
+
+.theme-toggle{
+  border:1px solid #d8d4ca;
+  background:#f8f6f1;
+  color:#2b2924;
+  border-radius:6px;
+  padding:8px 10px;
+  font-size:11px;
+  font-weight:700;
+  cursor:pointer;
+  white-space:nowrap;
+}
+
+/* ---------- TEMA CLARO ---------- */
+
+html[data-theme="light"]{
+  color-scheme:light;
+}
+
+html[data-theme="light"] body{
+  background:#f4f2ec !important;
+  color:#222 !important;
+}
+
+html[data-theme="light"] .appbar{
+  background:#f8f6f1 !important;
+  border-bottom:1px solid #d8d4ca !important;
+}
+
+html[data-theme="light"] .brand{
+  color:#8e6a24 !important;
+}
+
+html[data-theme="light"] .brand-sub{
+  color:#67645e !important;
+}
+
+html[data-theme="light"] .institutional-logo-wrap{
+  background:#fff !important;
+  border-color:#ddd8cc !important;
+}
+
+html[data-theme="light"] .link-btn{
+  background:#fff !important;
+  color:#3e3b35 !important;
+  border-color:#ddd8cc !important;
+}
+
+html[data-theme="light"] .theme-toggle{
+  background:#1b1b1a !important;
+  color:#f7f5ef !important;
+  border-color:#1b1b1a !important;
+}
+
+html[data-theme="light"] .workspace{
+  background:
+    radial-gradient(circle at 72% 10%, rgba(142,106,36,.035), transparent 30%),
+    #f4f2ec !important;
+}
+
+html[data-theme="light"] .history-sidebar{
+  background:#141413 !important;
+  border-right-color:#2f2e2a !important;
+  color:#f5f2e9 !important;
+}
+
+html[data-theme="light"] .sidebar-head,
+html[data-theme="light"] .sidebar-search,
+html[data-theme="light"] .sidebar-foot,
+html[data-theme="light"] .case-history{
+  background:#141413 !important;
+}
+
+html[data-theme="light"] .sidebar-head,
+html[data-theme="light"] .sidebar-search,
+html[data-theme="light"] .sidebar-foot{
+  border-color:#2e2d28 !important;
+}
+
+html[data-theme="light"] .sidebar-search input{
+  background:#1d1d1b !important;
+  color:#f5f2e9 !important;
+  border-color:#35342f !important;
+}
+
+html[data-theme="light"] .history-item{
+  background:#1c1c1a !important;
+  border-color:#302f2b !important;
+  color:#e8e5dc !important;
+}
+
+html[data-theme="light"] .history-item:hover{
+  background:#23221f !important;
+}
+
+html[data-theme="light"] .history-item.active{
+  background:#282620 !important;
+  border-color:#66542f !important;
+}
+
+html[data-theme="light"] .workspace > .page{
+  background:transparent !important;
+  color:#222 !important;
+}
+
+html[data-theme="light"] .stats-grid,
+html[data-theme="light"] .analysis-sheet,
+html[data-theme="light"] .info-box,
+html[data-theme="light"] .memo15,
+html[data-theme="light"] .resolution-panel,
+html[data-theme="light"] .empty-card,
+html[data-theme="light"] .new-case-card{
+  background:#fff !important;
+  color:#222 !important;
+  border-color:#ddd8cc !important;
+}
+
+html[data-theme="light"] .stat-card,
+html[data-theme="light"] .case-head,
+html[data-theme="light"] .memo15-head,
+html[data-theme="light"] .memo-cell,
+html[data-theme="light"] .checkpoint,
+html[data-theme="light"] .new-case-actions{
+  border-color:#e0ddd5 !important;
+}
+
+html[data-theme="light"] .stat-card b,
+html[data-theme="light"] .section h2,
+html[data-theme="light"] .case-head h3,
+html[data-theme="light"] .no-analysis h4,
+html[data-theme="light"] .memo-title,
+html[data-theme="light"] .cp-title,
+html[data-theme="light"] .new-case-hero h1{
+  color:#222 !important;
+}
+
+html[data-theme="light"] .section-sub,
+html[data-theme="light"] .mono-note,
+html[data-theme="light"] .source-line,
+html[data-theme="light"] .info-box p,
+html[data-theme="light"] .summary-box,
+html[data-theme="light"] .new-case-hero p{
+  color:#66635d !important;
+}
+
+html[data-theme="light"] .info-box,
+html[data-theme="light"] .summary-box,
+html[data-theme="light"] .memo-grid,
+html[data-theme="light"] .memo-cell,
+html[data-theme="light"] .final-class{
+  background:#fff !important;
+}
+
+html[data-theme="light"] .memo15-head{
+  background:#f8f6f1 !important;
+}
+
+html[data-theme="light"] .memo-blank{
+  background:#f1eee7 !important;
+}
+
+html[data-theme="light"] .evidence-box,
+html[data-theme="light"] .evidence-result-row span{
+  background:#f5f3ed !important;
+  border-color:#dedad0 !important;
+  color:#48453f !important;
+}
+
+html[data-theme="light"] .filterbar{
+  background:#fff !important;
+  border-color:#ddd8cc !important;
+}
+
+html[data-theme="light"] .filter-chip{
+  background:#f4f1e9 !important;
+  border-color:#d9d4c8 !important;
+  color:#555149 !important;
+}
+
+html[data-theme="light"] .filter-chip.active{
+  background:#c99b39 !important;
+  border-color:#c99b39 !important;
+  color:#191713 !important;
+}
+
+html[data-theme="light"] .btn-dark{
+  background:#191918 !important;
+  border-color:#191918 !important;
+  color:#fff !important;
+}
+
+html[data-theme="light"] .btn-outline{
+  background:#fff !important;
+  border-color:#d8d4ca !important;
+  color:#33312c !important;
+}
+
+html[data-theme="light"] .identity-warning{
+  background:#fff8e8 !important;
+  border-color:#e1c58d !important;
+  border-left-color:#b48832 !important;
+  color:#695329 !important;
+}
+
+html[data-theme="light"] .new-case-page{
+  background:#f4f2ec !important;
+  color:#222 !important;
+}
+
+html[data-theme="light"] .new-case-security{
+  background:#f4f7f1 !important;
+  border-color:#ddd8cc !important;
+}
+
+html[data-theme="light"] #new-case-form input,
+html[data-theme="light"] #new-case-form textarea{
+  background:#fff !important;
+  color:#222 !important;
+  border-color:#d8d4ca !important;
+}
+
+html[data-theme="light"] .case-guidance{
+  background:#fbf8ef !important;
+  color:#665c43 !important;
+}
+
+html[data-theme="light"] .manual-case-note{
+  background:#f4f3ef !important;
+  border-color:#ddd8cc !important;
+  color:#66635d !important;
+}
+
+html[data-theme="light"] .login-screen{
+  background:#f4f2ec !important;
+}
+
+html[data-theme="light"] .login-card{
+  background:#fff !important;
+  color:#222 !important;
+  border-color:#d8d4ca !important;
+}
+
+html[data-theme="light"] .login-card h1{
+  color:#8e6a24 !important;
+}
+
+html[data-theme="light"] .login-card p{
+  color:#69665f !important;
+}
+
+html[data-theme="light"] .login-card input{
+  background:#fff !important;
+  color:#222 !important;
+  border-color:#d8d4ca !important;
+}
+
+/* ---------- TEMA ESCURO ---------- */
+
+html[data-theme="dark"] .theme-toggle{
+  background:#f4f2ec !important;
+  color:#1f1f1d !important;
+  border-color:#f4f2ec !important;
+}
+
+/* O restante do tema escuro vem da base v3.1. */
