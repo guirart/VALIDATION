@@ -1375,3 +1375,57 @@ html[data-theme="light"] .test-import-result{
   color:#222 !important;
   border-color:#d8d4ca !important;
 }
+
+
+/* ---------- V3.6: BOTÕES PASTÉIS NO TEMA CLARO ---------- */
+html[data-theme="light"] button,
+html[data-theme="light"] .btn,
+html[data-theme="light"] a.btn,
+html[data-theme="light"] .link-btn,
+html[data-theme="light"] .theme-toggle,
+html[data-theme="light"] .sidebar-icon,
+html[data-theme="light"] .progress-row button,
+html[data-theme="light"] .expand-actions button{
+  background:#eee3d2 !important;
+  color:#554b40 !important;
+  border:1px solid #d8c7ae !important;
+  box-shadow:none !important;
+}
+html[data-theme="light"] button:hover,
+html[data-theme="light"] .btn:hover,
+html[data-theme="light"] a.btn:hover,
+html[data-theme="light"] .link-btn:hover,
+html[data-theme="light"] .theme-toggle:hover,
+html[data-theme="light"] .sidebar-icon:hover{
+  background:#e5d5bf !important;
+  border-color:#cdb99c !important;
+  color:#443c34 !important;
+}
+html[data-theme="light"] button:focus-visible,
+html[data-theme="light"] .btn:focus-visible,
+html[data-theme="light"] a.btn:focus-visible{
+  outline:3px solid rgba(183,154,116,.28) !important;
+  outline-offset:2px;
+}
+html[data-theme="light"] .btn-dark,
+html[data-theme="light"] .sidebar-new-link{
+  background:#dfcfb8 !important;
+  color:#4b4035 !important;
+  border-color:#cbb596 !important;
+}
+html[data-theme="light"] .btn-outline{
+  background:#f5ede2 !important;
+  color:#5a5045 !important;
+  border-color:#d9c8b2 !important;
+}
+html[data-theme="light"] .filter-chip.active{
+  background:#e7d4ad !important;
+  border-color:#d1b984 !important;
+  color:#514633 !important;
+}
+html[data-theme="light"] .filter-chip{
+  background:#f3eadf !important;
+  border-color:#dfd0bd !important;
+  color:#62584d !important;
+}
+html[data-theme="light"] .resolve-item input{accent-color:#b99b78 !important;}

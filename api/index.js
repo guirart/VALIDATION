@@ -8,8 +8,8 @@ const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','re
 const AUDIT_RECOMMENDATIONS = new Set(['liberar','corrigir','escalar para revisão humana aprofundada']);
 const AUDIT_STATUSES = new Set(['confirmado','divergente','não encontrado','opinião sem precedente']);
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
-const APP_VERSION = '3.5.0';
-const VALIDATOR_VERSION = '3.5.0';
+const APP_VERSION = '3.6.0';
+const VALIDATOR_VERSION = '3.6.0';
 
 function stageLog(stage, meta={}) {
   try {

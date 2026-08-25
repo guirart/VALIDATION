@@ -316,3 +316,7 @@ failed_points, quality_gate, hash e versões.
 O quality gate distingue citação literal, silêncio normativo e silêncio documental.
 No ponto 11, `mp_quote=""` só pode representar ausência do dossiê sob condições conservadoras.
 Paráfrases normativas continuam inválidas como citação.
+
+
+## V3.6 — P11 E TEMA CLARO
+O P11 reconhece combinações semânticas controladas de ausência + fonte documental + não presunção + objeto do art. 2º, sem fuzzy matching de citações. No tema claro, controles e botões usam bege e tons pastéis; o tema escuro permanece disponível.

@@ -267,3 +267,11 @@ validation_debug, failed_points, contract_sha256 e versões.
 - Ignora apenas markup Markdown de apresentação na comparação literal.
 - `validation_debug` passa a incluir todos os 15 pontos.
 - Não exige migração de banco.
+
+
+## Versão 3.6
+- P11: detector de silêncio documental baseado em sinais semânticos controlados, reduzindo dependência de frase canônica.
+- Mantém travas: mp_quote literal, contract_quote literal, silêncio documental não pode virar `atende`.
+- Tema claro: botões bege e paleta pastel; remove caixas pretas dos controles.
+- Tema escuro permanece opcional.
+- Sem migração de banco.

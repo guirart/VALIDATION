@@ -178,3 +178,7 @@ Antes de qualquer análise, leia integralmente:
 - Ponto 11: se a utilização/contratação da linha adicional do art. 2º não constar no dossiê, use `mp_quote=""`, declare "silêncio do dossiê" ou "ausência documental no dossiê" em `legal_reference`, registre em `reasoning` que a modalidade não consta e não deve ser presumida, e use `legal_result=inconclusivo` ou `nao_aplicavel`.
 - Pontos 6 e 12: silêncio normativo só é permitido quando a MP realmente não contém previsão expressa sobre o subtema. A frase "A MP não contém previsão expressa..." é reconhecida.
 - Markdown como `*caput*` é apenas apresentação e não altera o matching literal material.
+
+
+## REGRA V3.6 — P11 SEMÂNTICO
+No ponto 11, não dependa de uma frase canônica. Descreva com linguagem natural e inequívoca (i) a ausência documental, (ii) o objeto ausente — contratação/utilização da linha adicional do art. 2º — e (iii) que o fato não será presumido. A validação continua conservadora: ausência documental nunca equivale a atendimento.
