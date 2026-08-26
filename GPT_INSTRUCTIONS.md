@@ -320,3 +320,27 @@ Paráfrases normativas continuam inválidas como citação.
 
 ## V3.6 — P11 E TEMA CLARO
 O P11 reconhece combinações semânticas controladas de ausência + fonte documental + não presunção + objeto do art. 2º, sem fuzzy matching de citações. No tema claro, controles e botões usam bege e tons pastéis; o tema escuro permanece disponível.
+
+
+# V3.8 — TAXONOMIA ESTRUTURAL OBRIGATÓRIA
+
+Esta seção prevalece sobre instruções anteriores incompatíveis.
+
+Cada ponto DEVE separar quatro dimensões:
+
+- `applicability`: `aplicavel | nao_aplicavel | condicional`
+- `evidence_status`: `comprovado | parcialmente_comprovado | nao_comprovado | nao_consta | dispensado`
+- `legal_result`: `atende | nao_atende | inconclusivo | nao_aplicavel`
+- `display_status`: `atinge | parcial | atencao | nao_consta | nao_se_aplica`
+
+Regras obrigatórias:
+
+1. Se `applicability=nao_aplicavel`, use `evidence_status=dispensado`, `legal_result=nao_aplicavel` e `display_status=nao_se_aplica`.
+2. Nunca transforme modalidade alternativa desnecessária em pendência.
+3. Nunca transforme evento futuro que ainda não deveria existir em documento faltante.
+4. P3: determine primeiro se a modalidade excepcional é necessária.
+5. P11: determine primeiro se a linha adicional do art. 2º é necessária.
+6. P5/P12/P15: diferencie alerta futuro de deficiência documental atual.
+7. P9: instruções ao analisador/protocolo não podem ser usadas como `contract_quote`.
+8. `verdict` e `display_label` são campos legados. A semântica é governada pelas quatro dimensões acima.
+9. O backend deriva e normaliza a apresentação; não tente usar `verdict=parcial` para representar `nao_aplicavel`.

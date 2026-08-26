@@ -173,10 +173,20 @@ paths:
                                 point: {type: integer}
                                 title: {type: string}
                                 legal_reference: {type: string}
-                                evidence_status: {type: string}
-                                legal_result: {type: string}
-                                verdict: {type: string}
-                                display_label: {type: string}
+                                applicability:
+                                  type: string
+                                  enum: [aplicavel, nao_aplicavel, condicional]
+                                evidence_status:
+                                  type: string
+                                  enum: [comprovado, parcialmente_comprovado, nao_comprovado, nao_consta, dispensado]
+                                legal_result:
+                                  type: string
+                                  enum: [atende, nao_atende, inconclusivo, nao_aplicavel]
+                                display_status:
+                                  type: string
+                                  enum: [atinge, parcial, atencao, nao_consta, nao_se_aplica]
+                                verdict: {type: string, description: "Legado; não governa a decisão."}
+                                display_label: {type: string, description: "Derivado pelo backend a partir de display_status."}
                                 mp_quote: {type: string}
                                 contract_quote: {type: string}
                                 reasoning: {type: string}
@@ -279,10 +289,20 @@ paths:
                           point: {type: integer}
                           title: {type: string}
                           legal_reference: {type: string}
-                          evidence_status: {type: string}
-                          legal_result: {type: string}
-                          verdict: {type: string}
-                          display_label: {type: string}
+                          applicability:
+                            type: string
+                            enum: [aplicavel, nao_aplicavel, condicional]
+                          evidence_status:
+                            type: string
+                            enum: [comprovado, parcialmente_comprovado, nao_comprovado, nao_consta, dispensado]
+                          legal_result:
+                            type: string
+                            enum: [atende, nao_atende, inconclusivo, nao_aplicavel]
+                          display_status:
+                            type: string
+                            enum: [atinge, parcial, atencao, nao_consta, nao_se_aplica]
+                          verdict: {type: string, description: "Legado; não governa a decisão."}
+                          display_label: {type: string, description: "Derivado pelo backend."}
                           mp_quote: {type: string}
                           contract_quote: {type: string}
                           reasoning: {type: string}

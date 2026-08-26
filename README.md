@@ -359,3 +359,35 @@ validation_debug, failed_points, contract_sha256 e versões.
 - Histórico: enquadrável verde, não enquadrável vermelho, parcialmente enquadrável amarelo e inconclusivo roxo.
 - Pontos e bordas do item ativo acompanham a classificação.
 - Mantém comparativo, checklist, hero de classificação e validador jurídico intactos.
+
+
+## UI 3.7.4 — status visual coerente
+- Corrige o caso em que `display_label="ATENÇÃO"` era exibido com a cor de `verdict="parcial"`.
+- A cor agora segue prioritariamente o rótulo visível da análise.
+- ATINGE/ATENDE = verde, PARCIAL = amarelo, ATENÇÃO = vermelho.
+- Contadores e filtros usam a mesma classificação visual.
+- Mantém as cores do histórico da v3.7.3.
+- Não altera backend, API ou validador jurídico.
+
+
+## v3.8.0 — correção estrutural da taxonomia
+
+A v3.8 separa explicitamente:
+
+- aplicabilidade;
+- suficiência documental;
+- resultado jurídico;
+- status de exibição.
+
+O quality gate passa a rejeitar contradições como `legal_result=nao_aplicavel` com `verdict=parcial`.
+`evidence_status=dispensado` foi criado para pontos juridicamente não aplicáveis.
+O `display_status` é derivado/validado pelo backend e `verdict` permanece somente para compatibilidade.
+
+Após o deploy, atualize a GPT Action usando `openapi.yaml` desta versão e atualize as instruções com `GPT_INSTRUCTIONS.md`.
+
+Regressão recomendada antes da bateria completa: TEST-004, TEST-005, TEST-006 e TEST-007.
+
+
+## Branding institucional — Comissão de Agronegócio
+
+A logo institucional do cabeçalho foi substituída pela marca fornecida da **OAB Minas Gerais — Comissão de Agronegócio**. A alteração é exclusivamente visual e não modifica a API, o schema jurídico nem o validador v3.8.0.

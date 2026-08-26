@@ -1,6 +1,6 @@
 {
   "name": "veredicta-mp1376-app",
-  "version": "3.7.3",
+  "version": "3.8.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -25,7 +25,9 @@
     "test:v370": "node tests/v370-final-class-hero.test.mjs",
     "test:v371": "node tests/v371-comparativo-restaurado.test.mjs",
     "test:v372": "node tests/v372-status-colors.test.mjs",
-    "test:v373": "node tests/v373-real-color-selectors.test.mjs"
+    "test:v373": "node tests/v373-real-color-selectors.test.mjs",
+    "test:v374": "node tests/v374-status-visual-coerente.test.mjs",
+    "test:v38": "node tests/v38-taxonomy.test.mjs"
   },
   "devDependencies": {
     "vercel": "latest"
