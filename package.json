@@ -1,11 +1,11 @@
 {
   "name": "veredicta-mp1376-app",
-  "version": "3.8.1",
+  "version": "3.9.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vercel dev",
-    "check": "node --check api/index.js && node --check lib/http.js && node --check lib/supabase.js && node --check lib/legal.js && node --check lib/actionAuth.js && node --check app.js",
+    "check": "node --check api/index.js && node --check lib/http.js && node --check lib/supabase.js && node --check lib/userAuth.js && node --check lib/legal.js && node --check lib/actionAuth.js && node --check app.js && node --check login.js && node --check settings.js && node --check new-case.js",
     "test:citations": "node tests/citation-policy.test.mjs",
     "test:citation-modes": "node tests/citation-modes.test.mjs",
     "test:point12": "node tests/point12-policy.test.mjs",
@@ -28,7 +28,7 @@
     "test:v373": "node tests/v373-real-color-selectors.test.mjs",
     "test:v374": "node tests/v374-status-visual-coerente.test.mjs",
     "test:v38": "node tests/v38-taxonomy.test.mjs",
-    "test:v381": "node tests/v381-test004-regression.test.mjs"
+    "test:v39": "node tests/v39-product-multiuser.test.mjs"
   },
   "devDependencies": {
     "vercel": "latest"

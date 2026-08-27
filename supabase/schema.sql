@@ -61,3 +61,19 @@ alter table public.audit_logs enable row level security;
 
 -- Sem policies públicas: o navegador NÃO acessa as tabelas diretamente.
 -- O backend usa SUPABASE_SERVICE_ROLE_KEY, guardada apenas no ambiente do servidor.
+
+-- v3.9 multiusuário
+alter table public.cases add column if not exists owner_id uuid references auth.users(id) on delete set null;
+alter table public.reviews add column if not exists reviewer_user_id uuid references auth.users(id) on delete set null;
+alter table public.audit_logs add column if not exists actor_user_id uuid references auth.users(id) on delete set null;
+create table if not exists public.user_settings (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  display_name text,
+  oab_number text,
+  default_theme text not null default 'light' check (default_theme in ('light','dark')),
+  compact_mode boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.user_settings enable row level security;
+create index if not exists idx_cases_owner_id on public.cases(owner_id);

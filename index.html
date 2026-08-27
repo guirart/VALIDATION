@@ -8,30 +8,25 @@
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <div id="login" class="login-screen hidden">
-    <form id="login-form" class="login-card">
-      <div class="micro">ACESSO INTERNO</div>
-      <h1>Veredicta</h1>
-      <p>Triagem assistida de contratos de crédito rural.</p>
-      <input id="password" type="password" placeholder="Senha do app" autocomplete="current-password" required />
-      <button class="btn btn-dark">Entrar</button>
-      <p id="login-error" class="error"></p>
-    </form>
-  </div>
-
   <div id="app" class="hidden">
-    <header class="appbar">
-      <div class="brand-wrap">
-        <span class="brand"><svg class="brand-scales" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 8v43M20 52h24M25 14h14M32 14L17 22M32 14l15 8M17 22l-8 16h16L17 22Zm30 0-8 16h16L47 22ZM10 38c1.5 6 12.5 6 14 0M40 38c1.5 6 12.5 6 14 0"/></svg>VEREDICTA</span>
-        <span class="brand-sub">MP 1.376/2026</span>
+    <header class="appbar appbar-navy">
+      <div class="header-left-cluster">
+        <a class="brand-link brand-light" href="/"><span class="brand">VEREDICTA</span><span class="brand-sub">MP 1.376/2026</span></a>
+        <div class="institutional-logo-wrap institutional-logo-left">
+          <img class="institutional-logo" src="/assets/oab-mg-comissao-agronegocio.jpeg" alt="OAB Minas Gerais — Comissão de Agronegócio" />
+        </div>
       </div>
-      <div class="institutional-logo-wrap">
-        <img class="institutional-logo" src="/assets/oab-mg-comissao-agronegocio.jpeg" alt="OAB Minas Gerais — Comissão de Agronegócio" />
-      </div>
+      <nav class="top-nav" aria-label="Navegação principal">
+        <button class="top-nav-btn active" data-view="dashboard">Dashboard</button>
+        <button class="top-nav-btn" data-view="analises">Análises</button>
+        <a href="/new-case.html">Novo caso</a>
+        <a href="/settings.html">Configurações</a>
+      </nav>
       <div class="appbar-actions">
-        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Alternar tema">☀ Claro</button>
-        <button id="refresh" class="link-btn">atualizar</button>
-        <button id="logout" class="link-btn">sair</button>
+        <span id="current-user" class="current-user"></span>
+        <button id="theme-toggle" class="header-btn" type="button">☀ Claro</button>
+        <button id="refresh" class="header-btn">Atualizar</button>
+        <button id="logout" class="header-btn">Sair</button>
       </div>
     </header>
 
@@ -65,6 +60,15 @@
 
       <main class="page">
       <section id="stats" class="stats-grid"></section>
+
+      <section id="dashboard-overview" class="dashboard-overview">
+        <div class="dashboard-title-row"><div><div class="micro">VISÃO GERAL</div><h1>Dashboard</h1><p>Acompanhe o volume de casos, classificações e evolução das análises.</p></div><a class="btn btn-primary" href="/new-case.html">+ Novo caso</a></div>
+        <section id="dashboard-cards" class="dashboard-cards"></section>
+        <div class="dashboard-charts">
+          <section class="chart-card"><div class="chart-card-head"><div><h2>Distribuição por status</h2><p>Classificação final das análises mais recentes.</p></div></div><div class="donut-layout"><div id="status-donut" class="status-donut" role="img" aria-label="Distribuição por classificação"><div class="donut-hole"><b id="donut-total">0</b><span>analisados</span></div></div><div id="status-legend" class="status-legend"></div></div></section>
+          <section class="chart-card"><div class="chart-card-head"><div><h2>Progresso das análises</h2><p>Análises gravadas nos últimos 14 dias.</p></div></div><div id="progress-chart" class="progress-chart"></div></section>
+        </div>
+      </section>
 
       <section class="section analysis-section">
         <div class="section-title-row">

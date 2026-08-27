@@ -16,39 +16,20 @@ async function api(url, options={}) {
   return body;
 }
 
-function showLogin() {
-  $('#new-case-app').classList.add('hidden');
-  $('#login').classList.remove('hidden');
-}
+function showLogin(){ location.href='/login.html'; }
 
-function showApp() {
-  $('#login').classList.add('hidden');
-  $('#new-case-app').classList.remove('hidden');
-}
+function showApp(){ $('#new-case-app').classList.remove('hidden'); }
 
 async function boot() {
   const session = await fetch('/api/auth',{credentials:'same-origin'}).then(r=>r.json());
-  if (session.passwordRequired && !session.authenticated) return showLogin();
+  if (!session.authenticated) return showLogin();
   showApp();
 }
 
-$('#login-form').addEventListener('submit', async e => {
-  e.preventDefault();
-  $('#login-error').textContent = '';
-  try {
-    await api('/api/auth',{
-      method:'POST',
-      body:JSON.stringify({password:$('#password').value})
-    });
-    showApp();
-  } catch (err) {
-    $('#login-error').textContent = err.message;
-  }
-});
 
 $('#logout').addEventListener('click', async () => {
   await fetch('/api/auth',{method:'DELETE', credentials:'same-origin'});
-  showLogin();
+  location.href='/login.html';
 });
 
 $('#new-case-form').addEventListener('submit', async e => {
@@ -87,7 +68,7 @@ $('#new-case-form').addEventListener('submit', async e => {
 
 boot().catch(err => {
   console.error(err);
-  showLogin();
+  location.href='/login.html';
 });
 
 

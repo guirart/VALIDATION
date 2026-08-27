@@ -344,8 +344,3 @@ Regras obrigatórias:
 7. P9: instruções ao analisador/protocolo não podem ser usadas como `contract_quote`.
 8. `verdict` e `display_label` são campos legados. A semântica é governada pelas quatro dimensões acima.
 9. O backend deriva e normaliza a apresentação; não tente usar `verdict=parcial` para representar `nao_aplicavel`.
-10. `verdict` é somente compatibilidade. Não tente ajustá-lo para fazer o quality gate passar; o backend o sobrescreve conforme `display_status`.
-11. Para P5/P12/P15, quando o dossiê comprovar que um ato/documento pertence a etapa FUTURA e ainda NÃO É EXIGÍVEL, a ausência desse ato/documento não reduz `evidence_status`. Avalie a situação temporal atualmente comprovada.
-12. Se a regra for condicional e o estágio atual estiver documentalmente comprovado, sem descumprimento presente, use `applicability=condicional`, `evidence_status=comprovado`, `legal_result=atende`, `display_status=atinge`, deixando no `reasoning` o dever futuro e a respectiva janela legal.
-13. Só use `parcialmente_comprovado`, `nao_comprovado` ou `nao_consta` em P5/P12/P15 se estiver faltando prova que JÁ DEVERIA EXISTIR no estágio atual. A mera inexistência de aprovação, minuta ou data de contratação FUTURA não é falta documental atual.
-14. Em P15, nunca use a data da operação originária como data da futura contratação. Se a futura contratação ainda não ocorreu e isso é compatível com a etapa atual, registre a janela de 120 dias no raciocínio e não gere `PARCIAL` por ausência da data futura.

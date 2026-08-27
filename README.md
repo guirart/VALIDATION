@@ -388,13 +388,39 @@ Após o deploy, atualize a GPT Action usando `openapi.yaml` desta versão e atua
 Regressão recomendada antes da bateria completa: TEST-004, TEST-005, TEST-006 e TEST-007.
 
 
-## v3.8.1 — REGRESSION FIX TEST-004
-
-- `verdict` passou a ser efetivamente legado: não reprova mais o quality gate por divergência com a taxonomia nova e é normalizado pelo backend.
-- P5/P12/P15: evento/documento futuro ainda não exigível não deve ser convertido em deficiência documental atual.
-- P15: a data da operação originária não pode substituir a data da futura contratação; a janela legal deve ser registrada sem criar `PARCIAL` apenas porque a contratação futura ainda não ocorreu.
-- Regressão prioritária após deploy: repetir VEREDICTA-TEST-004 antes de avançar para TEST-005.
-
 ## Branding institucional — Comissão de Agronegócio
 
 A logo institucional do cabeçalho foi substituída pela marca fornecida da **OAB Minas Gerais — Comissão de Agronegócio**. A alteração é exclusivamente visual e não modifica a API, o schema jurídico nem o validador v3.8.0.
+
+
+## v3.9.0 — Product UI + multiusuário
+
+Esta versão preserva o motor jurídico/validador da v3.8 e evolui a camada de produto:
+
+- paleta principal azul-marinho + branco;
+- logo da OAB/MG — Comissão de Agronegócio posicionada no cluster esquerdo do cabeçalho;
+- Dashboard com métricas, gráfico de distribuição das classificações e progresso dos últimos 14 dias;
+- tela de Configurações por advogado;
+- autenticação multiusuário com Supabase Auth (e-mail/senha);
+- casos reais separados por `owner_id`;
+- casos sintéticos continuam disponíveis para o ambiente de testes;
+- a Action não lista casos reais: `/api/gpt/cases` lista somente casos sintéticos do Test Lab.
+
+### Ativação obrigatória do multiusuário
+
+1. No Supabase, abra **Authentication > Providers > Email** e habilite e-mail/senha.
+2. Execute `supabase/migration_v3_9_multiuser.sql` no SQL Editor.
+3. Na Vercel, configure:
+   - `NEXT_PUBLIC_SUPABASE_URL` (ou `SUPABASE_URL`)
+   - `SUPABASE_SECRET_KEY` / `SUPABASE_SERVICE_ROLE_KEY`
+   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (ou `SUPABASE_ANON_KEY`)
+   - `ALLOW_SIGNUP=true` para permitir cadastro pela própria tela, ou `false` para criação manual de usuários no Supabase.
+4. Faça novo deploy.
+
+### Casos existentes
+
+Casos sintéticos permanecem compartilhados no Test Lab. Casos reais antigos que tenham `owner_id = null` não serão exibidos a usuários comuns até que um proprietário seja atribuído. Para migrar um caso real antigo, defina `owner_id` com o UUID do usuário correspondente em `auth.users`.
+
+### Segurança da GPT Action em ambiente multiusuário
+
+A Action usa uma chave de integração própria e não representa a sessão de um advogado. Por isso, a listagem geral da Action foi limitada a casos sintéticos. Casos reais continuam sendo obtidos por UUID específico quando o advogado inicia uma análise a partir do app. Para uma etapa futura de isolamento ainda mais rígido da Action, recomenda-se emitir tokens efêmeros por caso/análise.
