@@ -3072,3 +3072,21 @@ html[data-theme="light"] body,body{background:var(--surface)!important;color:var
 
 @media(max-width:1150px){.top-nav{display:none}.dashboard-cards{grid-template-columns:repeat(2,1fr)}.dashboard-charts{grid-template-columns:1fr}.institutional-logo-left{min-width:170px!important}}
 @media(max-width:760px){.appbar-navy{padding:0 10px!important}.brand-light .brand-sub,.current-user{display:none}.institutional-logo-left{min-width:135px!important;max-width:150px!important}.institutional-logo-left .institutional-logo{max-width:140px!important}.dashboard-cards{grid-template-columns:1fr}.dashboard-title-row{align-items:flex-start;flex-direction:column}.donut-layout{flex-direction:column;height:auto;padding-top:20px}.chart-card{min-height:auto}.auth-shell{grid-template-columns:1fr}.auth-brand-panel{display:none}.settings-grid{grid-template-columns:1fr}.settings-actions{grid-column:auto}.header-left-cluster{gap:8px}}
+
+
+/* =========================================================
+   GUEST ACCESS 3.9.1
+   ========================================================= */
+.guest-access-btn{
+  position:fixed;top:22px;right:26px;z-index:100;
+  border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.08);
+  color:#fff;border-radius:9px;padding:11px 16px;font:600 12px/1 system-ui,sans-serif;
+  cursor:pointer;backdrop-filter:blur(8px);transition:.18s ease;
+}
+.guest-access-btn:hover{background:#fff;color:var(--navy-900);border-color:#fff;transform:translateY(-1px)}
+.guest-access-btn:disabled{opacity:.6;cursor:wait;transform:none}
+html.guest-mode #current-user::after{content:' · somente leitura';font-size:10px;opacity:.72;font-weight:400}
+html.guest-mode .guest-disabled{opacity:.48!important;cursor:not-allowed!important;filter:saturate(.5)}
+html.guest-mode .dashboard-title-row .guest-disabled{display:none!important}
+html.guest-mode #sidebar-new.guest-disabled{display:flex!important;pointer-events:auto!important}
+@media(max-width:760px){.guest-access-btn{top:14px;right:14px;padding:9px 12px;font-size:11px}}

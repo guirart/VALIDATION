@@ -9,8 +9,27 @@ const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','re
 const AUDIT_RECOMMENDATIONS = new Set(['liberar','corrigir','escalar para revisão humana aprofundada']);
 const AUDIT_STATUSES = new Set(['confirmado','divergente','não encontrado','opinião sem precedente']);
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
-const APP_VERSION = '3.9.0';
+const APP_VERSION = '3.9.1';
 const VALIDATOR_VERSION = '3.8.0';
+
+const GUEST_USER = {id:'guest',email:null,user_metadata:{full_name:'Acesso convidado'},guest:true};
+function requestCookies(req){
+  const out={};
+  String(req.headers.cookie||'').split(';').forEach(part=>{
+    const i=part.indexOf('='); if(i<0)return;
+    out[part.slice(0,i).trim()]=decodeURIComponent(part.slice(i+1).trim());
+  });
+  return out;
+}
+function guestCookie(enabled=true){
+  return `veredicta_guest=${enabled?'1':''}; HttpOnly; Path=/; SameSite=Lax; Max-Age=${enabled?60*60*24:0}; Secure`;
+}
+function isGuest(req){return requestCookies(req).veredicta_guest==='1'}
+async function getAppActor(req,res){
+  if(isGuest(req)) return {guest:true,user:GUEST_USER};
+  const session=await getCurrentUser(req,res);
+  return session?{guest:false,...session}:null;
+}
 
 function stageLog(stage, meta={}) {
   try {
@@ -103,37 +122,51 @@ function verifyAudit(audit, analyst) {
 async function auth(req,res) {
   const cfg=authConfig();
   if(req.method==='GET'){
+    if(isGuest(req)) return json(res,200,{authenticated:true,guest:true,user:GUEST_USER,allow_signup:cfg.allowSignup,auth_configured:cfg.configured});
     const session=await getCurrentUser(req,res);
-    return json(res,200,{authenticated:Boolean(session),user:session?.user||null,allow_signup:cfg.allowSignup,auth_configured:cfg.configured});
+    return json(res,200,{authenticated:Boolean(session),guest:false,user:session?.user||null,allow_signup:cfg.allowSignup,auth_configured:cfg.configured});
   }
   if(req.method==='POST'){
     const body=await readJson(req);
+    const mode=String(body.mode||'login');
+    if(mode==='guest'){
+      res.setHeader('Set-Cookie',[...clearUserCookies(),guestCookie(true)]);
+      return json(res,200,{ok:true,guest:true,user:GUEST_USER});
+    }
     const email=String(body.email||'').trim().toLowerCase();
     const password=String(body.password||'');
-    const mode=String(body.mode||'login');
     if(!email||!password)return json(res,400,{error:'E-mail e senha são obrigatórios'});
     try{
       if(mode==='signup'){
         if(!cfg.allowSignup)return json(res,403,{error:'Criação pública de contas está desativada.'});
         const out=await signUp(email,password,{full_name:String(body.full_name||'').trim()});
-        if(out.access_token){setSessionCookies(res,out);return json(res,200,{ok:true,user:out.user})}
+        if(out.access_token){res.setHeader('Set-Cookie',[...clearUserCookies(),...[]]);setSessionCookies(res,out);return json(res,200,{ok:true,user:out.user})}
         return json(res,200,{ok:true,confirmation_required:true,message:'Conta criada. Confirme seu e-mail antes de entrar.'});
       }
-      const out=await signIn(email,password);setSessionCookies(res,out);return json(res,200,{ok:true,user:out.user});
+      const out=await signIn(email,password);
+      setSessionCookies(res,out);
+      return json(res,200,{ok:true,user:out.user});
     }catch(e){return json(res,e.statusCode||401,{error:e.message})}
   }
-  if(req.method==='DELETE'){res.setHeader('Set-Cookie',clearUserCookies());return json(res,200,{ok:true})}
+  if(req.method==='DELETE'){
+    res.setHeader('Set-Cookie',[...clearUserCookies(),guestCookie(false)]);
+    return json(res,200,{ok:true});
+  }
   return json(res,405,{error:'Método não permitido'});
 }
 
 async function config(req,res){
-  const session=await requireUser(req,res,json); if(!session)return;
-  return json(res,200,{custom_gpt_url:process.env.CUSTOM_GPT_URL||'',app_version:APP_VERSION,user:{id:session.user.id,email:session.user.email}});
+  const actor=await getAppActor(req,res); if(!actor)return json(res,401,{error:'Não autenticado'});
+  return json(res,200,{custom_gpt_url:process.env.CUSTOM_GPT_URL||'',app_version:APP_VERSION,guest:actor.guest,user:{id:actor.user.id,email:actor.user.email}});
 }
 
 async function settings(req,res){
-  const session=await requireUser(req,res,json); if(!session)return;
-  const uid=session.user.id;
+  const actor=await getAppActor(req,res); if(!actor)return json(res,401,{error:'Não autenticado'});
+  if(actor.guest){
+    if(req.method==='GET') return json(res,200,{guest:true,read_only:true,settings:{user_id:'guest',display_name:'Acesso convidado',oab_number:'',default_theme:'light',compact_mode:false}});
+    return json(res,403,{error:'Configurações persistentes exigem login.'});
+  }
+  const uid=actor.user.id;
   if(req.method==='GET'){
     const rows=await db(`user_settings?user_id=eq.${encodeURIComponent(uid)}&select=*&limit=1`);
     return json(res,200,{settings:rows[0]||{user_id:uid,default_theme:'light',compact_mode:false}});
@@ -149,10 +182,8 @@ async function settings(req,res){
 }
 
 async function cases(req,res) {
-  // Endpoint do APP, protegido pela sessão interna.
-  // O usuário autenticado pode cadastrar e consultar casos reais.
-  const session=await requireUser(req,res,json); if(!session)return;
-  const uid=session.user.id;
+  const actor=await getAppActor(req,res); if(!actor)return json(res,401,{error:'Não autenticado'});
+  const uid=actor.user.id;
 
   if(req.method==='GET') {
     const id=String(req.query?.id||'').trim();
@@ -160,43 +191,25 @@ async function cases(req,res) {
       const rows=await db(`cases?id=eq.${encodeURIComponent(id)}&select=*,analyses(*),reviews(*)&limit=1`);
       if(!rows.length)return json(res,404,{error:'Caso não encontrado'});
       const row=rows[0];
-      if(!row.synthetic && row.owner_id!==uid)return json(res,403,{error:'Você não tem acesso a este caso'});
-      return json(res,200,{case:row});
+      if(actor.guest && !row.synthetic)return json(res,403,{error:'Acesso convidado permite somente casos sintéticos de demonstração.'});
+      if(!actor.guest && !row.synthetic && row.owner_id!==uid)return json(res,403,{error:'Você não tem acesso a este caso'});
+      return json(res,200,{case:row,guest:actor.guest,read_only:actor.guest});
     }
-    const rows=await db(`cases?or=(synthetic.eq.true,owner_id.eq.${encodeURIComponent(uid)})&select=*,analyses(id,final_classification,quality_gate,auditor_recommendation,created_at),reviews(id,decision,created_at)&order=created_at.desc`);
-    return json(res,200,{cases:rows});
+    const query=actor.guest
+      ? 'cases?synthetic=eq.true&select=*,analyses(id,final_classification,quality_gate,auditor_recommendation,created_at),reviews(id,decision,created_at)&order=created_at.desc'
+      : `cases?or=(synthetic.eq.true,owner_id.eq.${encodeURIComponent(uid)})&select=*,analyses(id,final_classification,quality_gate,auditor_recommendation,created_at),reviews(id,decision,created_at)&order=created_at.desc`;
+    const rows=await db(query);
+    return json(res,200,{cases:rows,guest:actor.guest,read_only:actor.guest});
   }
 
   if(req.method==='POST'){
+    if(actor.guest)return json(res,403,{error:'Para criar casos reais, entre com sua conta profissional.'});
     const body=await readJson(req);
-    if(!body.title||!body.contract_text){
-      return json(res,400,{error:'Título e texto do contrato são obrigatórios'});
-    }
-
-    const [row]=await db('cases',{
-      method:'POST',
-      body:JSON.stringify({
-        title:String(body.title).slice(0,180),
-        client_name:String(body.client_name||'').slice(0,180),
-        contract_text:String(body.contract_text),
-        status:'pendente',
-        owner_id:uid
-      })
-    });
-
-    await db('audit_logs',{
-      method:'POST',
-      body:JSON.stringify({
-        case_id:row.id,
-        event_type:'case_created_in_app',
-        actor_user_id:uid,
-        payload:{title:row.title}
-      })
-    });
-
+    if(!body.title||!body.contract_text)return json(res,400,{error:'Título e texto do contrato são obrigatórios'});
+    const [row]=await db('cases',{method:'POST',body:JSON.stringify({title:String(body.title).slice(0,180),client_name:String(body.client_name||'').slice(0,180),contract_text:String(body.contract_text),status:'pendente',owner_id:uid})});
+    await db('audit_logs',{method:'POST',body:JSON.stringify({case_id:row.id,event_type:'case_created_in_app',actor_user_id:uid,payload:{title:row.title}})});
     return json(res,201,{case:row});
   }
-
   return json(res,405,{error:'Método não permitido'});
 }
 
@@ -640,7 +653,8 @@ async function testImport(req,res){
 }
 
 async function testImportUi(req,res){
-  const session=await requireUser(req,res,json); if(!session)return;
+  const actor=await getAppActor(req,res); if(!actor)return json(res,401,{error:'Não autenticado'});
+  if(actor.guest)return json(res,403,{error:'Importação de testes exige login.'});
   if(req.method!=='POST') return json(res,405,{error:'Método não permitido'});
 
   try {

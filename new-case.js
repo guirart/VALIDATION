@@ -1,3 +1,4 @@
+const guestModeNewCase=true;
 const $ = s => document.querySelector(s);
 
 async function api(url, options={}) {

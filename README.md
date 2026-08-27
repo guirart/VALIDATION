@@ -424,3 +424,11 @@ Casos sintéticos permanecem compartilhados no Test Lab. Casos reais antigos que
 ### Segurança da GPT Action em ambiente multiusuário
 
 A Action usa uma chave de integração própria e não representa a sessão de um advogado. Por isso, a listagem geral da Action foi limitada a casos sintéticos. Casos reais continuam sendo obtidos por UUID específico quando o advogado inicia uma análise a partir do app. Para uma etapa futura de isolamento ainda mais rígido da Action, recomenda-se emitir tokens efêmeros por caso/análise.
+
+
+## v3.9.1 — acesso convidado
+- Mantém autenticação multiusuário por Supabase.
+- Adiciona botão “Acesso sem login” no canto da tela de login.
+- Convidados acessam dashboard e casos sintéticos em modo somente leitura.
+- Casos reais privados, criação de casos, importação de testes e configurações persistentes exigem login.
+- O cookie de convidado é separado das sessões de usuários autenticados.

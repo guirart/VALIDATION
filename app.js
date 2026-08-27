@@ -6,6 +6,7 @@ let selectedCase = null;
 let customGptUrl = '';
 let currentFilter = 'all';
 let currentUser = null;
+let guestMode = false;
 let currentView = 'dashboard';
 
 const CHECKLIST_15 = [
@@ -74,7 +75,12 @@ async function boot(){
   const auth=await fetch('/api/auth',{credentials:'same-origin'}).then(r=>r.json());
   if(!auth.authenticated)return showLogin();
   currentUser=auth.user||null;
-  if($('#current-user'))$('#current-user').textContent=currentUser?.user_metadata?.full_name||currentUser?.email||'';
+  guestMode=Boolean(auth.guest||currentUser?.guest);
+  document.documentElement.classList.toggle('guest-mode',guestMode);
+  if($('#current-user'))$('#current-user').textContent=guestMode?'Convidado':(currentUser?.user_metadata?.full_name||currentUser?.email||'');
+  if(guestMode){
+    document.querySelectorAll('a[href="/new-case.html"]').forEach(a=>{a.href='#';a.classList.add('guest-disabled');a.title='Entre com sua conta para criar casos';a.addEventListener('click',e=>{e.preventDefault();alert('O acesso sem login é somente leitura. Entre com sua conta para criar casos reais.')})});
+  }
   showApp();await loadConfig();
   try{const pref=await api('/api/settings');if(!localStorage.getItem('veredicta-theme')&&pref.settings?.default_theme)applyTheme(pref.settings.default_theme);document.documentElement.classList.toggle('compact-ui',Boolean(pref.settings?.compact_mode))}catch{}
   await loadCases();bindMainNav();setMainView(location.hash==='#analises'?'analises':'dashboard');
