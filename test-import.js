@@ -12,16 +12,7 @@ async function api(url,options={}){
   if(!res.ok)throw new Error(body.error||`Erro ${res.status}`);
   return body;
 }
-function showLogin(){$('#test-import-app').classList.add('hidden');$('#login').classList.remove('hidden')}
-function showApp(){$('#login').classList.add('hidden');$('#test-import-app').classList.remove('hidden')}
-
-function applyTheme(theme){
-  const resolved=theme==='dark'?'dark':'light';
-  document.documentElement.dataset.theme=resolved;
-  localStorage.setItem('veredicta-theme',resolved);
-  const btn=$('#theme-toggle');
-  if(btn)btn.textContent=resolved==='dark'?'☀ Claro':'☾ Escuro';
-}
+function showLogin(){ location.href='/login.html'; }
 function initTheme(){
   applyTheme(localStorage.getItem('veredicta-theme')||'light');
   $('#theme-toggle')?.addEventListener('click',()=>{
@@ -35,13 +26,6 @@ async function boot(){
   if(session.passwordRequired&&!session.authenticated)return showLogin();
   showApp();
 }
-$('#login-form').addEventListener('submit',async e=>{
-  e.preventDefault();$('#login-error').textContent='';
-  try{
-    await api('/api/auth',{method:'POST',body:JSON.stringify({password:$('#password').value})});
-    showApp();
-  }catch(err){$('#login-error').textContent=err.message}
-});
 $('#logout').addEventListener('click',async()=>{
   await fetch('/api/auth',{method:'DELETE',credentials:'same-origin'});showLogin()
 });

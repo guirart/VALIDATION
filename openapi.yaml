@@ -184,9 +184,8 @@ paths:
                                   enum: [atende, nao_atende, inconclusivo, nao_aplicavel]
                                 display_status:
                                   type: string
-                                  description: "Estado visual derivado da taxonomia. Evento futuro ainda não exigível não deve virar parcial/atencao apenas por inexistência do documento futuro."
                                   enum: [atinge, parcial, atencao, nao_consta, nao_se_aplica]
-                                verdict: {type: string, description: "Legado opcional; ignorado para o quality gate e sobrescrito pelo backend a partir de display_status."}
+                                verdict: {type: string, description: "Legado; não governa a decisão."}
                                 display_label: {type: string, description: "Derivado pelo backend a partir de display_status."}
                                 mp_quote: {type: string}
                                 contract_quote: {type: string}
@@ -301,9 +300,8 @@ paths:
                             enum: [atende, nao_atende, inconclusivo, nao_aplicavel]
                           display_status:
                             type: string
-                            description: "Estado visual derivado da taxonomia. Evento futuro ainda não exigível não deve virar parcial/atencao apenas por inexistência do documento futuro."
                             enum: [atinge, parcial, atencao, nao_consta, nao_se_aplica]
-                          verdict: {type: string, description: "Legado opcional; ignorado para o quality gate e sobrescrito pelo backend a partir de display_status."}
+                          verdict: {type: string, description: "Legado; não governa a decisão."}
                           display_label: {type: string, description: "Derivado pelo backend."}
                           mp_quote: {type: string}
                           contract_quote: {type: string}
