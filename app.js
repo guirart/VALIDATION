@@ -58,27 +58,93 @@ function visualVerdictClass(p){
 
 function latest(arr=[]){return [...arr].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0]}
 
+let authState='checking';
+let authCheckPromise=null;
+
+async function confirmSession(force=false){
+  if(authCheckPromise&&!force)return authCheckPromise;
+  authCheckPromise=(async()=>{
+    try{
+      const res=await fetch('/api/auth',{credentials:'include',cache:'no-store'});
+      if(!res.ok)return false;
+      const body=await res.json().catch(()=>({}));
+      return Boolean(body.authenticated);
+    }catch{return false}
+    finally{authCheckPromise=null}
+  })();
+  return authCheckPromise;
+}
+
 async function api(url, options={}){
-  const res=await fetch(url,{credentials:'same-origin',headers:{'Content-Type':'application/json',...(options.headers||{})},...options});
+  const res=await fetch(url,{credentials:'include',headers:{'Content-Type':'application/json',...(options.headers||{})},...options});
   let body={};try{body=await res.json()}catch{}
-  if(res.status===401){showLogin();throw new Error('Sessão encerrada')}
+
+  if(res.status===401){
+    // O endpoint de login deve preservar a mensagem real (ex.: senha inválida).
+    if(url==='/api/auth')throw new Error(body.error||'Não autenticado');
+
+    // Não derruba a interface por um 401 isolado. Confirma a sessão antes.
+    const authenticated=await confirmSession(true);
+    if(!authenticated){
+      authState='unauthenticated';
+      showLogin();
+      throw new Error('Sessão encerrada');
+    }
+
+    // A sessão continua válida: mantenha o dashboard e reporte apenas a falha da chamada.
+    throw new Error(body.error||'Falha temporária de autenticação');
+  }
+
   if(!res.ok)throw new Error(body.error||`Erro ${res.status}`);
   return body;
 }
-function showLogin(){$('#app').classList.add('hidden');$('#login').classList.remove('hidden')}
-function showApp(){$('#login').classList.add('hidden');$('#app').classList.remove('hidden')}
+function showLogin(){
+  if(authState==='authenticated')authState='unauthenticated';
+  $('#app').classList.add('hidden');
+  $('#login').classList.remove('hidden');
+}
+function showApp(){
+  authState='authenticated';
+  $('#login').classList.add('hidden');
+  $('#app').classList.remove('hidden');
+}
 
 async function boot(){
-  const s=await fetch('/api/auth',{credentials:'same-origin'}).then(r=>r.json());
-  if(s.passwordRequired&&!s.authenticated)return showLogin();
-  showApp();await loadConfig();await loadCases();
+  authState='checking';
+  const authenticated=await confirmSession(true);
+  if(!authenticated){authState='unauthenticated';showLogin();return}
+
+  showApp();
+  try{
+    await loadConfig();
+    await loadCases();
+  }catch(err){
+    // Só sai do app se a sessão realmente tiver terminado.
+    const stillAuthenticated=await confirmSession(true);
+    if(!stillAuthenticated){authState='unauthenticated';showLogin();return}
+    console.error('Falha ao carregar o Veredicta:',err);
+  }
 }
 $('#login-form').addEventListener('submit',async e=>{
   e.preventDefault();$('#login-error').textContent='';
-  try{await api('/api/auth',{method:'POST',body:JSON.stringify({password:$('#password').value})});showApp();await loadConfig();await loadCases()}
-  catch(err){$('#login-error').textContent=err.message}
+  try{
+    await api('/api/auth',{method:'POST',body:JSON.stringify({password:$('#password').value})});
+    const authenticated=await confirmSession(true);
+    if(!authenticated)throw new Error('Login aceito, mas a sessão não foi confirmada. Atualize a página e tente novamente.');
+    showApp();
+    await loadConfig();
+    await loadCases();
+  }catch(err){
+    authState='unauthenticated';
+    showLogin();
+    $('#login-error').textContent=err.message;
+  }
 });
-$('#logout').addEventListener('click',async()=>{await fetch('/api/auth',{method:'DELETE'});showLogin()});
+$('#logout').addEventListener('click',async()=>{
+  await fetch('/api/auth',{method:'DELETE',credentials:'include'}).catch(()=>{});
+  authState='unauthenticated';
+  showLogin();
+});
 $('#refresh').addEventListener('click',async()=>{await loadCases(true)});
 $('#sidebar-refresh')?.addEventListener('click',async()=>{await loadCases(true)});
 $('#case-search')?.addEventListener('input',()=>renderHistory());
