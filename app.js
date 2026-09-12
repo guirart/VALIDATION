@@ -5,9 +5,6 @@ let selectedId = null;
 let selectedCase = null;
 let customGptUrl = '';
 let currentFilter = 'all';
-let currentUser = null;
-let guestMode = false;
-let currentView = 'dashboard';
 
 const CHECKLIST_15 = [
   {point:1,title:'Natureza do instrumento',legal_reference:'art. 1º, caput / art. 7º',description:'A MP cria uma via administrativa e depende de regulamentação; não substitui a análise jurídica nem promete automatismos.',resolve:'Confirmar a natureza do instrumento e registrar que a MP autoriza linhas de composição, sem transformar o enquadramento técnico em aprovação automática. Conferir a regulamentação do CMN vigente.'},
@@ -101,39 +98,34 @@ async function api(url, options={}){
   if(!res.ok)throw new Error(body.error||`Erro ${res.status}`);
   return body;
 }
-function showLogin(){
+function showLogin(message=''){
   if(authState==='authenticated')authState='unauthenticated';
-  $('#app').classList.add('hidden');
-  $('#login').classList.remove('hidden');
+  const app=$('#app');
+  const login=$('#login');
+  if(app)app.classList.add('hidden');
+  if(login)login.classList.remove('hidden');
+  const bootError=$('#boot-error');
+  if(bootError && message)bootError.textContent=message;
 }
 function showApp(){
   authState='authenticated';
-  $('#login').classList.add('hidden');
-  $('#app').classList.remove('hidden');
+  const login=$('#login');
+  const app=$('#app');
+  if(login)login.classList.add('hidden');
+  if(app)app.classList.remove('hidden');
+  const bootError=$('#boot-error');
+  if(bootError)bootError.textContent='';
 }
 
 async function boot(){
   authState='checking';
   const authenticated=await confirmSession(true);
   if(!authenticated){authState='unauthenticated';showLogin();return}
-  try{
-    const auth=await fetch('/api/auth',{credentials:'same-origin'}).then(r=>r.json()).catch(()=>({authenticated:false}));
-    if(auth?.authenticated){
-      currentUser=auth.user||null;
-      guestMode=Boolean(auth.guest||currentUser?.guest);
-      document.documentElement.classList.toggle('guest-mode',guestMode);
-      if($('#current-user'))$('#current-user').textContent=guestMode?'Convidado':(currentUser?.user_metadata?.full_name||currentUser?.email||'');
-      if(guestMode){
-        document.querySelectorAll('a[href="/new-case.html"]').forEach(a=>{a.href='#';a.classList.add('guest-disabled');a.title='Entre com sua conta para criar casos';a.addEventListener('click',e=>{e.preventDefault();alert('O acesso sem login é somente leitura. Entre com sua conta para criar casos reais.')})});
-      }
-    }
-  }catch{}
+
   showApp();
   try{
     await loadConfig();
     await loadCases();
-    bindMainNav();
-    setMainView(location.hash==='#analises'?'analises':'dashboard');
   }catch(err){
     // Só sai do app se a sessão realmente tiver terminado.
     const stillAuthenticated=await confirmSession(true);
@@ -168,7 +160,7 @@ $('#case-search')?.addEventListener('input',()=>renderHistory());
 async function loadConfig(){try{const out=await api('/api/config');customGptUrl=out.custom_gpt_url||''}catch{customGptUrl=''}}
 async function loadCases(keep=false){
   const out=await api('/api/cases');cases=out.cases||[];
-  renderStats();renderDashboard();renderTabs();
+  renderStats();renderTabs();
 
   const requestedCase = new URLSearchParams(window.location.search).get('case');
   if(requestedCase && cases.some(c=>c.id===requestedCase)){
@@ -184,46 +176,6 @@ async function loadCases(keep=false){
   else if(cases.length){await openCase(cases[0].id,false)}
   else{selectedId=null;selectedCase=null;renderEmptyCase();renderResolution()}
 }
-function bindMainNav(){
-  $$('.top-nav-btn').forEach(btn=>btn.addEventListener('click',()=>setMainView(btn.dataset.view)));
-  if(location.hash==='#analises')setMainView('analises');
-}
-function setMainView(view){
-  currentView=view==='analises'?'analises':'dashboard';
-  $('#dashboard-overview')?.classList.toggle('hidden',currentView!=='dashboard');
-  $('.analysis-section')?.classList.toggle('hidden',currentView!=='analises');
-  $('#resolution-section')?.classList.toggle('hidden',currentView!=='analises');
-  $$('.top-nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===currentView));
-  if(currentView==='analises')location.hash='analises'; else history.replaceState({},'',location.pathname+location.search);
-}
-function classificationKey(value=''){
-  const n=norm(value);if(n==='enquadravel')return 'eligible';if(n.includes('parcialmente'))return 'partial';if(n==='inconclusivo')return 'uncertain';if(n.includes('nao enquadravel'))return 'rejected';return 'pending';
-}
-function renderDashboard(){
-  const analyzed=cases.filter(c=>(c.analyses||[]).length);
-  const pending=cases.filter(c=>['pendente','em-analise','requer-correcao'].includes(c.status)).length;
-  const reviewed=cases.filter(c=>(c.reviews||[]).length).length;
-  const qg=analyzed.filter(c=>latest(c.analyses)?.quality_gate===true).length;
-  const rate=analyzed.length?Math.round(qg/analyzed.length*100):0;
-  const cards=[['Casos em análise',pending,'Pendentes ou em processamento','folder'],['Análises concluídas',analyzed.length,'Com análise gravada','check'],['Revisões humanas',reviewed,'Decisões humanas registradas','review'],['Quality gate',rate+'%',`${qg} de ${analyzed.length} análises liberadas`,'trend']];
-  $('#dashboard-cards').innerHTML=cards.map(c=>`<article class="dashboard-metric"><div><span>${c[0]}</span><b>${c[1]}</b><small>${c[2]}</small></div><i class="metric-icon metric-${c[3]}">${c[3]==='check'?'✓':c[3]==='trend'?'↗':c[3]==='review'?'§':'▱'}</i></article>`).join('');
-
-  const counts={eligible:0,partial:0,uncertain:0,rejected:0};
-  analyzed.forEach(c=>{const k=classificationKey(latest(c.analyses)?.final_classification);if(k in counts)counts[k]++});
-  const total=Object.values(counts).reduce((a,b)=>a+b,0)||1;
-  const pct=k=>counts[k]/total*100;
-  const a=pct('eligible'),b=a+pct('partial'),c=b+pct('uncertain');
-  const donut=$('#status-donut'); if(donut)donut.style.background=`conic-gradient(var(--chart-green) 0 ${a}%,var(--chart-yellow) ${a}% ${b}%,var(--chart-purple) ${b}% ${c}%,var(--chart-red) ${c}% 100%)`;
-  if($('#donut-total'))$('#donut-total').textContent=total===1&&Object.values(counts).every(v=>v===0)?0:total;
-  const legends=[['eligible','Enquadrável','var(--chart-green)'],['partial','Parcialmente enquadrável','var(--chart-yellow)'],['uncertain','Inconclusivo','var(--chart-purple)'],['rejected','Não enquadrável','var(--chart-red)']];
-  $('#status-legend').innerHTML=legends.map(([k,l,color])=>`<div><i style="background:${color}"></i><span>${l}</span><b>${counts[k]}</b></div>`).join('');
-
-  const days=[];for(let i=13;i>=0;i--){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-i);days.push(d)}
-  const vals=days.map(d=>analyzed.reduce((n,caseItem)=>n+(caseItem.analyses||[]).filter(x=>{const xD=new Date(x.created_at);return xD>=d&&xD<new Date(d.getTime()+86400000)}).length,0));
-  const max=Math.max(1,...vals);
-  $('#progress-chart').innerHTML=`<div class="trend-bars">${days.map((d,i)=>`<div class="trend-col" title="${d.toLocaleDateString('pt-BR')}: ${vals[i]}"><span style="height:${Math.max(4,vals[i]/max*100)}%"></span><small>${i%3===0?d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}):''}</small></div>`).join('')}</div>`;
-}
-
 function renderStats(){
   const analyzed=cases.filter(c=>(c.analyses||[]).length).length;
   const reviewed=cases.filter(c=>(c.reviews||[]).length).length;
@@ -267,7 +219,7 @@ function renderHistory(){
       </span>
     </button>`;
   }).join(''):`<div class="history-empty">Nenhum caso encontrado.</div>`;
-  $$('.history-item').forEach(b=>b.addEventListener('click',()=>{setMainView('analises');openCase(b.dataset.id)}));
+  $$('.history-item').forEach(b=>b.addEventListener('click',()=>openCase(b.dataset.id)));
 }
 function renderTabs(){ renderHistory(); }
 async function openCase(id,rerenderTabs=true){
@@ -465,7 +417,22 @@ setInterval(async()=>{
   }
 },15000);
 
-boot().catch(err=>{console.error(err);showLogin()});
+function renderBootFailure(err){
+  console.error('BOOT_ERROR',err);
+  authState='unauthenticated';
+  const message='Falha ao carregar o Veredicta. Recarregue a página. Se persistir, verifique o Console e a API.';
+  showLogin(message);
+}
+
+window.addEventListener('error',event=>{
+  if(authState==='checking')renderBootFailure(event.error||new Error(event.message||'Erro de inicialização'));
+});
+
+window.addEventListener('unhandledrejection',event=>{
+  if(authState==='checking')renderBootFailure(event.reason instanceof Error?event.reason:new Error(String(event.reason||'Falha de inicialização')));
+});
+
+boot().catch(renderBootFailure);
 
 
 function applyTheme(theme){
