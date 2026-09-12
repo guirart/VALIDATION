@@ -5,7 +5,7 @@ const app=fs.readFileSync(new URL('../app.js',import.meta.url),'utf8');
 const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const actionAuth=fs.readFileSync(new URL('../lib/actionAuth.js',import.meta.url),'utf8');
 const migration=fs.readFileSync(new URL('../supabase/migration_v3_10_auth_billing.sql',import.meta.url),'utf8');
-assert.match(api,/APP_VERSION = '3\.10\.0'/);
+assert.match(api,/APP_VERSION = '3\.10\.1'/);
 assert.match(api,/async function register\(/);
 assert.match(api,/async function stripeWebhook\(/);
 assert.match(api,/subscription_status/);

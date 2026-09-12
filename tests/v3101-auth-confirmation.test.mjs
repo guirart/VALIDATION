@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const api=fs.readFileSync(new URL('../api/index.js',import.meta.url),'utf8');
+const auth=fs.readFileSync(new URL('../lib/userAuth.js',import.meta.url),'utf8');
+assert.match(api,/APP_VERSION = '3\.10\.1'/);
+assert.match(api,/signup\?\.user \|\| signup/);
+assert.match(api,/requestBaseUrl\(req\)/);
+assert.match(auth,/redirectBase=''/);
+assert.match(auth,/email_confirmed=1/);
+console.log('v3.10.1 auth confirmation: OK');

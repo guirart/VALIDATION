@@ -11,8 +11,17 @@ const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','re
 const AUDIT_RECOMMENDATIONS = new Set(['liberar','corrigir','escalar para revisão humana aprofundada']);
 const AUDIT_STATUSES = new Set(['confirmado','divergente','não encontrado','opinião sem precedente']);
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
-const APP_VERSION = '3.10.0';
+const APP_VERSION = '3.10.1';
 const VALIDATOR_VERSION = '3.8.1';
+
+function requestBaseUrl(req){
+  const forwardedProto=String(req.headers?.['x-forwarded-proto']||'').split(',')[0].trim();
+  const forwardedHost=String(req.headers?.['x-forwarded-host']||'').split(',')[0].trim();
+  const host=forwardedHost || String(req.headers?.host||'').trim();
+  const proto=forwardedProto || (host && !/^localhost(?::|$)/i.test(host) ? 'https' : 'http');
+  if(host && !/^localhost(?::|$)/i.test(host)) return `${proto}://${host}`.replace(/\/$/,'');
+  return String(process.env.APP_BASE_URL||'').replace(/\/$/,'');
+}
 
 function stageLog(stage, meta={}) {
   try {
@@ -118,8 +127,24 @@ async function auth(req,res) {
 
     const authUserId=authData?.user?.id;
     if(!authUserId) return json(res,401,{error:'Não foi possível identificar o usuário autenticado.'});
-    const profiles=await db(`veredicta_users?auth_user_id=eq.${encodeURIComponent(authUserId)}&select=id,auth_user_id,name,email,role,status,subscription_status,stripe_customer_id,stripe_subscription_id&limit=1`);
-    if(!profiles.length) return json(res,403,{error:'Cadastro do Veredicta não localizado. Faça o registro novamente ou contate o administrador.'});
+    let profiles=await db(`veredicta_users?auth_user_id=eq.${encodeURIComponent(authUserId)}&select=id,auth_user_id,name,email,role,status,subscription_status,stripe_customer_id,stripe_subscription_id&limit=1`);
+    if(!profiles.length){
+      const authEmail=String(authData?.user?.email||normalizedEmail).trim().toLowerCase();
+      const byEmail=await db(`veredicta_users?email=eq.${encodeURIComponent(authEmail)}&select=id,auth_user_id,name,email,role,status,subscription_status,stripe_customer_id,stripe_subscription_id&limit=1`);
+      if(byEmail.length){
+        await db(`veredicta_users?id=eq.${encodeURIComponent(byEmail[0].id)}`,{method:'PATCH',body:JSON.stringify({auth_user_id:authUserId,updated_at:new Date().toISOString()})});
+        profiles=[{...byEmail[0],auth_user_id:authUserId}];
+      }else{
+        const adminEmail=String(process.env.VEREDICTA_ADMIN_EMAIL||'').trim().toLowerCase();
+        const role=adminEmail&&authEmail===adminEmail?'admin':'user';
+        const displayName=String(authData?.user?.user_metadata?.name||authEmail.split('@')[0]||'Usuário').trim();
+        const created=await db('veredicta_users',{method:'POST',body:JSON.stringify({
+          auth_user_id:authUserId,name:displayName,email:authEmail,role,
+          status:'pending_payment',subscription_status:'pending'
+        })});
+        profiles=created;
+      }
+    }
     const profile=profiles[0];
     if(profile.status==='suspended') return json(res,403,{error:'Acesso suspenso. Contate o administrador do Veredicta.'});
 
@@ -180,9 +205,10 @@ async function register(req,res){
   if(existing.length) return json(res,409,{error:'Já existe uma conta com este e-mail. Use Entrar para acessar ou regularizar sua assinatura.'});
 
   let signup;
-  try{ signup=await signUpUser({email,password,name}); }
+  try{ signup=await signUpUser({email,password,name,redirectBase:requestBaseUrl(req)}); }
   catch(e){ return json(res,e.statusCode===400?400:500,{error:e.message||'Falha ao criar usuário no Supabase Auth.'}); }
-  const authUserId=signup?.user?.id;
+  const signupUser=signup?.user || signup;
+  const authUserId=signupUser?.id;
   if(!authUserId) return json(res,500,{error:'O Supabase não retornou o identificador do novo usuário.'});
 
   const adminEmail=String(process.env.VEREDICTA_ADMIN_EMAIL||'').trim().toLowerCase();
@@ -210,7 +236,7 @@ async function register(req,res){
   return json(res,201,{
     ok:true,
     checkout_url:checkout.url,
-    email_confirmation_required:!signup?.session,
+    email_confirmation_required:!(signup?.session || signup?.access_token),
     message:'Conta criada. Conclua o pagamento e confirme seu e-mail para acessar o Veredicta.'
   });
 }
@@ -220,7 +246,7 @@ async function recover(req,res){
   const {email=''}=await readJson(req);
   const normalized=String(email).trim().toLowerCase();
   if(!normalized||!normalized.includes('@')) return json(res,400,{error:'Informe um e-mail válido.'});
-  try{await recoverPassword(normalized);}catch(e){console.warn('[recover]',e?.message||e)}
+  try{await recoverPassword(normalized,{redirectBase:requestBaseUrl(req)});}catch(e){console.warn('[recover]',e?.message||e)}
   return json(res,200,{ok:true,message:'Se houver uma conta para este e-mail, o Supabase enviará as instruções de recuperação.'});
 }
 
