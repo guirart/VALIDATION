@@ -9,15 +9,68 @@
 </head>
 <body>
   <div id="login" class="login-screen">
-    <form id="login-form" class="login-card">
-      <div class="micro">ACESSO INTERNO</div>
-      <h1>Veredicta</h1>
-      <p>Triagem assistida de contratos de crédito rural.</p>
-      <input id="password" type="password" placeholder="Senha do app" autocomplete="current-password" required />
-      <button class="btn btn-dark">Entrar</button>
-      <p id="login-error" class="error"></p>
-      <p id="boot-error" class="error" role="alert" aria-live="polite"></p>
-    </form>
+    <div class="auth-shell">
+      <section class="auth-intro">
+        <div class="micro">VEREDICTA</div>
+        <h1>Análise jurídica com acesso individual.</h1>
+        <p>Entre com sua conta ou crie um novo acesso. Novos usuários concluem a assinatura antes de entrar no sistema.</p>
+        <div class="auth-benefits">
+          <span>✓ casos separados por usuário</span>
+          <span>✓ pagamento vinculado à conta</span>
+          <span>✓ acesso liberado somente com assinatura ativa</span>
+        </div>
+      </section>
+
+      <section class="auth-card">
+        <div class="auth-brand">Veredicta</div>
+        <div class="auth-tabs" role="tablist">
+          <button id="tab-login" class="auth-tab active" type="button">Entrar</button>
+          <button id="tab-register" class="auth-tab" type="button">Criar conta</button>
+        </div>
+
+        <div id="auth-global-message" class="auth-message hidden" role="status"></div>
+
+        <form id="login-form" class="auth-form">
+          <label>E-mail
+            <input id="login-email" type="email" placeholder="seu@email.com" autocomplete="email" required />
+          </label>
+          <label>Senha
+            <input id="login-password" type="password" placeholder="Sua senha" autocomplete="current-password" required />
+          </label>
+          <button class="btn btn-dark" type="submit">Entrar no Veredicta</button>
+          <button id="forgot-password" class="auth-link-btn" type="button">Esqueci minha senha</button>
+          <a id="payment-action" class="btn auth-payment hidden" href="#" rel="noopener">Regularizar pagamento</a>
+          <p id="login-error" class="error"></p>
+          <p id="boot-error" class="error" role="alert" aria-live="polite"></p>
+        </form>
+
+        <form id="register-form" class="auth-form hidden">
+          <label>Nome completo
+            <input id="register-name" type="text" autocomplete="name" required />
+          </label>
+          <label>E-mail
+            <input id="register-email" type="email" autocomplete="email" required />
+          </label>
+          <label>Senha
+            <input id="register-password" type="password" minlength="8" autocomplete="new-password" required />
+          </label>
+          <label>Confirmar senha
+            <input id="register-password-confirm" type="password" minlength="8" autocomplete="new-password" required />
+          </label>
+          <div class="subscription-box">
+            <b>Plano Veredicta</b>
+            <span>Assinatura recorrente processada pela Stripe.</span>
+            <small>O acesso ao aplicativo é liberado após a confirmação do pagamento.</small>
+          </div>
+          <label class="auth-check">
+            <input id="register-terms" type="checkbox" required />
+            <span>Li e aceito os Termos de Uso e a Política de Privacidade.</span>
+          </label>
+          <button id="register-submit" class="btn btn-dark" type="submit">Criar conta e ir para pagamento</button>
+          <p id="register-error" class="error"></p>
+        </form>
+      </section>
+    </div>
   </div>
 
   <div id="app" class="hidden">

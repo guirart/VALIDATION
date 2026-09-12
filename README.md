@@ -1,3 +1,9 @@
+# Veredicta v3.10
+
+Esta versão substitui a senha global da página inicial por autenticação individual com e-mail e senha, cadastro público, cobrança recorrente via Stripe e bloqueio por inadimplência. O validator jurídico permanece em 3.8.1.
+
+Configuração: veja `V3.10_AUTH_BILLING_SETUP.md`.
+
 ## v3.9.2 — Login-first + proteção de migração
 
 A página inicial sempre abre no login, mesmo se existir cookie de sessão anterior. Se `cases.owner_id` ainda não existir, o dashboard entra em modo de compatibilidade e informa que a migration multiusuário deve ser executada.

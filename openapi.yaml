@@ -2,7 +2,7 @@ openapi: 3.1.0
 
 info:
   title: Veredicta API
-  version: "3.9.0"
+  version: 3.10.0
   description: API multiusuário do Veredicta. Cada X-Veredicta-Key identifica um usuário e limita casos e análises ao respectivo proprietário.
 
 servers:

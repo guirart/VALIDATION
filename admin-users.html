@@ -11,13 +11,6 @@
   </style>
 </head>
 <body>
-  <div id="login" class="login-screen hidden">
-    <form id="login-form" class="login-card">
-      <div class="micro">ACESSO INTERNO</div><h1>Veredicta</h1><p>Entre para administrar usuários GPT.</p>
-      <input id="password" type="password" placeholder="Senha do app" autocomplete="current-password" required />
-      <button class="btn btn-dark">Entrar</button><p id="login-error" class="error"></p>
-    </form>
-  </div>
   <div id="users-app" class="hidden">
     <header class="appbar">
       <div class="brand-wrap"><a class="brand brand-link" href="/">VEREDICTA</a><span class="brand-sub">Usuários GPT</span></div>
@@ -27,19 +20,14 @@
       <div class="new-case-hero"><div><div class="micro">MULTIUSUÁRIO</div><h1>Usuários do GPT Veredicta</h1><p>Cada usuário recebe uma chave exclusiva. Essa chave limita a Action aos casos e análises daquele usuário.</p></div></div>
       <div class="users-grid">
         <section class="user-panel">
-          <h2>Novo usuário</h2>
-          <form id="create-user-form">
-            <label class="field"><span>NOME</span><input id="user-name" required maxlength="180" /></label>
-            <label class="field"><span>E-MAIL</span><input id="user-email" type="email" required maxlength="240" /></label>
-            <label class="field"><span>PERFIL</span><select id="user-role"><option value="user">Usuário</option><option value="admin">Administrador</option></select></label>
-            <button class="btn btn-dark" type="submit">Criar usuário e chave</button>
-          </form>
+          <h2>Cadastro de usuários</h2>
+          <p class="muted">Novos usuários devem usar a tela inicial do Veredicta, em <b>Criar conta</b>. A criação é vinculada ao Stripe Checkout e o acesso só é liberado após a confirmação da assinatura.</p>
+          <a class="btn btn-dark" href="/">Abrir página de cadastro</a>
           <div id="new-key-wrap" class="hidden">
-            <p class="success"><b>Usuário criado.</b> Copie a chave agora. Ela não será exibida novamente.</p>
+            <p class="success"><b>Nova chave GPT.</b> Copie agora. Ela não será exibida novamente.</p>
             <div id="new-key" class="key-box"></div>
             <div class="key-actions"><button id="copy-key" class="btn btn-outline" type="button">Copiar chave</button></div>
           </div>
-          <p id="create-status" class="save-status"></p>
         </section>
         <section class="user-panel"><div class="section-title-row"><div><h2>Usuários cadastrados</h2><p class="muted">Suspenda um usuário para bloquear imediatamente o acesso da chave dele.</p></div><button id="refresh-users" class="btn btn-outline" type="button">Atualizar</button></div><div id="users-list" class="user-list"></div></section>
       </div>

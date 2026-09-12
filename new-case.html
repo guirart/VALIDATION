@@ -8,17 +8,6 @@
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <div id="login" class="login-screen hidden">
-    <form id="login-form" class="login-card">
-      <div class="micro">ACESSO INTERNO</div>
-      <h1>Veredicta</h1>
-      <p>Entre para cadastrar um novo caso.</p>
-      <input id="password" type="password" placeholder="Senha do app" autocomplete="current-password" required />
-      <button class="btn btn-dark">Entrar</button>
-      <p id="login-error" class="error"></p>
-    </form>
-  </div>
-
   <div id="new-case-app" class="hidden">
     <header class="appbar">
       <div class="brand-wrap">
@@ -72,7 +61,7 @@
               <input id="client-name" maxlength="180" placeholder="Ex.: Valdemar José de Oliveira" />
             </label>
 
-            <label class="field">
+            <label id="owner-field" class="field hidden">
               <span>USUÁRIO GPT RESPONSÁVEL</span>
               <select id="owner-user" required>
                 <option value="">Carregando usuários…</option>

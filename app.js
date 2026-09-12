@@ -95,7 +95,12 @@ async function api(url, options={}){
     throw new Error(body.error||'Falha temporária de autenticação');
   }
 
-  if(!res.ok)throw new Error(body.error||`Erro ${res.status}`);
+  if(!res.ok){
+    const err=new Error(body.error||`Erro ${res.status}`);
+    err.status=res.status;
+    err.body=body;
+    throw err;
+  }
   return body;
 }
 function showLogin(message=''){
@@ -131,20 +136,47 @@ function clearRuntimeError(){
   document.getElementById('runtime-error-banner')?.remove();
 }
 
+function setAuthMode(mode){
+  const loginMode=mode!=='register';
+  $('#tab-login')?.classList.toggle('active',loginMode);
+  $('#tab-register')?.classList.toggle('active',!loginMode);
+  $('#login-form')?.classList.toggle('hidden',!loginMode);
+  $('#register-form')?.classList.toggle('hidden',loginMode);
+  $('#login-error').textContent='';
+  $('#register-error').textContent='';
+  $('#payment-action')?.classList.add('hidden');
+}
+function showAuthMessage(text,type='info'){
+  const el=$('#auth-global-message');
+  if(!el)return;
+  el.textContent=text||'';
+  el.classList.toggle('hidden',!text);
+  el.dataset.type=type;
+}
 async function boot(){
-  // LOGIN-FIRST: a página inicial sempre começa na tela de login.
-  // Uma sessão antiga pode continuar tecnicamente válida no cookie, mas nunca
-  // abre o painel automaticamente. O usuário precisa clicar em Entrar.
   authState='unauthenticated';
   showLogin();
   clearRuntimeError();
+  setAuthMode('login');
+  const qs=new URLSearchParams(location.search);
+  if(qs.get('payment')==='success') showAuthMessage('Pagamento concluído. Se o e-mail já foi confirmado, entre com sua conta.','success');
+  if(qs.get('payment')==='cancelled') showAuthMessage('Pagamento cancelado. Sua conta permanece sem acesso até a assinatura ser concluída.','warning');
+  if(qs.get('email_confirmed')==='1') showAuthMessage('E-mail confirmado. Conclua o pagamento, se ainda estiver pendente, e depois faça login.','success');
 }
+$('#tab-login')?.addEventListener('click',()=>setAuthMode('login'));
+$('#tab-register')?.addEventListener('click',()=>setAuthMode('register'));
+
 $('#login-form').addEventListener('submit',async e=>{
-  e.preventDefault();$('#login-error').textContent='';
+  e.preventDefault();
+  $('#login-error').textContent='';
+  $('#payment-action')?.classList.add('hidden');
   try{
-    await api('/api/auth',{method:'POST',body:JSON.stringify({password:$('#password').value})});
+    await api('/api/auth',{method:'POST',body:JSON.stringify({
+      email:$('#login-email').value,
+      password:$('#login-password').value
+    })});
     const authenticated=await confirmSession(true);
-    if(!authenticated)throw new Error('Login aceito, mas a sessão não foi confirmada. Atualize a página e tente novamente.');
+    if(!authenticated)throw new Error('Login aceito, mas a sessão não foi confirmada. Tente novamente.');
     showApp();
     clearRuntimeError();
     try{
@@ -158,7 +190,44 @@ $('#login-form').addEventListener('submit',async e=>{
     authState='unauthenticated';
     showLogin();
     $('#login-error').textContent=err.message;
+    if(err?.body?.payment_url){
+      const a=$('#payment-action');
+      a.href=err.body.payment_url;
+      a.classList.remove('hidden');
+    }
   }
+});
+
+$('#register-form')?.addEventListener('submit',async e=>{
+  e.preventDefault();
+  $('#register-error').textContent='';
+  const password=$('#register-password').value;
+  const confirm=$('#register-password-confirm').value;
+  if(password!==confirm){ $('#register-error').textContent='As senhas não coincidem.'; return; }
+  const btn=$('#register-submit');
+  const old=btn.textContent;
+  btn.disabled=true; btn.textContent='Criando conta…';
+  try{
+    const out=await api('/api/register',{method:'POST',body:JSON.stringify({
+      name:$('#register-name').value,
+      email:$('#register-email').value,
+      password,
+      accept_terms:$('#register-terms').checked
+    })});
+    showAuthMessage(out.message||'Conta criada. Continue para o pagamento.','success');
+    if(out.checkout_url) window.location.href=out.checkout_url;
+  }catch(err){
+    $('#register-error').textContent=err.message;
+  }finally{btn.disabled=false;btn.textContent=old;}
+});
+
+$('#forgot-password')?.addEventListener('click',async()=>{
+  const email=String($('#login-email').value||'').trim();
+  if(!email){ $('#login-error').textContent='Informe seu e-mail para recuperar a senha.'; return; }
+  try{
+    const out=await api('/api/recover',{method:'POST',body:JSON.stringify({email})});
+    showAuthMessage(out.message||'Confira seu e-mail.','success');
+  }catch(err){ $('#login-error').textContent=err.message; }
 });
 $('#logout').addEventListener('click',async()=>{
   await fetch('/api/auth',{method:'DELETE',credentials:'include'}).catch(()=>{});
@@ -169,14 +238,10 @@ $('#refresh').addEventListener('click',async()=>{await loadCases(true)});
 $('#sidebar-refresh')?.addEventListener('click',async()=>{await loadCases(true)});
 $('#case-search')?.addEventListener('input',()=>renderHistory());
 
-async function loadConfig(){try{const out=await api('/api/config');customGptUrl=out.custom_gpt_url||''}catch{customGptUrl=''}}
+async function loadConfig(){try{const out=await api('/api/config');customGptUrl=out.custom_gpt_url||'';const adminLink=document.querySelector('a[href="/admin-users.html"]');if(adminLink)adminLink.style.display=out.user?.role==='admin'?'inline-flex':'none'}catch{customGptUrl=''}}
 async function loadCases(keep=false){
   const out=await api('/api/cases');cases=out.cases||[];
-  if(out.migration_required){
-    showRuntimeError('Multiusuário ainda não ativado no Supabase. Execute supabase/migration_v3_9_multiuser.sql no SQL Editor. O painel foi aberto em modo de compatibilidade.');
-  } else {
-    clearRuntimeError();
-  }
+  clearRuntimeError();
   renderStats();renderTabs();
 
   const requestedCase = new URLSearchParams(window.location.search).get('case');

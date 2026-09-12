@@ -1,14 +1,17 @@
 import crypto from 'node:crypto';
-import { json, readJson, makeSessionCookie, clearSessionCookie, isAuthenticated, requireAuth } from '../lib/http.js';
+import { json, readJson, makeSessionCookie, clearSessionCookie, isAuthenticated, requireAuth, getSession } from '../lib/http.js';
 import { requireActionAuth, generateUserApiKey, hashApiKey, LEGACY_OWNER_ID } from '../lib/actionAuth.js';
 import { db, supabaseConfigStatus } from '../lib/supabase.js';
+import { signUpUser, signInUser, recoverPassword } from '../lib/userAuth.js';
+import { createCheckoutSession, createBillingPortalSession, retrieveStripeEvent, stripeConfigStatus } from '../lib/stripe.js';
+import { sendWelcomeEmail } from '../lib/email.js';
 import { verifyAnalysis, FINAL_CLASSES, mpText, memoText } from '../lib/legal.js';
 
 const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','requer-correcao','concluido','erro']);
 const AUDIT_RECOMMENDATIONS = new Set(['liberar','corrigir','escalar para revisão humana aprofundada']);
 const AUDIT_STATUSES = new Set(['confirmado','divergente','não encontrado','opinião sem precedente']);
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
-const APP_VERSION = '3.9.2';
+const APP_VERSION = '3.10.0';
 const VALIDATOR_VERSION = '3.8.1';
 
 function stageLog(stage, meta={}) {
@@ -100,96 +103,251 @@ function verifyAudit(audit, analyst) {
 }
 
 async function auth(req,res) {
-  if (req.method === 'GET') return json(res,200,{authenticated:isAuthenticated(req),passwordRequired:true});
+  if (req.method === 'GET') {
+    const session=getSession(req);
+    return json(res,200,{authenticated:Boolean(session),user:session?{name:session.name,email:session.email,role:session.role}:null});
+  }
   if (req.method === 'POST') {
-    const {password=''} = await readJson(req);
-    const expected = process.env.APP_PASSWORD || 'marcal2015';
-    const a=Buffer.from(String(password)), b=Buffer.from(String(expected));
-    const ok=expected && a.length===b.length && crypto.timingSafeEqual(a,b);
-    if(!ok) return json(res,401,{error:'Senha inválida'});
-    res.setHeader('Set-Cookie',makeSessionCookie());
-    return json(res,200,{ok:true});
+    const {email='',password=''} = await readJson(req);
+    const normalizedEmail=String(email).trim().toLowerCase();
+    if(!normalizedEmail||!password) return json(res,400,{error:'Informe e-mail e senha.'});
+
+    let authData;
+    try{ authData=await signInUser({email:normalizedEmail,password:String(password)}); }
+    catch(e){ return json(res,401,{error:'E-mail ou senha inválidos, ou e-mail ainda não confirmado.'}); }
+
+    const authUserId=authData?.user?.id;
+    if(!authUserId) return json(res,401,{error:'Não foi possível identificar o usuário autenticado.'});
+    const profiles=await db(`veredicta_users?auth_user_id=eq.${encodeURIComponent(authUserId)}&select=id,auth_user_id,name,email,role,status,subscription_status,stripe_customer_id,stripe_subscription_id&limit=1`);
+    if(!profiles.length) return json(res,403,{error:'Cadastro do Veredicta não localizado. Faça o registro novamente ou contate o administrador.'});
+    const profile=profiles[0];
+    if(profile.status==='suspended') return json(res,403,{error:'Acesso suspenso. Contate o administrador do Veredicta.'});
+
+    const paid=new Set(['active','trialing']);
+    if(!paid.has(String(profile.subscription_status||'').toLowerCase())){
+      let paymentUrl='';
+      try{
+        if(profile.stripe_customer_id){
+          paymentUrl=(await createBillingPortalSession({customerId:profile.stripe_customer_id})).url||'';
+        }else{
+          paymentUrl=(await createCheckoutSession({userId:profile.id,email:profile.email,name:profile.name})).url||'';
+        }
+      }catch(e){ console.error('[billing] não foi possível gerar URL de regularização',e?.message||e); }
+      return json(res,402,{
+        error:'Assinatura sem adimplência ativa. Regularize o pagamento para acessar o Veredicta.',
+        billing_required:true,
+        subscription_status:profile.subscription_status||'pending',
+        payment_url:paymentUrl
+      });
+    }
+
+    if(profile.role==='admin'){
+      // No primeiro acesso do administrador, incorpora os dados legados à conta individual.
+      try{
+        await db(`cases?owner_id=eq.${encodeURIComponent(LEGACY_OWNER_ID)}`,{method:'PATCH',body:JSON.stringify({owner_id:profile.id})});
+        await db(`analyses?owner_id=eq.${encodeURIComponent(LEGACY_OWNER_ID)}`,{method:'PATCH',body:JSON.stringify({owner_id:profile.id})});
+        await db(`reviews?owner_id=eq.${encodeURIComponent(LEGACY_OWNER_ID)}`,{method:'PATCH',body:JSON.stringify({owner_id:profile.id})});
+        await db(`audit_logs?owner_id=eq.${encodeURIComponent(LEGACY_OWNER_ID)}`,{method:'PATCH',body:JSON.stringify({owner_id:profile.id})});
+      }catch(e){ console.warn('[legacy-claim]',e?.message||e); }
+    }
+
+    res.setHeader('Set-Cookie',makeSessionCookie({
+      userId:authUserId,
+      profileId:profile.id,
+      email:profile.email,
+      name:profile.name,
+      role:profile.role
+    }));
+    return json(res,200,{ok:true,user:{name:profile.name,email:profile.email,role:profile.role}});
   }
   if(req.method==='DELETE') { res.setHeader('Set-Cookie',clearSessionCookie()); return json(res,200,{ok:true}); }
   return json(res,405,{error:'Método não permitido'});
 }
 
+async function register(req,res){
+  if(req.method!=='POST') return json(res,405,{error:'Método não permitido'});
+  const body=await readJson(req);
+  const name=String(body.name||'').trim();
+  const email=String(body.email||'').trim().toLowerCase();
+  const password=String(body.password||'');
+  const accepted=Boolean(body.accept_terms);
+  if(name.length<2) return json(res,400,{error:'Informe seu nome.'});
+  if(!email||!email.includes('@')) return json(res,400,{error:'Informe um e-mail válido.'});
+  if(password.length<8) return json(res,400,{error:'A senha deve ter pelo menos 8 caracteres.'});
+  if(!accepted) return json(res,400,{error:'É necessário aceitar os Termos de Uso e a Política de Privacidade.'});
+
+  const existing=await db(`veredicta_users?email=eq.${encodeURIComponent(email)}&select=id,subscription_status,stripe_customer_id&limit=1`);
+  if(existing.length) return json(res,409,{error:'Já existe uma conta com este e-mail. Use Entrar para acessar ou regularizar sua assinatura.'});
+
+  let signup;
+  try{ signup=await signUpUser({email,password,name}); }
+  catch(e){ return json(res,e.statusCode===400?400:500,{error:e.message||'Falha ao criar usuário no Supabase Auth.'}); }
+  const authUserId=signup?.user?.id;
+  if(!authUserId) return json(res,500,{error:'O Supabase não retornou o identificador do novo usuário.'});
+
+  const adminEmail=String(process.env.VEREDICTA_ADMIN_EMAIL||'').trim().toLowerCase();
+  const role=adminEmail&&email===adminEmail?'admin':'user';
+  const [profile]=await db('veredicta_users',{
+    method:'POST',
+    body:JSON.stringify({
+      auth_user_id:authUserId,name,email,role,
+      status:'pending_payment',subscription_status:'pending',
+      terms_accepted_at:new Date().toISOString()
+    })
+  });
+
+  let checkout;
+  try{
+    checkout=await createCheckoutSession({userId:profile.id,email,name});
+    await db(`veredicta_users?id=eq.${encodeURIComponent(profile.id)}`,{
+      method:'PATCH',body:JSON.stringify({stripe_checkout_session_id:checkout.id,updated_at:new Date().toISOString()})
+    });
+  }catch(e){
+    console.error('[register] usuário criado, mas Stripe falhou:',e?.message||e);
+    return json(res,500,{error:`Conta criada, mas não foi possível abrir o pagamento: ${e.message}. Tente entrar para gerar uma nova cobrança.`});
+  }
+
+  return json(res,201,{
+    ok:true,
+    checkout_url:checkout.url,
+    email_confirmation_required:!signup?.session,
+    message:'Conta criada. Conclua o pagamento e confirme seu e-mail para acessar o Veredicta.'
+  });
+}
+
+async function recover(req,res){
+  if(req.method!=='POST') return json(res,405,{error:'Método não permitido'});
+  const {email=''}=await readJson(req);
+  const normalized=String(email).trim().toLowerCase();
+  if(!normalized||!normalized.includes('@')) return json(res,400,{error:'Informe um e-mail válido.'});
+  try{await recoverPassword(normalized);}catch(e){console.warn('[recover]',e?.message||e)}
+  return json(res,200,{ok:true,message:'Se houver uma conta para este e-mail, o Supabase enviará as instruções de recuperação.'});
+}
+
+async function stripeWebhook(req,res){
+  if(req.method!=='POST') return json(res,405,{error:'Método não permitido'});
+  const incoming=await readJson(req);
+  if(!incoming?.id) return json(res,400,{error:'Evento Stripe sem id.'});
+  // O evento é recuperado diretamente da API da Stripe com a chave secreta.
+  // Assim o backend não confia no JSON recebido do navegador/rede.
+  const event=await retrieveStripeEvent(incoming.id);
+  const object=event?.data?.object||{};
+  const type=String(event?.type||'');
+
+  async function profileByBilling(){
+    const userId=String(object?.metadata?.veredicta_user_id||object?.client_reference_id||'').trim();
+    if(userId){
+      const rows=await db(`veredicta_users?id=eq.${encodeURIComponent(userId)}&select=*&limit=1`);
+      if(rows.length) return rows[0];
+    }
+    const sub=typeof object?.subscription==='string'?object.subscription:object?.id?.startsWith?.('sub_')?object.id:'';
+    if(sub){
+      const rows=await db(`veredicta_users?stripe_subscription_id=eq.${encodeURIComponent(sub)}&select=*&limit=1`);
+      if(rows.length) return rows[0];
+    }
+    const customer=typeof object?.customer==='string'?object.customer:'';
+    if(customer){
+      const rows=await db(`veredicta_users?stripe_customer_id=eq.${encodeURIComponent(customer)}&select=*&limit=1`);
+      if(rows.length) return rows[0];
+    }
+    return null;
+  }
+
+  const profile=await profileByBilling();
+  if(!profile){
+    console.warn('[stripe-webhook] perfil não localizado para',event.id,type);
+    return json(res,200,{received:true,ignored:true});
+  }
+
+  let patch={updated_at:new Date().toISOString()};
+  if(type==='checkout.session.completed'){
+    patch.stripe_customer_id=typeof object.customer==='string'?object.customer:profile.stripe_customer_id;
+    patch.stripe_subscription_id=typeof object.subscription==='string'?object.subscription:profile.stripe_subscription_id;
+    patch.stripe_checkout_session_id=object.id||profile.stripe_checkout_session_id;
+    patch.subscription_status=(object.payment_status==='paid'||object.payment_status==='no_payment_required')?'active':'pending';
+    patch.status=patch.subscription_status==='active'?'active':profile.status;
+  }else if(type==='customer.subscription.created'||type==='customer.subscription.updated'){
+    patch.stripe_customer_id=typeof object.customer==='string'?object.customer:profile.stripe_customer_id;
+    patch.stripe_subscription_id=object.id||profile.stripe_subscription_id;
+    patch.subscription_status=object.status||profile.subscription_status;
+    patch.status=['active','trialing'].includes(object.status)?'active':profile.status;
+    if(object.current_period_end) patch.current_period_end=new Date(Number(object.current_period_end)*1000).toISOString();
+  }else if(type==='customer.subscription.deleted'){
+    patch.subscription_status='canceled';
+  }else if(type==='invoice.payment_failed'){
+    patch.subscription_status='past_due';
+  }else if(type==='invoice.paid'||type==='invoice.payment_succeeded'){
+    patch.subscription_status='active';
+    patch.status='active';
+  }else{
+    return json(res,200,{received:true,ignored:true,type});
+  }
+
+  const rows=await db(`veredicta_users?id=eq.${encodeURIComponent(profile.id)}`,{method:'PATCH',body:JSON.stringify(patch)});
+  const updated=rows?.[0]||{...profile,...patch};
+  if(['active','trialing'].includes(String(updated.subscription_status))&&!updated.welcome_email_sent_at){
+    try{
+      await sendWelcomeEmail({to:updated.email,name:updated.name});
+      await db(`veredicta_users?id=eq.${encodeURIComponent(profile.id)}`,{method:'PATCH',body:JSON.stringify({welcome_email_sent_at:new Date().toISOString()})});
+    }catch(e){ console.error('[welcome-email]',e?.message||e); }
+  }
+  return json(res,200,{received:true,type});
+}
+
+async function billing(req,res){
+  const session=requireAuth(req,res); if(!session)return;
+  if(req.method!=='POST') return json(res,405,{error:'Método não permitido'});
+  const profiles=await db(`veredicta_users?id=eq.${encodeURIComponent(session.profileId)}&select=id,name,email,stripe_customer_id,subscription_status&limit=1`);
+  if(!profiles.length) return json(res,404,{error:'Usuário não encontrado'});
+  const profile=profiles[0];
+  const target=profile.stripe_customer_id
+    ? await createBillingPortalSession({customerId:profile.stripe_customer_id})
+    : await createCheckoutSession({userId:profile.id,email:profile.email,name:profile.name});
+  return json(res,200,{url:target.url});
+}
 
 async function config(req,res){
-  if(!requireAuth(req,res)) return;
+  const session=requireAuth(req,res); if(!session)return;
   if(req.method!=='GET') return json(res,405,{error:'Método não permitido'});
   return json(res,200,{
     custom_gpt_url: process.env.CUSTOM_GPT_URL || '',
     app_version: APP_VERSION,
     validator_version: VALIDATOR_VERSION,
-    supabase: supabaseConfigStatus()
+    user:{name:session.name,email:session.email,role:session.role},
+    supabase: supabaseConfigStatus(),
+    stripe: stripeConfigStatus()
   });
 }
 
 async function cases(req,res) {
-  // Endpoint do APP, protegido pela sessão interna.
-  // O usuário autenticado pode cadastrar e consultar casos reais.
-  if(!requireAuth(req,res)) return;
+  const session=requireAuth(req,res); if(!session)return;
+  const ownerId=session.profileId;
 
   if(req.method==='GET') {
     const id=String(req.query?.id||'').trim();
     if(id){
-      const rows=await db(`cases?id=eq.${encodeURIComponent(id)}&select=*,analyses(*),reviews(*)&limit=1`);
+      const rows=await db(`cases?id=eq.${encodeURIComponent(id)}&owner_id=eq.${encodeURIComponent(ownerId)}&select=*,analyses(*),reviews(*)&limit=1`);
       if(!rows.length)return json(res,404,{error:'Caso não encontrado'});
       return json(res,200,{case:rows[0]});
     }
-    try {
-      const rows=await db('cases?select=id,title,client_name,status,owner_id,created_at,updated_at,analyses(id,final_classification,quality_gate,auditor_recommendation,created_at),reviews(id,created_at)&order=created_at.desc&limit=200');
-      return json(res,200,{cases:rows,migration_required:false});
-    } catch (error) {
-      const message=String(error?.message||'');
-      if (/owner_id/i.test(message) && /(does not exist|não existe|column)/i.test(message)) {
-        console.warn('[schema] Multiuser migration pending: cases.owner_id ausente. Carregando modo compatibilidade.');
-        const rows=await db('cases?select=id,title,client_name,status,created_at,updated_at,analyses(id,final_classification,quality_gate,auditor_recommendation,created_at),reviews(id,created_at)&order=created_at.desc&limit=200');
-        return json(res,200,{
-          cases:rows,
-          migration_required:true,
-          migration:'supabase/migration_v3_9_multiuser.sql'
-        });
-      }
-      throw error;
-    }
+    const rows=await db(`cases?owner_id=eq.${encodeURIComponent(ownerId)}&select=id,title,client_name,status,owner_id,created_at,updated_at,analyses(id,final_classification,quality_gate,auditor_recommendation,created_at),reviews(id,created_at)&order=created_at.desc&limit=200`);
+    return json(res,200,{cases:rows,migration_required:false});
   }
 
   if(req.method==='POST'){
     const body=await readJson(req);
-    if(!body.title||!body.contract_text){
-      return json(res,400,{error:'Título e texto do contrato são obrigatórios'});
-    }
-
-    const ownerId=String(body.owner_user_id||LEGACY_OWNER_ID).trim();
-    const owners=await db(`veredicta_users?id=eq.${encodeURIComponent(ownerId)}&status=eq.active&select=id,name,email&limit=1`);
+    if(!body.title||!body.contract_text) return json(res,400,{error:'Título e texto do contrato são obrigatórios'});
+    let targetOwner=ownerId;
+    if(session.role==='admin'&&body.owner_user_id) targetOwner=String(body.owner_user_id).trim();
+    const owners=await db(`veredicta_users?id=eq.${encodeURIComponent(targetOwner)}&status=eq.active&select=id,name,email&limit=1`);
     if(!owners.length) return json(res,400,{error:'Usuário responsável inválido ou inativo'});
-
-    const [row]=await db('cases',{
-      method:'POST',
-      body:JSON.stringify({
-        title:String(body.title).slice(0,180),
-        client_name:String(body.client_name||'').slice(0,180),
-        contract_text:String(body.contract_text),
-        owner_id:ownerId,
-        status:'pendente'
-      })
-    });
-
-    await db('audit_logs',{
-      method:'POST',
-      body:JSON.stringify({
-        case_id:row.id,
-        owner_id:ownerId,
-        event_type:'case_created_in_app',
-        payload:{title:row.title,owner_email:owners[0].email}
-      })
-    });
-
+    const [row]=await db('cases',{method:'POST',body:JSON.stringify({
+      title:String(body.title).slice(0,180),client_name:String(body.client_name||'').slice(0,180),
+      contract_text:String(body.contract_text),owner_id:targetOwner,status:'pendente'
+    })});
+    await db('audit_logs',{method:'POST',body:JSON.stringify({case_id:row.id,owner_id:targetOwner,event_type:'case_created_in_app',payload:{title:row.title,owner_email:owners[0].email}})});
     return json(res,201,{case:row});
   }
-
   return json(res,405,{error:'Método não permitido'});
 }
 
@@ -642,7 +800,8 @@ async function testImport(req,res){
 }
 
 async function testImportUi(req,res){
-  if(!requireAuth(req,res)) return;
+  const session=requireAuth(req,res); if(!session)return;
+  if(session.role!=='admin') return json(res,403,{error:'Importação de testes restrita ao administrador'});
   if(req.method!=='POST') return json(res,405,{error:'Método não permitido'});
 
   try {
@@ -750,10 +909,11 @@ async function sourceStatus(req,res){
 
 
 async function adminUsers(req,res){
-  if(!requireAuth(req,res)) return;
+  const session=requireAuth(req,res); if(!session)return;
+  if(session.role!=='admin') return json(res,403,{error:'Acesso administrativo restrito'});
 
   if(req.method==='GET'){
-    const users=await db('veredicta_users?select=id,name,email,role,status,created_at,updated_at&order=created_at.desc');
+    const users=await db('veredicta_users?select=id,name,email,role,status,subscription_status,auth_user_id,created_at,updated_at&order=created_at.desc');
     const keys=await db('veredicta_api_keys?select=id,user_id,key_prefix,label,status,last_used_at,created_at,revoked_at&order=created_at.desc');
     return json(res,200,{users:users.map(u=>({...u,keys:keys.filter(k=>k.user_id===u.id)}))});
   }
@@ -763,18 +923,7 @@ async function adminUsers(req,res){
     const op=String(body.operation||'create').trim();
 
     if(op==='create'){
-      const name=String(body.name||'').trim();
-      const email=String(body.email||'').trim().toLowerCase();
-      const role=body.role==='admin'?'admin':'user';
-      if(!name||!email||!email.includes('@')) return json(res,400,{error:'Nome e e-mail válidos são obrigatórios'});
-      const existing=await db(`veredicta_users?email=eq.${encodeURIComponent(email)}&select=id&limit=1`);
-      if(existing.length) return json(res,409,{error:'Já existe um usuário com este e-mail'});
-      const [user]=await db('veredicta_users',{method:'POST',body:JSON.stringify({name,email,role,status:'active'})});
-      const plainKey=generateUserApiKey();
-      const parts=plainKey.split('_');
-      const keyPrefix=parts.slice(0,3).join('_');
-      await db('veredicta_api_keys',{method:'POST',body:JSON.stringify({user_id:user.id,key_prefix:keyPrefix,key_hash:hashApiKey(plainKey),label:'GPT pessoal',status:'active'})});
-      return json(res,201,{user,api_key:plainKey,warning:'A chave é exibida somente agora. Salve-a em local seguro.'});
+      return json(res,409,{error:'Novos usuários devem ser criados pela página pública de cadastro e concluir o pagamento antes do acesso.'});
     }
 
     if(op==='rotate_key'){
@@ -808,6 +957,10 @@ export default async function handler(req,res){
   try {
     switch(action(req)){
       case 'auth': return await auth(req,res);
+      case 'register': return await register(req,res);
+      case 'recover': return await recover(req,res);
+      case 'stripe-webhook': return await stripeWebhook(req,res);
+      case 'billing': return await billing(req,res);
       case 'cases': return await cases(req,res);
       case 'config': return await config(req,res);
       case 'admin-users': return await adminUsers(req,res);

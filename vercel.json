@@ -7,6 +7,22 @@
       "destination": "/api?action=auth"
     },
     {
+      "source": "/api/register",
+      "destination": "/api?action=register"
+    },
+    {
+      "source": "/api/recover",
+      "destination": "/api?action=recover"
+    },
+    {
+      "source": "/api/billing",
+      "destination": "/api?action=billing"
+    },
+    {
+      "source": "/api/stripe/webhook",
+      "destination": "/api?action=stripe-webhook"
+    },
+    {
       "source": "/api/cases",
       "destination": "/api?action=cases"
     },
