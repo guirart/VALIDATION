@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const app=fs.readFileSync(new URL('../app.js',import.meta.url),'utf8');
+const api=fs.readFileSync(new URL('../api/index.js',import.meta.url),'utf8');
+assert.match(app,/LOGIN-FIRST/);
+assert.match(app,/authState='unauthenticated';\s*showLogin\(\)/);
+assert.doesNotMatch(app,/async function boot\(\)\{[\s\S]{0,180}confirmSession\(true\)/);
+assert.match(api,/migration_required:true/);
+assert.match(api,/Multiuser migration pending/);
+assert.match(api,/APP_VERSION = '3\.9\.2'/);
+console.log('v3.9.2 login-first + migration guard: OK');

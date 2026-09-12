@@ -1,3 +1,7 @@
+## v3.9.2 — Login-first + proteção de migração
+
+A página inicial sempre abre no login, mesmo se existir cookie de sessão anterior. Se `cases.owner_id` ainda não existir, o dashboard entra em modo de compatibilidade e informa que a migration multiusuário deve ser executada.
+
 # VEREDICTA v3.9 — Multiusuário por GPT
 
 Esta versão mantém o validator jurídico 3.8.1 e adiciona isolamento multiusuário para GPT Actions. Cada usuário recebe uma chave `vrd_live_...`; a API resolve essa chave para um `user_id` e todas as consultas do GPT são filtradas por `owner_id`.

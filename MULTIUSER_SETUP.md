@@ -1,3 +1,7 @@
+## v3.9.2 — Login-first + proteção de migração
+
+A página inicial sempre abre no login, mesmo se existir cookie de sessão anterior. Se `cases.owner_id` ainda não existir, o dashboard entra em modo de compatibilidade e informa que a migration multiusuário deve ser executada.
+
 # Configuração do Veredicta v3.9 Multiusuário
 
 ## 1. Banco

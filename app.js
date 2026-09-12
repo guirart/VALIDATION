@@ -132,22 +132,12 @@ function clearRuntimeError(){
 }
 
 async function boot(){
-  authState='checking';
-  const authenticated=await confirmSession(true);
-  if(!authenticated){authState='unauthenticated';showLogin();return}
-
-  showApp();
+  // LOGIN-FIRST: a página inicial sempre começa na tela de login.
+  // Uma sessão antiga pode continuar tecnicamente válida no cookie, mas nunca
+  // abre o painel automaticamente. O usuário precisa clicar em Entrar.
+  authState='unauthenticated';
+  showLogin();
   clearRuntimeError();
-  try{
-    await loadConfig();
-    await loadCases();
-  }catch(err){
-    // Só sai do app se a sessão realmente tiver terminado.
-    const stillAuthenticated=await confirmSession(true);
-    if(!stillAuthenticated){authState='unauthenticated';showLogin();return}
-    console.error('Falha ao carregar o Veredicta:',err);
-    showRuntimeError('Falha ao carregar dados: '+(err?.message||'erro desconhecido'));
-  }
 }
 $('#login-form').addEventListener('submit',async e=>{
   e.preventDefault();$('#login-error').textContent='';
@@ -182,6 +172,11 @@ $('#case-search')?.addEventListener('input',()=>renderHistory());
 async function loadConfig(){try{const out=await api('/api/config');customGptUrl=out.custom_gpt_url||''}catch{customGptUrl=''}}
 async function loadCases(keep=false){
   const out=await api('/api/cases');cases=out.cases||[];
+  if(out.migration_required){
+    showRuntimeError('Multiusuário ainda não ativado no Supabase. Execute supabase/migration_v3_9_multiuser.sql no SQL Editor. O painel foi aberto em modo de compatibilidade.');
+  } else {
+    clearRuntimeError();
+  }
   renderStats();renderTabs();
 
   const requestedCase = new URLSearchParams(window.location.search).get('case');

@@ -8,7 +8,7 @@ const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','re
 const AUDIT_RECOMMENDATIONS = new Set(['liberar','corrigir','escalar para revisão humana aprofundada']);
 const AUDIT_STATUSES = new Set(['confirmado','divergente','não encontrado','opinião sem precedente']);
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
-const APP_VERSION = '3.9.1';
+const APP_VERSION = '3.9.2';
 const VALIDATOR_VERSION = '3.8.1';
 
 function stageLog(stage, meta={}) {
@@ -138,8 +138,22 @@ async function cases(req,res) {
       if(!rows.length)return json(res,404,{error:'Caso não encontrado'});
       return json(res,200,{case:rows[0]});
     }
-    const rows=await db('cases?select=id,title,client_name,status,owner_id,created_at,updated_at,analyses(id,final_classification,quality_gate,auditor_recommendation,created_at),reviews(id,created_at)&order=created_at.desc&limit=200');
-    return json(res,200,{cases:rows});
+    try {
+      const rows=await db('cases?select=id,title,client_name,status,owner_id,created_at,updated_at,analyses(id,final_classification,quality_gate,auditor_recommendation,created_at),reviews(id,created_at)&order=created_at.desc&limit=200');
+      return json(res,200,{cases:rows,migration_required:false});
+    } catch (error) {
+      const message=String(error?.message||'');
+      if (/owner_id/i.test(message) && /(does not exist|não existe|column)/i.test(message)) {
+        console.warn('[schema] Multiuser migration pending: cases.owner_id ausente. Carregando modo compatibilidade.');
+        const rows=await db('cases?select=id,title,client_name,status,created_at,updated_at,analyses(id,final_classification,quality_gate,auditor_recommendation,created_at),reviews(id,created_at)&order=created_at.desc&limit=200');
+        return json(res,200,{
+          cases:rows,
+          migration_required:true,
+          migration:'supabase/migration_v3_9_multiuser.sql'
+        });
+      }
+      throw error;
+    }
   }
 
   if(req.method==='POST'){
