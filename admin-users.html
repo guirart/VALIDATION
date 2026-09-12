@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Usuários GPT — Veredicta</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    .users-page{max-width:1100px;margin:0 auto;padding:34px 24px 70px}.users-grid{display:grid;grid-template-columns:360px 1fr;gap:24px}.user-panel{padding:22px;border:1px solid var(--line,#ddd);border-radius:18px;background:var(--card,#fff)}.user-list{display:grid;gap:12px}.user-row{padding:16px;border:1px solid var(--line,#ddd);border-radius:14px}.user-row-head{display:flex;justify-content:space-between;gap:12px}.key-box{margin-top:14px;padding:14px;border-radius:12px;background:#111;color:#fff;word-break:break-all}.key-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.muted{opacity:.72}.danger{color:#b42318}.success{color:#067647}@media(max-width:850px){.users-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div id="login" class="login-screen hidden">
+    <form id="login-form" class="login-card">
+      <div class="micro">ACESSO INTERNO</div><h1>Veredicta</h1><p>Entre para administrar usuários GPT.</p>
+      <input id="password" type="password" placeholder="Senha do app" autocomplete="current-password" required />
+      <button class="btn btn-dark">Entrar</button><p id="login-error" class="error"></p>
+    </form>
+  </div>
+  <div id="users-app" class="hidden">
+    <header class="appbar">
+      <div class="brand-wrap"><a class="brand brand-link" href="/">VEREDICTA</a><span class="brand-sub">Usuários GPT</span></div>
+      <div class="appbar-actions"><a class="link-btn nav-link" href="/">voltar ao painel</a><button id="logout" class="link-btn">sair</button></div>
+    </header>
+    <main class="users-page">
+      <div class="new-case-hero"><div><div class="micro">MULTIUSUÁRIO</div><h1>Usuários do GPT Veredicta</h1><p>Cada usuário recebe uma chave exclusiva. Essa chave limita a Action aos casos e análises daquele usuário.</p></div></div>
+      <div class="users-grid">
+        <section class="user-panel">
+          <h2>Novo usuário</h2>
+          <form id="create-user-form">
+            <label class="field"><span>NOME</span><input id="user-name" required maxlength="180" /></label>
+            <label class="field"><span>E-MAIL</span><input id="user-email" type="email" required maxlength="240" /></label>
+            <label class="field"><span>PERFIL</span><select id="user-role"><option value="user">Usuário</option><option value="admin">Administrador</option></select></label>
+            <button class="btn btn-dark" type="submit">Criar usuário e chave</button>
+          </form>
+          <div id="new-key-wrap" class="hidden">
+            <p class="success"><b>Usuário criado.</b> Copie a chave agora. Ela não será exibida novamente.</p>
+            <div id="new-key" class="key-box"></div>
+            <div class="key-actions"><button id="copy-key" class="btn btn-outline" type="button">Copiar chave</button></div>
+          </div>
+          <p id="create-status" class="save-status"></p>
+        </section>
+        <section class="user-panel"><div class="section-title-row"><div><h2>Usuários cadastrados</h2><p class="muted">Suspenda um usuário para bloquear imediatamente o acesso da chave dele.</p></div><button id="refresh-users" class="btn btn-outline" type="button">Atualizar</button></div><div id="users-list" class="user-list"></div></section>
+      </div>
+    </main>
+  </div>
+  <script type="module" src="/admin-users.js"></script>
+</body>
+</html>

@@ -1,3 +1,13 @@
+# VEREDICTA v3.9 — Multiusuário por GPT
+
+Esta versão mantém o validator jurídico 3.8.1 e adiciona isolamento multiusuário para GPT Actions. Cada usuário recebe uma chave `vrd_live_...`; a API resolve essa chave para um `user_id` e todas as consultas do GPT são filtradas por `owner_id`.
+
+Antes do deploy, execute `supabase/migration_v3_9_multiuser.sql` no SQL Editor do Supabase. Depois abra `/admin-users.html`, crie o usuário, copie a chave exibida uma única vez e configure a cópia pessoal do GPT para enviar essa chave no cabeçalho `X-Veredicta-Key`.
+
+O painel web continua sendo administrativo. O GPT continua sem permissão para criar ou alterar o conteúdo factual dos casos.
+
+---
+
 # Veredicta
 
 > Senha padrão do app: `marcal2015`. Em produção, ela pode ser sobrescrita pela variável `APP_PASSWORD`. — MP nº 1.376/2026 — modo GPT Action

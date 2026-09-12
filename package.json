@@ -1,6 +1,6 @@
 {
   "name": "veredicta-mp1376-app",
-  "version": "3.8.1",
+  "version": "3.9.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -29,7 +29,8 @@
     "test:v374": "node tests/v374-status-visual-coerente.test.mjs",
     "test:v38": "node tests/v38-taxonomy.test.mjs",
     "test:v381": "node tests/v381-test004-regression.test.mjs",
-    "test:auth-loop": "node tests/v381-auth-loop.test.mjs"
+    "test:auth-loop": "node tests/v381-auth-loop.test.mjs",
+    "test:v39-multiuser": "node tests/v39-multiuser.test.mjs"
   },
   "devDependencies": {
     "vercel": "latest"

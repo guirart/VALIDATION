@@ -26,10 +26,18 @@ function showApp() {
   $('#new-case-app').classList.remove('hidden');
 }
 
+async function loadOwners(){
+  const out = await api('/api/admin/users');
+  const select = $('#owner-user');
+  const users = (out.users || []).filter(u => u.status === 'active');
+  select.innerHTML = users.map(u => `<option value="${u.id}">${u.name} — ${u.email}</option>`).join('');
+}
+
 async function boot() {
   const session = await fetch('/api/auth',{credentials:'same-origin'}).then(r=>r.json());
   if (session.passwordRequired && !session.authenticated) return showLogin();
   showApp();
+  await loadOwners();
 }
 
 $('#login-form').addEventListener('submit', async e => {
@@ -68,7 +76,8 @@ $('#new-case-form').addEventListener('submit', async e => {
       body:JSON.stringify({
         title: $('#title').value.trim(),
         client_name: $('#client-name').value.trim(),
-        contract_text: $('#contract-text').value
+        contract_text: $('#contract-text').value,
+        owner_user_id: $('#owner-user').value
       })
     });
 

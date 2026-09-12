@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import { json, readJson, makeSessionCookie, clearSessionCookie, isAuthenticated, requireAuth } from '../lib/http.js';
-import { requireActionAuth } from '../lib/actionAuth.js';
+import { requireActionAuth, generateUserApiKey, hashApiKey, LEGACY_OWNER_ID } from '../lib/actionAuth.js';
 import { db, supabaseConfigStatus } from '../lib/supabase.js';
 import { verifyAnalysis, FINAL_CLASSES, mpText, memoText } from '../lib/legal.js';
 
@@ -8,7 +8,7 @@ const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','re
 const AUDIT_RECOMMENDATIONS = new Set(['liberar','corrigir','escalar para revisão humana aprofundada']);
 const AUDIT_STATUSES = new Set(['confirmado','divergente','não encontrado','opinião sem precedente']);
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
-const APP_VERSION = '3.8.1';
+const APP_VERSION = '3.9.0';
 const VALIDATOR_VERSION = '3.8.1';
 
 function stageLog(stage, meta={}) {
@@ -148,12 +148,17 @@ async function cases(req,res) {
       return json(res,400,{error:'Título e texto do contrato são obrigatórios'});
     }
 
+    const ownerId=String(body.owner_user_id||LEGACY_OWNER_ID).trim();
+    const owners=await db(`veredicta_users?id=eq.${encodeURIComponent(ownerId)}&status=eq.active&select=id,name,email&limit=1`);
+    if(!owners.length) return json(res,400,{error:'Usuário responsável inválido ou inativo'});
+
     const [row]=await db('cases',{
       method:'POST',
       body:JSON.stringify({
         title:String(body.title).slice(0,180),
         client_name:String(body.client_name||'').slice(0,180),
         contract_text:String(body.contract_text),
+        owner_id:ownerId,
         status:'pendente'
       })
     });
@@ -162,8 +167,9 @@ async function cases(req,res) {
       method:'POST',
       body:JSON.stringify({
         case_id:row.id,
+        owner_id:ownerId,
         event_type:'case_created_in_app',
-        payload:{title:row.title}
+        payload:{title:row.title,owner_email:owners[0].email}
       })
     });
 
@@ -174,8 +180,9 @@ async function cases(req,res) {
 }
 
 async function gptCases(req,res){
-  // Endpoint da ACTION: somente leitura. O GPT nunca cria casos.
-  if(!requireActionAuth(req,res))return;
+  // Cada chave GPT enxerga somente os casos do seu próprio usuário.
+  const principal=await requireActionAuth(req,res);
+  if(!principal)return;
 
   if(req.method==='GET'){
     const status=String(req.query?.status||'').trim();
@@ -184,10 +191,10 @@ async function gptCases(req,res){
       : '';
 
     const rows=await db(
-      `cases?select=id,title,client_name,status,created_at,updated_at${filter}&order=created_at.desc&limit=50`
+      `cases?owner_id=eq.${encodeURIComponent(principal.userId)}&select=id,title,client_name,status,created_at,updated_at${filter}&order=created_at.desc&limit=50`
     );
 
-    return json(res,200,{cases:rows});
+    return json(res,200,{cases:rows,user:{name:principal.name,email:principal.email}});
   }
 
   return json(res,405,{
@@ -196,11 +203,14 @@ async function gptCases(req,res){
 }
 
 async function gptCase(req,res){
-  if(!requireActionAuth(req,res))return; if(req.method!=='GET')return json(res,405,{error:'Método não permitido'});
+  const principal=await requireActionAuth(req,res);
+  if(!principal)return;
+  if(req.method!=='GET')return json(res,405,{error:'Método não permitido'});
   const id=String(req.query?.id||'').trim(); if(!id)return json(res,400,{error:'id obrigatório'});
-  const rows=await db(`cases?id=eq.${encodeURIComponent(id)}&select=id,title,client_name,contract_text,status,created_at,updated_at&limit=1`); if(!rows.length)return json(res,404,{error:'Caso não encontrado'});
-  await db(`cases?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:JSON.stringify({status:'em-analise',updated_at:new Date().toISOString()})});
-  await db('audit_logs',{method:'POST',body:JSON.stringify({case_id:id,event_type:'case_fetched_by_gpt_action',payload:{}})});
+  const rows=await db(`cases?id=eq.${encodeURIComponent(id)}&owner_id=eq.${encodeURIComponent(principal.userId)}&select=id,title,client_name,contract_text,status,created_at,updated_at&limit=1`);
+  if(!rows.length)return json(res,404,{error:'Caso não encontrado para este usuário'});
+  await db(`cases?id=eq.${encodeURIComponent(id)}&owner_id=eq.${encodeURIComponent(principal.userId)}`,{method:'PATCH',body:JSON.stringify({status:'em-analise',updated_at:new Date().toISOString()})});
+  await db('audit_logs',{method:'POST',body:JSON.stringify({case_id:id,owner_id:principal.userId,event_type:'case_fetched_by_gpt_action',payload:{user_email:principal.email}})});
   return json(res,200,{
     case:{...rows[0],status:'em-analise'},
     contract_sha256:sha(rows[0].contract_text),
@@ -214,11 +224,12 @@ async function gptCase(req,res){
 async function gptAnalysis(req,res){
   stageLog('REQUEST_RECEIVED',{method:req.method});
 
-  if(!requireActionAuth(req,res)){
+  const principal=await requireActionAuth(req,res);
+  if(!principal){
     stageLog('AUTH_FAILED');
     return;
   }
-  stageLog('AUTH_OK');
+  stageLog('AUTH_OK',{user_id:principal.userId});
 
   if(req.method!=='POST'){
     stageLog('METHOD_REJECTED',{method:req.method});
@@ -257,7 +268,7 @@ async function gptAnalysis(req,res){
 
   stageLog('REQUEST_FIELDS_OK',{case_id:caseId});
 
-  const rows=await db(`cases?id=eq.${encodeURIComponent(caseId)}&select=*&limit=1`);
+  const rows=await db(`cases?id=eq.${encodeURIComponent(caseId)}&owner_id=eq.${encodeURIComponent(principal.userId)}&select=*&limit=1`);
   if(!rows.length){
     stageLog('CASE_NOT_FOUND',{case_id:caseId});
     return json(res,404,{
@@ -371,6 +382,7 @@ async function gptAnalysis(req,res){
     method:'POST',
     body:JSON.stringify({
       case_id:caseId,
+      owner_id:principal.userId,
       analyst_json:analystCheck.analysis,
       audit_json:body.audit,
       final_classification:finalClassification,
@@ -387,7 +399,7 @@ async function gptAnalysis(req,res){
 
   const status=qualityGate?'aguardando-revisao':'requer-correcao';
 
-  await db(`cases?id=eq.${encodeURIComponent(caseId)}`,{
+  await db(`cases?id=eq.${encodeURIComponent(caseId)}&owner_id=eq.${encodeURIComponent(principal.userId)}`,{
     method:'PATCH',
     body:JSON.stringify({status})
   });
@@ -397,6 +409,7 @@ async function gptAnalysis(req,res){
     body:JSON.stringify({
       case_id:caseId,
       analysis_id:analysisRow.id,
+      owner_id:principal.userId,
       event_type:'analysis_submitted',
       payload:{
         quality_gate:qualityGate,
@@ -596,7 +609,9 @@ async function importSyntheticCases(body) {
 }
 
 async function testImport(req,res){
-  if(!requireActionAuth(req,res)) return;
+  const principal=await requireActionAuth(req,res);
+  if(!principal) return;
+  if(principal.role!=='admin') return json(res,403,{error:'Importação de testes restrita ao administrador'});
   if(req.method!=='POST') return json(res,405,{error:'Método não permitido'});
 
   try {
@@ -631,7 +646,8 @@ async function testImportUi(req,res){
 
 
 async function gptAnalysisHistory(req,res){
-  if(!requireActionAuth(req,res)) return;
+  const principal=await requireActionAuth(req,res);
+  if(!principal) return;
   if(req.method!=='GET') return json(res,405,{error:'Método não permitido'});
 
   const caseId=String(req.query?.case_id||'').trim();
@@ -640,8 +656,11 @@ async function gptAnalysisHistory(req,res){
     app_version:APP_VERSION,validator_version:VALIDATOR_VERSION
   });
 
+  const owned=await db(`cases?id=eq.${encodeURIComponent(caseId)}&owner_id=eq.${encodeURIComponent(principal.userId)}&select=id&limit=1`);
+  if(!owned.length) return json(res,404,{ok:false,error:'Caso não encontrado para este usuário'});
+
   const rows=await db(
-    `analyses?case_id=eq.${encodeURIComponent(caseId)}&select=id,case_id,final_classification,quality_gate,auditor_recommendation,created_at&order=created_at.desc`
+    `analyses?case_id=eq.${encodeURIComponent(caseId)}&owner_id=eq.${encodeURIComponent(principal.userId)}&select=id,case_id,final_classification,quality_gate,auditor_recommendation,created_at&order=created_at.desc`
   );
 
   return json(res,200,{
@@ -651,7 +670,8 @@ async function gptAnalysisHistory(req,res){
 }
 
 async function gptAnalysisDetail(req,res){
-  if(!requireActionAuth(req,res)) return;
+  const principal=await requireActionAuth(req,res);
+  if(!principal) return;
   if(req.method!=='GET') return json(res,405,{error:'Método não permitido'});
 
   const analysisId=String(req.query?.id||'').trim();
@@ -661,33 +681,26 @@ async function gptAnalysisDetail(req,res){
   });
 
   const rows=await db(
-    `analyses?id=eq.${encodeURIComponent(analysisId)}&select=id,case_id,analyst_json,audit_json,final_classification,quality_gate,auditor_recommendation,created_at&limit=1`
+    `analyses?id=eq.${encodeURIComponent(analysisId)}&owner_id=eq.${encodeURIComponent(principal.userId)}&select=id,case_id,analyst_json,audit_json,final_classification,quality_gate,auditor_recommendation,created_at&limit=1`
   );
 
   if(!rows.length) return json(res,404,{
-    ok:false,error:'Análise não encontrada',analysis_id:analysisId,
+    ok:false,error:'Análise não encontrada para este usuário',analysis_id:analysisId,
     app_version:APP_VERSION,validator_version:VALIDATOR_VERSION
   });
 
   const a=rows[0];
-
   const logs=await db(
-    `audit_logs?analysis_id=eq.${encodeURIComponent(analysisId)}&event_type=eq.analysis_submitted&select=id,payload,created_at&order=created_at.desc&limit=1`
+    `audit_logs?analysis_id=eq.${encodeURIComponent(analysisId)}&owner_id=eq.${encodeURIComponent(principal.userId)}&event_type=eq.analysis_submitted&select=id,payload,created_at&order=created_at.desc&limit=1`
   );
-
   const payload=logs?.[0]?.payload || {};
 
   return json(res,200,{
     ok:true,
     analysis:{
-      id:a.id,
-      case_id:a.case_id,
-      analyst:a.analyst_json,
-      audit:a.audit_json,
-      final_classification:a.final_classification,
-      quality_gate:a.quality_gate,
-      auditor_recommendation:a.auditor_recommendation,
-      created_at:a.created_at
+      id:a.id,case_id:a.case_id,analyst:a.analyst_json,audit:a.audit_json,
+      final_classification:a.final_classification,quality_gate:a.quality_gate,
+      auditor_recommendation:a.auditor_recommendation,created_at:a.created_at
     },
     validation:{
       validation_errors:payload.validation_errors||[],
@@ -701,16 +714,18 @@ async function gptAnalysisDetail(req,res){
       app_version:payload.app_version||APP_VERSION,
       validator_version:payload.validator_version||VALIDATOR_VERSION
     },
-    app_version:APP_VERSION,
-    validator_version:VALIDATOR_VERSION
+    app_version:APP_VERSION,validator_version:VALIDATOR_VERSION
   });
 }
 
 async function sourceStatus(req,res){
-  if(!requireActionAuth(req,res))return; if(req.method!=='GET')return json(res,405,{error:'Método não permitido'});
+  const principal=await requireActionAuth(req,res);
+  if(!principal)return;
+  if(req.method!=='GET')return json(res,405,{error:'Método não permitido'});
   return json(res,200,{
     app_version:APP_VERSION,
     validator_version:VALIDATOR_VERSION,
+    user:{name:principal.name,email:principal.email},
     legal_source_version:process.env.LEGAL_SOURCE_VERSION||null,
     memorandum_version:process.env.MEMORANDUM_VERSION||null,
     mp_sha256:sha(mpText),
@@ -719,12 +734,69 @@ async function sourceStatus(req,res){
   });
 }
 
+
+async function adminUsers(req,res){
+  if(!requireAuth(req,res)) return;
+
+  if(req.method==='GET'){
+    const users=await db('veredicta_users?select=id,name,email,role,status,created_at,updated_at&order=created_at.desc');
+    const keys=await db('veredicta_api_keys?select=id,user_id,key_prefix,label,status,last_used_at,created_at,revoked_at&order=created_at.desc');
+    return json(res,200,{users:users.map(u=>({...u,keys:keys.filter(k=>k.user_id===u.id)}))});
+  }
+
+  if(req.method==='POST'){
+    const body=await readJson(req);
+    const op=String(body.operation||'create').trim();
+
+    if(op==='create'){
+      const name=String(body.name||'').trim();
+      const email=String(body.email||'').trim().toLowerCase();
+      const role=body.role==='admin'?'admin':'user';
+      if(!name||!email||!email.includes('@')) return json(res,400,{error:'Nome e e-mail válidos são obrigatórios'});
+      const existing=await db(`veredicta_users?email=eq.${encodeURIComponent(email)}&select=id&limit=1`);
+      if(existing.length) return json(res,409,{error:'Já existe um usuário com este e-mail'});
+      const [user]=await db('veredicta_users',{method:'POST',body:JSON.stringify({name,email,role,status:'active'})});
+      const plainKey=generateUserApiKey();
+      const parts=plainKey.split('_');
+      const keyPrefix=parts.slice(0,3).join('_');
+      await db('veredicta_api_keys',{method:'POST',body:JSON.stringify({user_id:user.id,key_prefix:keyPrefix,key_hash:hashApiKey(plainKey),label:'GPT pessoal',status:'active'})});
+      return json(res,201,{user,api_key:plainKey,warning:'A chave é exibida somente agora. Salve-a em local seguro.'});
+    }
+
+    if(op==='rotate_key'){
+      const userId=String(body.user_id||'').trim();
+      const users=await db(`veredicta_users?id=eq.${encodeURIComponent(userId)}&select=id,name,email,status&limit=1`);
+      if(!users.length) return json(res,404,{error:'Usuário não encontrado'});
+      await db(`veredicta_api_keys?user_id=eq.${encodeURIComponent(userId)}&status=eq.active`,{method:'PATCH',body:JSON.stringify({status:'revoked',revoked_at:new Date().toISOString()})});
+      const plainKey=generateUserApiKey();
+      const parts=plainKey.split('_');
+      const keyPrefix=parts.slice(0,3).join('_');
+      await db('veredicta_api_keys',{method:'POST',body:JSON.stringify({user_id:userId,key_prefix:keyPrefix,key_hash:hashApiKey(plainKey),label:'GPT pessoal',status:'active'})});
+      return json(res,200,{user:users[0],api_key:plainKey,warning:'A chave anterior foi revogada. Esta nova chave é exibida somente agora.'});
+    }
+
+    if(op==='set_status'){
+      const userId=String(body.user_id||'').trim();
+      const status=body.status==='suspended'?'suspended':'active';
+      const rows=await db(`veredicta_users?id=eq.${encodeURIComponent(userId)}`,{method:'PATCH',body:JSON.stringify({status,updated_at:new Date().toISOString()})});
+      if(!rows.length) return json(res,404,{error:'Usuário não encontrado'});
+      return json(res,200,{user:rows[0]});
+    }
+
+    return json(res,400,{error:'Operação administrativa inválida'});
+  }
+
+  return json(res,405,{error:'Método não permitido'});
+}
+
+
 export default async function handler(req,res){
   try {
     switch(action(req)){
       case 'auth': return await auth(req,res);
       case 'cases': return await cases(req,res);
       case 'config': return await config(req,res);
+      case 'admin-users': return await adminUsers(req,res);
       case 'review': return await review(req,res);
       case 'gpt-cases': return await gptCases(req,res);
       case 'gpt-case': return await gptCase(req,res);

@@ -2,8 +2,8 @@ openapi: 3.1.0
 
 info:
   title: Veredicta API
-  version: "3.6.0"
-  description: API do Veredicta com consulta de casos, análises, histórico e importação sintética.
+  version: "3.9.0"
+  description: API multiusuário do Veredicta. Cada X-Veredicta-Key identifica um usuário e limita casos e análises ao respectivo proprietário.
 
 servers:
   - url: https://validation-six-tawny.vercel.app
@@ -402,6 +402,7 @@ components:
       type: apiKey
       in: header
       name: X-Veredicta-Key
+      description: Chave individual do usuário Veredicta. Nunca compartilhe a mesma chave entre usuários.
 
 security:
   - VeredictaKey: []

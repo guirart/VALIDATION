@@ -19,6 +19,10 @@
       "destination": "/api?action=review"
     },
     {
+      "source": "/api/admin/users",
+      "destination": "/api?action=admin-users"
+    },
+    {
       "source": "/api/gpt/cases",
       "destination": "/api?action=gpt-cases"
     },
