@@ -8,7 +8,7 @@ const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','re
 const AUDIT_RECOMMENDATIONS = new Set(['liberar','corrigir','escalar para revisão humana aprofundada']);
 const AUDIT_STATUSES = new Set(['confirmado','divergente','não encontrado','opinião sem precedente']);
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
-const APP_VERSION = '3.9.0';
+const APP_VERSION = '3.9.1';
 const VALIDATOR_VERSION = '3.8.1';
 
 function stageLog(stage, meta={}) {
@@ -138,7 +138,7 @@ async function cases(req,res) {
       if(!rows.length)return json(res,404,{error:'Caso não encontrado'});
       return json(res,200,{case:rows[0]});
     }
-    const rows=await db('cases?select=*,analyses(id,final_classification,quality_gate,auditor_recommendation,created_at)&order=created_at.desc');
+    const rows=await db('cases?select=id,title,client_name,status,owner_id,created_at,updated_at,analyses(id,final_classification,quality_gate,auditor_recommendation,created_at),reviews(id,created_at)&order=created_at.desc&limit=200');
     return json(res,200,{cases:rows});
   }
 
@@ -818,6 +818,7 @@ export default async function handler(req,res){
         supabase: supabaseConfigStatus()
       }));
     } catch {}
-    return json(res,500,{error:e?.message || 'Erro interno do servidor'});
+    const status = e?.code === 'SUPABASE_TIMEOUT' ? 504 : 500;
+    return json(res,status,{error:e?.message || 'Erro interno do servidor'});
   }
 }
