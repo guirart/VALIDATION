@@ -117,12 +117,27 @@ function showApp(){
   if(bootError)bootError.textContent='';
 }
 
+function showRuntimeError(message='Falha ao carregar dados do Veredicta.'){
+  let box=document.getElementById('runtime-error-banner');
+  if(!box){
+    box=document.createElement('div');
+    box.id='runtime-error-banner';
+    box.style.cssText='position:fixed;left:16px;right:16px;top:16px;z-index:99999;padding:12px 16px;border-radius:10px;background:#7f1d1d;color:#fff;font:600 14px/1.4 system-ui;box-shadow:0 8px 30px rgba(0,0,0,.35)';
+    document.body.appendChild(box);
+  }
+  box.textContent=message;
+}
+function clearRuntimeError(){
+  document.getElementById('runtime-error-banner')?.remove();
+}
+
 async function boot(){
   authState='checking';
   const authenticated=await confirmSession(true);
   if(!authenticated){authState='unauthenticated';showLogin();return}
 
   showApp();
+  clearRuntimeError();
   try{
     await loadConfig();
     await loadCases();
@@ -131,6 +146,7 @@ async function boot(){
     const stillAuthenticated=await confirmSession(true);
     if(!stillAuthenticated){authState='unauthenticated';showLogin();return}
     console.error('Falha ao carregar o Veredicta:',err);
+    showRuntimeError('Falha ao carregar dados: '+(err?.message||'erro desconhecido'));
   }
 }
 $('#login-form').addEventListener('submit',async e=>{
@@ -140,8 +156,14 @@ $('#login-form').addEventListener('submit',async e=>{
     const authenticated=await confirmSession(true);
     if(!authenticated)throw new Error('Login aceito, mas a sessão não foi confirmada. Atualize a página e tente novamente.');
     showApp();
-    await loadConfig();
-    await loadCases();
+    clearRuntimeError();
+    try{
+      await loadConfig();
+      await loadCases();
+    }catch(dataErr){
+      console.error('Login OK, mas falhou o carregamento de dados:',dataErr);
+      showRuntimeError('Login realizado. Falha ao carregar dados: '+(dataErr?.message||'erro desconhecido'));
+    }
   }catch(err){
     authState='unauthenticated';
     showLogin();

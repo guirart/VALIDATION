@@ -114,6 +114,18 @@ async function auth(req,res) {
   return json(res,405,{error:'Método não permitido'});
 }
 
+
+async function config(req,res){
+  if(!requireAuth(req,res)) return;
+  if(req.method!=='GET') return json(res,405,{error:'Método não permitido'});
+  return json(res,200,{
+    custom_gpt_url: process.env.CUSTOM_GPT_URL || '',
+    app_version: APP_VERSION,
+    validator_version: VALIDATOR_VERSION,
+    supabase: supabaseConfigStatus()
+  });
+}
+
 async function cases(req,res) {
   // Endpoint do APP, protegido pela sessão interna.
   // O usuário autenticado pode cadastrar e consultar casos reais.
@@ -724,5 +736,16 @@ export default async function handler(req,res){
       case 'test-import-ui': return await testImportUi(req,res);
       default: return json(res,404,{error:'Ação não encontrada'});
     }
-  } catch(e) { return json(res,500,{error:e.message}); }
+  } catch(e) {
+    try {
+      console.error('[VEREDICTA_RUNTIME_ERROR]', JSON.stringify({
+        action: action(req),
+        method: req.method,
+        message: e?.message || String(e),
+        stack: e?.stack || null,
+        supabase: supabaseConfigStatus()
+      }));
+    } catch {}
+    return json(res,500,{error:e?.message || 'Erro interno do servidor'});
+  }
 }
