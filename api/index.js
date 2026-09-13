@@ -11,7 +11,7 @@ const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','re
 const AUDIT_RECOMMENDATIONS = new Set(['liberar','corrigir','escalar para revisão humana aprofundada']);
 const AUDIT_STATUSES = new Set(['confirmado','divergente','não encontrado','opinião sem precedente']);
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
-const APP_VERSION = '3.10.1';
+const APP_VERSION = '3.10.2';
 const VALIDATOR_VERSION = '3.8.1';
 
 function requestBaseUrl(req){
@@ -149,20 +149,29 @@ async function auth(req,res) {
     if(profile.status==='suspended') return json(res,403,{error:'Acesso suspenso. Contate o administrador do Veredicta.'});
 
     const paid=new Set(['active','trialing']);
-    if(!paid.has(String(profile.subscription_status||'').toLowerCase())){
+    const subscriptionStatus=String(profile.subscription_status||'pending').toLowerCase();
+    if(!paid.has(subscriptionStatus)){
       let paymentUrl='';
+      let billingError='';
       try{
-        if(profile.stripe_customer_id){
-          paymentUrl=(await createBillingPortalSession({customerId:profile.stripe_customer_id})).url||'';
+        // Conta ainda sem assinatura efetiva: crie um novo Checkout.
+        // Portal é reservado para quem já possui relação de cobrança que pode ser regularizada.
+        const checkoutStatuses=new Set(['pending','incomplete','incomplete_expired','canceled']);
+        if(!profile.stripe_customer_id || checkoutStatuses.has(subscriptionStatus)){
+          paymentUrl=(await createCheckoutSession({userId:profile.id,email:profile.email,name:profile.name,customerId:profile.stripe_customer_id||undefined})).url||'';
         }else{
-          paymentUrl=(await createCheckoutSession({userId:profile.id,email:profile.email,name:profile.name})).url||'';
+          paymentUrl=(await createBillingPortalSession({customerId:profile.stripe_customer_id})).url||'';
         }
-      }catch(e){ console.error('[billing] não foi possível gerar URL de regularização',e?.message||e); }
+      }catch(e){
+        billingError=String(e?.message||e||'Falha ao gerar cobrança');
+        console.error('[billing] não foi possível gerar URL de regularização',billingError);
+      }
       return json(res,402,{
         error:'Assinatura sem adimplência ativa. Regularize o pagamento para acessar o Veredicta.',
         billing_required:true,
         subscription_status:profile.subscription_status||'pending',
-        payment_url:paymentUrl
+        payment_url:paymentUrl,
+        billing_error:billingError||undefined
       });
     }
 

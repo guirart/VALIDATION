@@ -189,11 +189,18 @@ $('#login-form').addEventListener('submit',async e=>{
   }catch(err){
     authState='unauthenticated';
     showLogin();
-    $('#login-error').textContent=err.message;
-    if(err?.body?.payment_url){
+    const billingRequired=Boolean(err?.body?.billing_required);
+    const paymentUrl=String(err?.body?.payment_url||'');
+    const billingError=String(err?.body?.billing_error||'');
+    $('#login-error').textContent=billingRequired && billingError
+      ? `${err.message} Motivo da cobrança: ${billingError}`
+      : err.message;
+    if(billingRequired && paymentUrl){
       const a=$('#payment-action');
-      a.href=err.body.payment_url;
+      a.href=paymentUrl;
       a.classList.remove('hidden');
+      $('#login-error').textContent='Assinatura pendente. Redirecionando para o pagamento…';
+      setTimeout(()=>{ window.location.assign(paymentUrl); },250);
     }
   }
 });
