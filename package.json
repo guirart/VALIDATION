@@ -1,6 +1,6 @@
 {
   "name": "veredicta-mp1376-app",
-  "version": "3.10.2",
+  "version": "3.10.3",
   "private": true,
   "type": "module",
   "scripts": {
@@ -31,7 +31,8 @@
     "test:v381": "node tests/v381-test004-regression.test.mjs",
     "test:auth-loop": "node tests/v381-auth-loop.test.mjs",
     "test:v39-multiuser": "node tests/v39-multiuser.test.mjs",
-    "test:v310": "node tests/v310-auth-billing.test.mjs"
+    "test:v310": "node tests/v310-auth-billing.test.mjs",
+    "test:v3103": "node tests/v3103-admin-bypass.test.mjs"
   },
   "devDependencies": {
     "vercel": "latest"

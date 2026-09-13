@@ -8,5 +8,5 @@ assert.match(stripe,/else\{[\s\S]*customer_email=email/);
 assert.match(app,/Redirecionando para o pagamento/);
 assert.match(app,/window\.location\.assign\(paymentUrl\)/);
 assert.match(api,/billing_error/);
-assert.match(api,/const APP_VERSION = '3\.10\.2'/);
+assert.match(api,/const APP_VERSION = '3\.10\.[2-9][0-9]*'/);
 console.log('v3.10.2 payment redirect: OK');

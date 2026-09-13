@@ -1,4 +1,4 @@
-# Veredicta v3.10
+# Veredicta v3.10.3
 
 Esta versão substitui a senha global da página inicial por autenticação individual com e-mail e senha, cadastro público, cobrança recorrente via Stripe e bloqueio por inadimplência. O validator jurídico permanece em 3.8.1.
 
@@ -414,3 +414,8 @@ Regressão recomendada antes da bateria completa: TEST-004, TEST-005, TEST-006 e
 - P5/P12/P15: evento/documento futuro ainda não exigível não deve ser convertido em deficiência documental atual.
 - P15: a data da operação originária não pode substituir a data da futura contratação; a janela legal deve ser registrada sem criar `PARCIAL` apenas porque a contratação futura ainda não ocorreu.
 - Regressão prioritária após deploy: repetir VEREDICTA-TEST-004 antes de avançar para TEST-005.
+
+
+## Administrador sem cobrança
+
+Defina `VEREDICTA_ADMIN_EMAIL` na Vercel. O e-mail configurado usa o mesmo login Supabase, mas ignora a exigência de assinatura Stripe. Veja `V3.10.3-ADMIN-BILLING-EXEMPT.md`.

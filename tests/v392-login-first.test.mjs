@@ -7,5 +7,5 @@ assert.match(app,/authState='unauthenticated';\s*showLogin\(\)/);
 assert.doesNotMatch(app,/async function boot\(\)\{[\s\S]{0,180}confirmSession\(true\)/);
 assert.match(api,/migration_required:true/);
 assert.match(api,/Multiuser migration pending/);
-assert.match(api,/APP_VERSION = '3\.9\.2'/);
+assert.match(api,/APP_VERSION = '3\.10\.[0-9]+'/);
 console.log('v3.9.2 login-first + migration guard: OK');

@@ -11,7 +11,7 @@ const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','re
 const AUDIT_RECOMMENDATIONS = new Set(['liberar','corrigir','escalar para revisão humana aprofundada']);
 const AUDIT_STATUSES = new Set(['confirmado','divergente','não encontrado','opinião sem precedente']);
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
-const APP_VERSION = '3.10.2';
+const APP_VERSION = '3.10.3';
 const VALIDATOR_VERSION = '3.8.1';
 
 function requestBaseUrl(req){
@@ -145,12 +145,32 @@ async function auth(req,res) {
         profiles=created;
       }
     }
-    const profile=profiles[0];
-    if(profile.status==='suspended') return json(res,403,{error:'Acesso suspenso. Contate o administrador do Veredicta.'});
+    let profile=profiles[0];
+
+    // O e-mail administrativo configurado na Vercel é a fonte de verdade.
+    // Se a conta já existia como usuário comum, ela é promovida automaticamente no login.
+    const configuredAdminEmail=String(process.env.VEREDICTA_ADMIN_EMAIL||'').trim().toLowerCase();
+    const isConfiguredAdmin=Boolean(configuredAdminEmail && String(profile.email||normalizedEmail).trim().toLowerCase()===configuredAdminEmail);
+    const isAdmin=isConfiguredAdmin || profile.role==='admin';
+
+    if(isAdmin && (profile.role!=='admin' || profile.status!=='active' || profile.subscription_status!=='admin_exempt')){
+      const updated=await db(`veredicta_users?id=eq.${encodeURIComponent(profile.id)}`,{
+        method:'PATCH',
+        body:JSON.stringify({
+          role:'admin',
+          status:'active',
+          subscription_status:'admin_exempt',
+          updated_at:new Date().toISOString()
+        })
+      });
+      profile=updated[0]||{...profile,role:'admin',status:'active',subscription_status:'admin_exempt'};
+    }
+
+    if(profile.status==='suspended' && !isAdmin) return json(res,403,{error:'Acesso suspenso. Contate o administrador do Veredicta.'});
 
     const paid=new Set(['active','trialing']);
     const subscriptionStatus=String(profile.subscription_status||'pending').toLowerCase();
-    if(!paid.has(subscriptionStatus)){
+    if(!isAdmin && !paid.has(subscriptionStatus)){
       let paymentUrl='';
       let billingError='';
       try{
@@ -222,14 +242,27 @@ async function register(req,res){
 
   const adminEmail=String(process.env.VEREDICTA_ADMIN_EMAIL||'').trim().toLowerCase();
   const role=adminEmail&&email===adminEmail?'admin':'user';
+  const adminExempt=role==='admin';
   const [profile]=await db('veredicta_users',{
     method:'POST',
     body:JSON.stringify({
       auth_user_id:authUserId,name,email,role,
-      status:'pending_payment',subscription_status:'pending',
+      status:adminExempt?'active':'pending_payment',
+      subscription_status:adminExempt?'admin_exempt':'pending',
       terms_accepted_at:new Date().toISOString()
     })
   });
+
+  if(adminExempt){
+    return json(res,201,{
+      ok:true,
+      admin:true,
+      billing_exempt:true,
+      checkout_url:'',
+      email_confirmation_required:!(signup?.session || signup?.access_token),
+      message:'Conta administrativa criada. Confirme o e-mail e entre normalmente; nenhuma assinatura será exigida.'
+    });
+  }
 
   let checkout;
   try{
@@ -335,6 +368,7 @@ async function billing(req,res){
   const profiles=await db(`veredicta_users?id=eq.${encodeURIComponent(session.profileId)}&select=id,name,email,stripe_customer_id,subscription_status&limit=1`);
   if(!profiles.length) return json(res,404,{error:'Usuário não encontrado'});
   const profile=profiles[0];
+  if(session.role==='admin') return json(res,200,{url:'',billing_exempt:true,message:'Administrador isento de cobrança.'});
   const target=profile.stripe_customer_id
     ? await createBillingPortalSession({customerId:profile.stripe_customer_id})
     : await createCheckoutSession({userId:profile.id,email:profile.email,name:profile.name});
