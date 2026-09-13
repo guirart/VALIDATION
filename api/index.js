@@ -1,17 +1,18 @@
 import crypto from 'node:crypto';
-import { json, readJson, makeSessionCookie, clearSessionCookie, isAuthenticated, requireAuth, getSession } from '../lib/http.js';
-import { requireActionAuth, generateUserApiKey, hashApiKey, LEGACY_OWNER_ID } from '../lib/actionAuth.js';
+import { json, readJson, readRaw, makeSessionCookie, clearSessionCookie, isAuthenticated, requireAuth, getSession } from '../lib/http.js';
+import { requireActionAuth, LEGACY_OWNER_ID } from '../lib/actionAuth.js';
 import { db, supabaseConfigStatus } from '../lib/supabase.js';
 import { signUpUser, signInUser, recoverPassword } from '../lib/userAuth.js';
 import { createCheckoutSession, createBillingPortalSession, retrieveStripeEvent, stripeConfigStatus } from '../lib/stripe.js';
 import { sendWelcomeEmail } from '../lib/email.js';
+import { createAuthorizationCode, exchangeAuthorizationCode, refreshOAuthToken, oauthConfigStatus, validateOAuthClient, validateRedirectUri, revokeUserOAuth } from '../lib/oauth.js';
 import { verifyAnalysis, FINAL_CLASSES, mpText, memoText } from '../lib/legal.js';
 
 const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','requer-correcao','concluido','erro']);
 const AUDIT_RECOMMENDATIONS = new Set(['liberar','corrigir','escalar para revisão humana aprofundada']);
 const AUDIT_STATUSES = new Set(['confirmado','divergente','não encontrado','opinião sem precedente']);
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
-const APP_VERSION = '3.10.3';
+const APP_VERSION = '3.11.0';
 const VALIDATOR_VERSION = '3.8.1';
 
 function requestBaseUrl(req){
@@ -960,6 +961,101 @@ async function gptAnalysisDetail(req,res){
   });
 }
 
+
+async function readOAuthParams(req){
+  if(req.body && typeof req.body==='object' && !Buffer.isBuffer(req.body)) return req.body;
+  const raw=await readRaw(req);
+  const ct=String(req.headers?.['content-type']||'').toLowerCase();
+  if(ct.includes('application/x-www-form-urlencoded')) return Object.fromEntries(new URLSearchParams(raw));
+  if(!raw)return {};
+  try{return JSON.parse(raw)}catch{return Object.fromEntries(new URLSearchParams(raw))}
+}
+
+function oauthError(res,status,error,description){
+  res.setHeader('Cache-Control','no-store');
+  res.setHeader('Pragma','no-cache');
+  return json(res,status,{error,error_description:description||error});
+}
+
+function appendQuery(url,params){
+  const u=new URL(url);
+  for(const [k,v] of Object.entries(params)) if(v!==undefined&&v!==null&&String(v)!=='') u.searchParams.set(k,String(v));
+  return u.toString();
+}
+
+async function oauthAuthorize(req,res){
+  if(req.method!=='POST') return json(res,405,{error:'Método não permitido'});
+  const session=requireAuth(req,res); if(!session)return;
+  const body=await readJson(req);
+  const clientId=String(body.client_id||'').trim();
+  const redirectUri=String(body.redirect_uri||'').trim();
+  const responseType=String(body.response_type||'code').trim();
+  const state=String(body.state||'');
+  const scope=String(body.scope||'veredicta');
+  const decision=String(body.decision||'approve');
+  const codeChallenge=String(body.code_challenge||'');
+  const codeChallengeMethod=String(body.code_challenge_method||'');
+
+  if(responseType!=='code') return json(res,400,{error:'unsupported_response_type'});
+  if(!validateOAuthClient(clientId,'',{requireSecret:false})) return json(res,400,{error:'invalid_client'});
+  if(!validateRedirectUri(redirectUri)) return json(res,400,{error:'redirect_uri não autorizado'});
+
+  if(decision==='deny'){
+    return json(res,200,{redirect_to:appendQuery(redirectUri,{error:'access_denied',state})});
+  }
+
+  // Revalida a conta no momento da conexão do GPT. Sessão antiga não ignora suspensão ou inadimplência posterior.
+  const profiles=await db(`veredicta_users?id=eq.${encodeURIComponent(session.profileId)}&select=id,name,email,role,status,subscription_status&limit=1`);
+  if(!profiles.length) return json(res,403,{error:'Conta Veredicta não encontrada'});
+  const profile=profiles[0];
+  if(profile.status!=='active') return json(res,403,{error:'Conta Veredicta suspensa ou inativa'});
+  const isAdmin=profile.role==='admin';
+  if(!isAdmin && !['active','trialing'].includes(String(profile.subscription_status||'').toLowerCase())){
+    return json(res,402,{error:'Assinatura sem adimplência ativa. Regularize o pagamento antes de conectar o GPT.',billing_required:true,subscription_status:profile.subscription_status||'pending'});
+  }
+
+  const out=await createAuthorizationCode({
+    userId:profile.id,clientId,redirectUri,scope,codeChallenge,codeChallengeMethod
+  });
+  return json(res,200,{redirect_to:appendQuery(redirectUri,{code:out.code,state})});
+}
+
+async function oauthToken(req,res){
+  if(req.method!=='POST') return oauthError(res,405,'invalid_request','Método não permitido');
+  const body=await readOAuthParams(req);
+  const basic=String(req.headers?.authorization||'').match(/^Basic\s+(.+)$/i);
+  let basicId='',basicSecret='';
+  if(basic){
+    try{
+      const decoded=Buffer.from(basic[1],'base64').toString('utf8');
+      const idx=decoded.indexOf(':');
+      if(idx>=0){basicId=decoded.slice(0,idx);basicSecret=decoded.slice(idx+1)}
+    }catch{}
+  }
+  const clientId=String(basicId||body.client_id||'').trim();
+  const clientSecret=String(basicSecret||body.client_secret||'').trim();
+  if(!validateOAuthClient(clientId,clientSecret)) return oauthError(res,401,'invalid_client','Client ID ou Client Secret inválido');
+
+  try{
+    let tokens;
+    if(body.grant_type==='authorization_code'){
+      tokens=await exchangeAuthorizationCode({
+        code:String(body.code||''),clientId,clientSecret,
+        redirectUri:String(body.redirect_uri||''),codeVerifier:String(body.code_verifier||'')
+      });
+    }else if(body.grant_type==='refresh_token'){
+      tokens=await refreshOAuthToken({refreshToken:String(body.refresh_token||''),clientId,clientSecret});
+    }else{
+      return oauthError(res,400,'unsupported_grant_type','Use authorization_code ou refresh_token');
+    }
+    res.setHeader('Cache-Control','no-store');
+    res.setHeader('Pragma','no-cache');
+    return json(res,200,tokens);
+  }catch(e){
+    return oauthError(res,e?.statusCode||400,e?.oauthError||'invalid_grant',e?.message||'Falha OAuth');
+  }
+}
+
 async function sourceStatus(req,res){
   const principal=await requireActionAuth(req,res);
   if(!principal)return;
@@ -982,36 +1078,49 @@ async function adminUsers(req,res){
   if(session.role!=='admin') return json(res,403,{error:'Acesso administrativo restrito'});
 
   if(req.method==='GET'){
-    const users=await db('veredicta_users?select=id,name,email,role,status,subscription_status,auth_user_id,created_at,updated_at&order=created_at.desc');
-    const keys=await db('veredicta_api_keys?select=id,user_id,key_prefix,label,status,last_used_at,created_at,revoked_at&order=created_at.desc');
-    return json(res,200,{users:users.map(u=>({...u,keys:keys.filter(k=>k.user_id===u.id)}))});
+    const users=await db(`veredicta_users?id=neq.${encodeURIComponent(LEGACY_OWNER_ID)}&select=id,name,email,role,status,subscription_status,auth_user_id,created_at,updated_at&order=created_at.desc`);
+    let oauthTokens=[];
+    let legacyKeys=[];
+    let migrationRequired=false;
+    try{
+      oauthTokens=await db('veredicta_oauth_tokens?select=id,user_id,client_id,scope,status,last_used_at,access_expires_at,created_at,revoked_at&order=created_at.desc');
+    }catch(e){
+      if(/veredicta_oauth_tokens|schema cache|does not exist/i.test(String(e?.message||''))) migrationRequired=true;
+      else throw e;
+    }
+    try{legacyKeys=await db('veredicta_api_keys?select=id,user_id,status,last_used_at,created_at&order=created_at.desc')}catch{}
+    const now=Date.now();
+    const enriched=users.map(u=>{
+      const activeOAuth=oauthTokens.filter(t=>t.user_id===u.id&&t.status==='active'&&Date.parse(t.access_expires_at)>now);
+      const allOAuth=oauthTokens.filter(t=>t.user_id===u.id);
+      const activeLegacy=legacyKeys.filter(k=>k.user_id===u.id&&k.status==='active');
+      const dates=[...allOAuth.map(t=>t.last_used_at),...legacyKeys.filter(k=>k.user_id===u.id).map(k=>k.last_used_at)].filter(Boolean).sort();
+      return {...u,gpt:{connected:activeOAuth.length>0,active_oauth_sessions:activeOAuth.length,legacy_keys:activeLegacy.length,last_used_at:dates.at(-1)||null}};
+    });
+    return json(res,200,{users:enriched,oauth:oauthConfigStatus(requestBaseUrl(req)),migration_required:migrationRequired});
   }
 
   if(req.method==='POST'){
     const body=await readJson(req);
-    const op=String(body.operation||'create').trim();
+    const op=String(body.operation||'').trim();
+    const userId=String(body.user_id||'').trim();
+    if(!userId) return json(res,400,{error:'user_id obrigatório'});
+    const users=await db(`veredicta_users?id=eq.${encodeURIComponent(userId)}&select=id,name,email,role,status&limit=1`);
+    if(!users.length) return json(res,404,{error:'Usuário não encontrado'});
 
-    if(op==='create'){
-      return json(res,409,{error:'Novos usuários devem ser criados pela página pública de cadastro e concluir o pagamento antes do acesso.'});
-    }
-
-    if(op==='rotate_key'){
-      const userId=String(body.user_id||'').trim();
-      const users=await db(`veredicta_users?id=eq.${encodeURIComponent(userId)}&select=id,name,email,status&limit=1`);
-      if(!users.length) return json(res,404,{error:'Usuário não encontrado'});
-      await db(`veredicta_api_keys?user_id=eq.${encodeURIComponent(userId)}&status=eq.active`,{method:'PATCH',body:JSON.stringify({status:'revoked',revoked_at:new Date().toISOString()})});
-      const plainKey=generateUserApiKey();
-      const parts=plainKey.split('_');
-      const keyPrefix=parts.slice(0,3).join('_');
-      await db('veredicta_api_keys',{method:'POST',body:JSON.stringify({user_id:userId,key_prefix:keyPrefix,key_hash:hashApiKey(plainKey),label:'GPT pessoal',status:'active'})});
-      return json(res,200,{user:users[0],api_key:plainKey,warning:'A chave anterior foi revogada. Esta nova chave é exibida somente agora.'});
+    if(op==='revoke_gpt'){
+      await revokeUserOAuth(userId).catch(e=>{if(!/veredicta_oauth_tokens|schema cache|does not exist/i.test(String(e?.message||'')))throw e});
+      await db(`veredicta_api_keys?user_id=eq.${encodeURIComponent(userId)}&status=eq.active`,{method:'PATCH',body:JSON.stringify({status:'revoked',revoked_at:new Date().toISOString()})}).catch(()=>{});
+      return json(res,200,{ok:true,user:users[0]});
     }
 
     if(op==='set_status'){
-      const userId=String(body.user_id||'').trim();
       const status=body.status==='suspended'?'suspended':'active';
       const rows=await db(`veredicta_users?id=eq.${encodeURIComponent(userId)}`,{method:'PATCH',body:JSON.stringify({status,updated_at:new Date().toISOString()})});
-      if(!rows.length) return json(res,404,{error:'Usuário não encontrado'});
+      if(status==='suspended'){
+        await revokeUserOAuth(userId).catch(()=>{});
+        await db(`veredicta_api_keys?user_id=eq.${encodeURIComponent(userId)}&status=eq.active`,{method:'PATCH',body:JSON.stringify({status:'revoked',revoked_at:new Date().toISOString()})}).catch(()=>{});
+      }
       return json(res,200,{user:rows[0]});
     }
 
@@ -1030,6 +1139,8 @@ export default async function handler(req,res){
       case 'recover': return await recover(req,res);
       case 'stripe-webhook': return await stripeWebhook(req,res);
       case 'billing': return await billing(req,res);
+      case 'oauth-authorize': return await oauthAuthorize(req,res);
+      case 'oauth-token': return await oauthToken(req,res);
       case 'cases': return await cases(req,res);
       case 'config': return await config(req,res);
       case 'admin-users': return await adminUsers(req,res);

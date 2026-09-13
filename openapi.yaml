@@ -2,8 +2,11 @@ openapi: 3.1.0
 
 info:
   title: Veredicta API
-  version: 3.10.3
-  description: API multiusuário do Veredicta. Cada X-Veredicta-Key identifica um usuário e limita casos e análises ao respectivo proprietário.
+  version: 3.11.0
+  description: >
+    API multiusuário do Veredicta. A autenticação preferencial é OAuth: cada usuário conecta sua própria conta
+    do Veredicta ao GPT e a API limita casos e análises ao respectivo proprietário. Chaves antigas continuam
+    aceitas pelo backend apenas para compatibilidade de transição.
 
 servers:
   - url: https://validation-six-tawny.vercel.app
@@ -15,7 +18,7 @@ paths:
       operationId: consultarStatusVeredicta
       summary: Consulta status das fontes e versões.
       security:
-        - VeredictaKey: []
+        - VeredictaOAuth: [veredicta]
       responses:
         "200":
           description: Status consultado.
@@ -37,7 +40,7 @@ paths:
       operationId: listarCasosVeredicta
       summary: Lista casos cadastrados.
       security:
-        - VeredictaKey: []
+        - VeredictaOAuth: [veredicta]
       parameters:
         - name: status
           in: query
@@ -71,7 +74,7 @@ paths:
       operationId: buscarCasoVeredicta
       summary: Recupera caso e contract_sha256 atual.
       security:
-        - VeredictaKey: []
+        - VeredictaOAuth: [veredicta]
       parameters:
         - name: id
           in: query
@@ -105,7 +108,7 @@ paths:
       operationId: listarHistoricoAnalisesVeredicta
       summary: Lista análises já gravadas para um caso.
       security:
-        - VeredictaKey: []
+        - VeredictaOAuth: [veredicta]
       parameters:
         - name: case_id
           in: query
@@ -140,7 +143,7 @@ paths:
       operationId: buscarDetalheAnaliseVeredicta
       summary: Recupera análise armazenada e diagnóstico do quality gate.
       security:
-        - VeredictaKey: []
+        - VeredictaOAuth: [veredicta]
       parameters:
         - name: id
           in: query
@@ -266,7 +269,7 @@ paths:
       operationId: enviarAnaliseVeredicta
       summary: Envia análise jurídica auditada.
       security:
-        - VeredictaKey: []
+        - VeredictaOAuth: [veredicta]
       requestBody:
         required: true
         content:
@@ -346,7 +349,7 @@ paths:
       operationId: importarCasosSinteticosVeredicta
       summary: Importa casos sintéticos de teste.
       security:
-        - VeredictaKey: []
+        - VeredictaOAuth: [veredicta]
       requestBody:
         required: true
         content:
@@ -398,11 +401,15 @@ components:
   schemas: {}
 
   securitySchemes:
-    VeredictaKey:
-      type: apiKey
-      in: header
-      name: X-Veredicta-Key
-      description: Chave individual do usuário Veredicta. Nunca compartilhe a mesma chave entre usuários.
+    VeredictaOAuth:
+      type: oauth2
+      description: Login individual do Veredicta para uso do GPT.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://validation-six-tawny.vercel.app/oauth/authorize
+          tokenUrl: https://validation-six-tawny.vercel.app/api/oauth/token
+          scopes:
+            veredicta: Consultar casos e histórico e enviar análises do usuário autenticado.
 
 security:
-  - VeredictaKey: []
+  - VeredictaOAuth: [veredicta]

@@ -1,69 +1,47 @@
-# Veredicta v3.10.3
+# Veredicta v3.11
 
-Esta versão substitui a senha global da página inicial por autenticação individual com e-mail e senha, cadastro público, cobrança recorrente via Stripe e bloqueio por inadimplência. O validator jurídico permanece em 3.8.1.
+Sistema de análise jurídica assistida por IA para contratos/dossiês sob a MP nº 1.376/2026.
 
-Configuração: veja `V3.10_AUTH_BILLING_SETUP.md`.
+A v3.11 mantém o validator jurídico 3.8.1 e consolida três camadas independentes:
 
-## v3.9.2 — Login-first + proteção de migração
+1. login individual por e-mail e senha no Veredicta;
+2. cobrança recorrente por usuário via Stripe;
+3. conexão individual do GPT por OAuth, sem distribuição manual de chaves.
 
-A página inicial sempre abre no login, mesmo se existir cookie de sessão anterior. Se `cases.owner_id` ainda não existir, o dashboard entra em modo de compatibilidade e informa que a migration multiusuário deve ser executada.
+## Fluxo atual
 
-# VEREDICTA v3.9 — Multiusuário por GPT
+O usuário cria a conta, confirma o e-mail, conclui a assinatura e usa o painel. Ao conectar o GPT, o ChatGPT abre o login do Veredicta; depois do consentimento, a Action recebe um token OAuth vinculado ao usuário e só acessa os casos daquele `owner_id`.
 
-Esta versão mantém o validator jurídico 3.8.1 e adiciona isolamento multiusuário para GPT Actions. Cada usuário recebe uma chave `vrd_live_...`; a API resolve essa chave para um `user_id` e todas as consultas do GPT são filtradas por `owner_id`.
+Administradores definidos por `VEREDICTA_ADMIN_EMAIL` continuam isentos de cobrança.
 
-Antes do deploy, execute `supabase/migration_v3_9_multiuser.sql` no SQL Editor do Supabase. Depois abra `/admin-users.html`, crie o usuário, copie a chave exibida uma única vez e configure a cópia pessoal do GPT para enviar essa chave no cabeçalho `X-Veredicta-Key`.
+## Administração
 
-O painel web continua sendo administrativo. O GPT continua sem permissão para criar ou alterar o conteúdo factual dos casos.
+`/admin-users.html` mostra nome, e-mail, perfil, conta, assinatura, estado da conexão GPT e último uso. Usuários não são criados nessa tela. O administrador pode suspender uma conta ou revogar a conexão GPT.
 
----
+## Arquivos principais
 
-# Veredicta
-
-> Senha padrão do app: `marcal2015`. Em produção, ela pode ser sobrescrita pela variável `APP_PASSWORD`. — MP nº 1.376/2026 — modo GPT Action
-
-App web para organizar e auditar análises de contratos de crédito rural. Nesta versão, **o app não chama a OpenAI por API**.
-
-O motor de IA é um **GPT personalizado no ChatGPT**. O GPT usa **Actions** para conversar com este app:
-
-1. o app/Supabase guarda o contrato;
-2. o GPT chama `getCaseForAnalysis`;
-3. o GPT executa análise jurídica + auditoria adversarial usando suas instruções e Knowledge;
-4. o GPT chama `submitAuditedAnalysis`;
-5. o backend valida estruturalmente os 15 pontos e verifica literalmente citações da MP e do contrato;
-6. o app mostra o resultado;
-7. um advogado realiza a revisão humana obrigatória.
-
-## Arquivos importantes
-
-- `GPT_INSTRUCTIONS.md` — instruções para colar no GPT.
-- `openapi.yaml` — schema da Action.
-- `SETUP_GPT_ACTION.md` — configuração passo a passo.
-- `api/gpt/*` — endpoints exclusivos da Action.
-- `legal/*` — fontes jurídicas que também devem ser anexadas como Knowledge do GPT.
-- `supabase/schema.sql` — banco.
+- `GPT_INSTRUCTIONS.md` — instruções do GPT.
+- `openapi.yaml` — schema OAuth da Action.
+- `SETUP_GPT_ACTION.md` — configuração do GPT.
+- `V3.11-USER-ADMIN-OAUTH.md` — configuração da v3.11.
+- `supabase/migration_v3_11_gpt_oauth.sql` — tabelas OAuth.
+- `legal/*` — fontes jurídicas.
 
 ## Segurança
 
-O app usa duas autenticações independentes:
+- navegador: sessão HttpOnly assinada por `APP_SESSION_SECRET`;
+- autenticação primária: Supabase Auth;
+- GPT Action: OAuth individual;
+- banco: isolamento por `owner_id`;
+- cobrança: Stripe;
+- `SUPABASE_SECRET_KEY` permanece somente no backend;
+- códigos e tokens OAuth são persistidos apenas como SHA-256.
 
-- navegador: sessão com `APP_PASSWORD`;
-- GPT Action: Bearer `GPT_ACTION_API_KEY`.
-
-A `SUPABASE_SERVICE_ROLE_KEY` fica somente no backend e nunca é entregue ao GPT.
+As antigas `GPT_ACTION_API_KEY` e `veredicta_api_keys` permanecem apenas como compatibilidade de transição e não fazem parte do fluxo normal.
 
 ## Deploy
 
-Veja `SETUP_GPT_ACTION.md` e `DEPLOY.md`.
-
-## Supabase — nomes de variáveis aceitos
-
-A URL do projeto pode ser configurada como `NEXT_PUBLIC_SUPABASE_URL` (preferida quando o projeto já foi iniciado pelo assistente do Supabase) ou `SUPABASE_URL`.
-
-A `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` é reconhecida para diagnóstico, mas **não é usada para gravar contratos**. O schema ativa RLS e não possui policies públicas. Para operações server-side configure `SUPABASE_SECRET_KEY` (chave `sb_secret_...`, recomendada nos projetos novos) ou, em projetos legados, `SUPABASE_SERVICE_ROLE_KEY`.
-
-Depois do login, `GET /api/config` informa apenas se as variáveis foram detectadas e quais nomes foram usados; nenhum valor secreto é devolvido.
-
+Veja `DEPLOY.md`, `V3.10_AUTH_BILLING_SETUP.md` e `V3.11-USER-ADMIN-OAUTH.md`.
 
 ## Versão 1.4 — checklist no app
 

@@ -8,7 +8,7 @@ assert.match(auth,/key_hash/);
 assert.match(auth,/sha256/);
 assert.match(api,/owner_id=eq\.\$\{encodeURIComponent\(principal\.userId\)\}/);
 assert.match(api,/async function adminUsers/);
-assert.match(api,/APP_VERSION = '3\.10\.[0-9]+'/);
+assert.match(api,/APP_VERSION = '3\.(?:10\.[0-9]+|11\.[0-9]+)'/);
 assert.match(api,/VALIDATOR_VERSION = '3\.8\.1'/);
 assert.match(migration,/create table if not exists public\.veredicta_users/);
 assert.match(migration,/create table if not exists public\.veredicta_api_keys/);

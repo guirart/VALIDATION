@@ -1,11 +1,11 @@
 {
   "name": "veredicta-mp1376-app",
-  "version": "3.10.3",
+  "version": "3.11.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vercel dev",
-    "check": "node --check api/index.js && node --check lib/http.js && node --check lib/supabase.js && node --check lib/legal.js && node --check lib/actionAuth.js && node --check lib/userAuth.js && node --check lib/stripe.js && node --check lib/email.js && node --check app.js && node --check new-case.js && node --check admin-users.js",
+    "check": "node --check api/index.js && node --check lib/http.js && node --check lib/supabase.js && node --check lib/legal.js && node --check lib/actionAuth.js && node --check lib/userAuth.js && node --check lib/oauth.js && node --check lib/stripe.js && node --check lib/email.js && node --check app.js && node --check new-case.js && node --check admin-users.js && node --check oauth-authorize.js",
     "test:citations": "node tests/citation-policy.test.mjs",
     "test:citation-modes": "node tests/citation-modes.test.mjs",
     "test:point12": "node tests/point12-policy.test.mjs",
@@ -32,7 +32,8 @@
     "test:auth-loop": "node tests/v381-auth-loop.test.mjs",
     "test:v39-multiuser": "node tests/v39-multiuser.test.mjs",
     "test:v310": "node tests/v310-auth-billing.test.mjs",
-    "test:v3103": "node tests/v3103-admin-bypass.test.mjs"
+    "test:v3103": "node tests/v3103-admin-bypass.test.mjs",
+    "test:v311": "node tests/v311-admin-oauth.test.mjs"
   },
   "devDependencies": {
     "vercel": "latest"

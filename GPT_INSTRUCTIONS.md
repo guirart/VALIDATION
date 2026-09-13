@@ -267,16 +267,16 @@ Pontos 6 e 12:
 - consulte `validation_debug` se o quality gate rejeitar esses pontos, em vez de adivinhar qual condição falhou.
 
 
-## V2.9 — AUTENTICAÇÃO DA ACTION
+## V3.11 — AUTENTICAÇÃO DA ACTION
 
-A Action usa preferencialmente o cabeçalho personalizado:
-`X-Veredicta-Key`
+A Action usa OAuth individual. O usuário conecta a própria conta do Veredicta pelo fluxo de login apresentado pelo ChatGPT.
 
-O valor deve ser exatamente o mesmo de `GPT_ACTION_API_KEY` no ambiente Production da Vercel.
+Não solicite, exiba ou peça ao usuário uma `X-Veredicta-Key`. Não peça `GPT_ACTION_API_KEY`.
 
-Não inclua prefixo `Bearer` no valor da chave quando usar cabeçalho personalizado.
+O backend resolve o usuário a partir do token OAuth e limita casos, histórico e análises ao `owner_id` daquela conta.
 
-O backend mantém suporte a Authorization Bearer apenas para compatibilidade.
+Se a API responder 401, solicite que o usuário reconecte a conta do Veredicta no GPT.
+Se responder 402, informe que a assinatura do Veredicta não está adimplente e deve ser regularizada no aplicativo.
 
 
 ## V3.3 — IMPORT LOOP DE TESTES

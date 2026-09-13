@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Conectar Veredicta ao ChatGPT</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    body{min-height:100vh;background:#f2f0e9!important;color:#20221e!important;display:grid;place-items:center;padding:24px}
+    .oauth-card{width:min(480px,94vw);background:#fff;border:1px solid #d7d3c8;border-radius:14px;box-shadow:0 24px 70px rgba(27,26,22,.14);padding:30px;color:#20221e}
+    .oauth-brand{font:400 31px Georgia,serif;color:#8b6419;margin-bottom:6px}.oauth-card h1{font:400 25px/1.15 Georgia,serif;margin:0 0 10px}.oauth-card p{color:#66685f;line-height:1.55;margin:8px 0}.oauth-perms{margin:18px 0;padding:14px;border:1px solid #ded8c8;background:#faf8f2;border-radius:8px;display:grid;gap:8px;font-size:12px}.oauth-perms span{display:block}.oauth-form{display:grid;gap:12px;margin-top:18px}.oauth-form label{display:grid;gap:6px;font-size:12px;font-weight:600}.oauth-form input{padding:12px 13px;border:1px solid #d5d2ca;border-radius:7px;background:#fff;color:#20221e}.oauth-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}.oauth-user{padding:12px;border-radius:8px;background:#eef3e9;border:1px solid #d3dfcc;color:#36543c;font-size:12px}.oauth-error{margin-top:12px;color:#a24632;font-size:12px;line-height:1.45}.hidden{display:none!important}@media(max-width:520px){.oauth-actions{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main class="oauth-card">
+    <div class="oauth-brand">Veredicta</div>
+    <h1>Conectar sua conta ao ChatGPT</h1>
+    <p>O GPT Veredicta precisa identificar sua conta para acessar somente os seus casos e análises.</p>
+    <div class="oauth-perms">
+      <span>✓ consultar seus casos e histórico</span>
+      <span>✓ recuperar documentos dos seus casos</span>
+      <span>✓ enviar análises jurídicas em seu nome</span>
+      <span>✓ respeitar o status da sua assinatura</span>
+    </div>
+
+    <div id="oauth-user" class="oauth-user hidden"></div>
+
+    <form id="oauth-login" class="oauth-form hidden">
+      <label>E-mail<input id="oauth-email" type="email" autocomplete="email" required /></label>
+      <label>Senha<input id="oauth-password" type="password" autocomplete="current-password" required /></label>
+      <button class="btn btn-dark" type="submit">Entrar para continuar</button>
+    </form>
+
+    <div id="oauth-actions" class="oauth-actions hidden">
+      <button id="oauth-cancel" class="btn btn-outline" type="button">Cancelar</button>
+      <button id="oauth-approve" class="btn btn-dark" type="button">Conectar ao ChatGPT</button>
+    </div>
+    <div id="oauth-error" class="oauth-error"></div>
+  </main>
+  <script type="module" src="/oauth-authorize.js"></script>
+</body>
+</html>

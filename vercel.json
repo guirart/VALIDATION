@@ -7,6 +7,18 @@
       "destination": "/api?action=auth"
     },
     {
+      "source": "/oauth/authorize",
+      "destination": "/oauth-authorize.html"
+    },
+    {
+      "source": "/api/oauth/authorize",
+      "destination": "/api?action=oauth-authorize"
+    },
+    {
+      "source": "/api/oauth/token",
+      "destination": "/api?action=oauth-token"
+    },
+    {
       "source": "/api/register",
       "destination": "/api?action=register"
     },

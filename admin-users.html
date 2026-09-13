@@ -1,36 +1,67 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="robots" content="noindex,nofollow" />
-  <title>Usuários GPT — Veredicta</title>
+  <title>Administração de usuários — Veredicta</title>
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem('veredicta-theme')||'dark'}catch{}</script>
   <link rel="stylesheet" href="/styles.css" />
   <style>
-    .users-page{max-width:1100px;margin:0 auto;padding:34px 24px 70px}.users-grid{display:grid;grid-template-columns:360px 1fr;gap:24px}.user-panel{padding:22px;border:1px solid var(--line,#ddd);border-radius:18px;background:var(--card,#fff)}.user-list{display:grid;gap:12px}.user-row{padding:16px;border:1px solid var(--line,#ddd);border-radius:14px}.user-row-head{display:flex;justify-content:space-between;gap:12px}.key-box{margin-top:14px;padding:14px;border-radius:12px;background:#111;color:#fff;word-break:break-all}.key-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.muted{opacity:.72}.danger{color:#b42318}.success{color:#067647}@media(max-width:850px){.users-grid{grid-template-columns:1fr}}
+    body{min-height:100vh;background:var(--bg)!important;color:var(--ink)!important}
+    .admin-page{max-width:1180px;margin:0 auto;padding:112px 24px 72px}
+    .admin-hero{display:flex;justify-content:space-between;gap:22px;align-items:flex-end;margin-bottom:24px}
+    .admin-hero h1{font:400 34px/1.08 Georgia,serif;margin:5px 0 8px;color:var(--ink)}
+    .admin-hero p{margin:0;color:var(--muted);max-width:720px;line-height:1.55}
+    .admin-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+    .admin-stat,.oauth-panel,.users-panel{background:var(--paper);border:1px solid var(--line);border-radius:14px;color:var(--ink)}
+    .admin-stat{padding:16px}.admin-stat span{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}.admin-stat b{display:block;font:400 27px/1.1 Georgia,serif;margin-top:7px;color:var(--ink)}
+    .oauth-panel{padding:18px;margin-bottom:18px;display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center}.oauth-title{display:flex;align-items:center;gap:9px}.oauth-title h2{font:400 20px Georgia,serif;margin:0}.oauth-panel p{margin:7px 0 0;color:var(--muted);line-height:1.5}.oauth-meta{font:11px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--muted);margin-top:8px}.oauth-meta code{color:var(--ink)}
+    .status-dot{width:9px;height:9px;border-radius:50%;display:inline-block}.status-dot.ok{background:#5cb85c}.status-dot.warn{background:#d7a633}
+    .users-panel{overflow:hidden}.users-panel-head{padding:18px 18px 15px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:18px;align-items:center}.users-panel-head h2{font:400 21px Georgia,serif;margin:0}.users-panel-head p{color:var(--muted);margin:5px 0 0;font-size:12px}
+    .users-list{display:grid}.user-row{display:grid;grid-template-columns:minmax(210px,1.5fr) .65fr .85fr .85fr .9fr auto;gap:14px;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line)}.user-row:last-child{border-bottom:0}.user-main b{display:block;color:var(--ink);font-size:13px}.user-main span,.cell small{display:block;color:var(--muted);font-size:11px;margin-top:4px}.cell-label{display:none}.cell strong{font-size:12px;font-weight:600;color:var(--ink)}
+    .pill-admin{display:inline-flex;padding:5px 8px;border:1px solid var(--line);border-radius:999px;font-size:10px;background:var(--paper-2);color:var(--ink)}.pill-good{color:#94d67d}.pill-warn{color:#e0bc64}.pill-bad{color:#ef8f64}.actions{display:flex;gap:7px;justify-content:flex-end}.actions .btn{padding:8px 10px;height:auto;font-size:11px;white-space:nowrap}.danger-btn{border-color:#704037!important;color:#ef9a7a!important;background:#2b1916!important}
+    .empty{padding:34px;text-align:center;color:var(--muted)}
+    .migration-warning{margin:0 0 18px;padding:12px 14px;border-radius:10px;border:1px solid #705824;background:#2c2515;color:#e3c879;font-size:12px}
+    @media(max-width:980px){.admin-stats{grid-template-columns:repeat(2,1fr)}.user-row{grid-template-columns:1fr 1fr}.cell-label{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}.actions{justify-content:flex-start;grid-column:1/-1}.oauth-panel{grid-template-columns:1fr}}
+    @media(max-width:620px){.admin-page{padding:100px 14px 50px}.admin-stats{grid-template-columns:1fr 1fr}.admin-hero{align-items:flex-start;flex-direction:column}.user-row{grid-template-columns:1fr}.actions{grid-column:auto;flex-wrap:wrap}}
   </style>
 </head>
 <body>
   <div id="users-app" class="hidden">
     <header class="appbar">
-      <div class="brand-wrap"><a class="brand brand-link" href="/">VEREDICTA</a><span class="brand-sub">Usuários GPT</span></div>
+      <div class="brand-wrap"><a class="brand brand-link" href="/">VEREDICTA</a><span class="brand-sub">Administração</span></div>
       <div class="appbar-actions"><a class="link-btn nav-link" href="/">voltar ao painel</a><button id="logout" class="link-btn">sair</button></div>
     </header>
-    <main class="users-page">
-      <div class="new-case-hero"><div><div class="micro">MULTIUSUÁRIO</div><h1>Usuários do GPT Veredicta</h1><p>Cada usuário recebe uma chave exclusiva. Essa chave limita a Action aos casos e análises daquele usuário.</p></div></div>
-      <div class="users-grid">
-        <section class="user-panel">
-          <h2>Cadastro de usuários</h2>
-          <p class="muted">Novos usuários devem usar a tela inicial do Veredicta, em <b>Criar conta</b>. A criação é vinculada ao Stripe Checkout e o acesso só é liberado após a confirmação da assinatura.</p>
-          <a class="btn btn-dark" href="/">Abrir página de cadastro</a>
-          <div id="new-key-wrap" class="hidden">
-            <p class="success"><b>Nova chave GPT.</b> Copie agora. Ela não será exibida novamente.</p>
-            <div id="new-key" class="key-box"></div>
-            <div class="key-actions"><button id="copy-key" class="btn btn-outline" type="button">Copiar chave</button></div>
-          </div>
-        </section>
-        <section class="user-panel"><div class="section-title-row"><div><h2>Usuários cadastrados</h2><p class="muted">Suspenda um usuário para bloquear imediatamente o acesso da chave dele.</p></div><button id="refresh-users" class="btn btn-outline" type="button">Atualizar</button></div><div id="users-list" class="user-list"></div></section>
-      </div>
+
+    <main class="admin-page">
+      <section class="admin-hero">
+        <div><div class="micro">ADMINISTRAÇÃO</div><h1>Usuários do Veredicta</h1><p>As contas são criadas exclusivamente pela tela pública de cadastro. Aqui você acompanha acesso, assinatura e conexão do GPT de cada usuário.</p></div>
+        <button id="refresh-users" class="btn btn-outline" type="button">Atualizar</button>
+      </section>
+
+      <div id="migration-warning" class="migration-warning hidden">A migration OAuth da v3.11 ainda não foi executada no Supabase. O login do site continua funcionando, mas a conexão individual do GPT ainda não está disponível.</div>
+
+      <section class="admin-stats" aria-label="Resumo de usuários">
+        <div class="admin-stat"><span>Usuários</span><b id="stat-total">—</b></div>
+        <div class="admin-stat"><span>Contas ativas</span><b id="stat-active">—</b></div>
+        <div class="admin-stat"><span>Adimplentes</span><b id="stat-paid">—</b></div>
+        <div class="admin-stat"><span>GPT conectado</span><b id="stat-gpt">—</b></div>
+      </section>
+
+      <section class="oauth-panel">
+        <div>
+          <div class="oauth-title"><span id="oauth-dot" class="status-dot warn"></span><h2>Conexão do GPT por OAuth</h2></div>
+          <p id="oauth-description">Carregando configuração...</p>
+          <div id="oauth-meta" class="oauth-meta"></div>
+        </div>
+        <div><span id="oauth-badge" class="pill-admin">verificando</span></div>
+      </section>
+
+      <section class="users-panel">
+        <div class="users-panel-head"><div><h2>Contas cadastradas</h2><p>Não há mais chaves GPT para copiar. O próprio usuário conecta a conta pelo login quando usar o GPT.</p></div></div>
+        <div id="users-list" class="users-list"><div class="empty">Carregando usuários...</div></div>
+      </section>
     </main>
   </div>
   <script type="module" src="/admin-users.js"></script>

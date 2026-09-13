@@ -1,49 +1,49 @@
-## v3.9.2 — Login-first + proteção de migração
+# Veredicta multiusuário — arquitetura atual v3.11
 
-A página inicial sempre abre no login, mesmo se existir cookie de sessão anterior. Se `cases.owner_id` ainda não existir, o dashboard entra em modo de compatibilidade e informa que a migration multiusuário deve ser executada.
+## Identidade
 
-# Configuração do Veredicta v3.9 Multiusuário
+Cada pessoa possui uma conta real do Veredicta criada por e-mail e senha. O registro ocorre exclusivamente na página inicial e a assinatura Stripe fica vinculada a essa conta.
 
-## 1. Banco
+## Isolamento
 
-No Supabase, abra SQL Editor e execute integralmente:
+Cada caso possui `owner_id`. O site e a Action consultam apenas os casos do usuário autenticado.
 
-`supabase/migration_v3_9_multiuser.sql`
+## GPT
 
-A migration cria `veredicta_users`, `veredicta_api_keys` e adiciona `owner_id` às tabelas jurídicas. Os casos existentes são atribuídos ao administrador legado para não perder dados.
+A v3.11 substitui a distribuição manual de chaves por OAuth. Quando o usuário usa o GPT, o ChatGPT abre o login do Veredicta e recebe um token individual após autorização.
 
-## 2. Deploy
+Fluxo:
 
-Publique o ZIP normalmente na Vercel. Mantenha as variáveis do Supabase existentes. `GPT_ACTION_API_KEY` pode permanecer configurada para compatibilidade administrativa, mas não deve ser compartilhada com clientes.
+`ChatGPT → OAuth Veredicta → login → conta/assinatura → token → API → owner_id`
 
-## 3. Criar usuário
+As antigas `veredicta_api_keys` continuam aceitas somente para transição e não aparecem mais na interface administrativa.
 
-Acesse:
+## Administração
 
-`https://SEU-DOMINIO/admin-users.html`
+`/admin-users.html` permite ver:
 
-Entre com a senha administrativa do Veredicta e clique em “Criar usuário e chave”. A chave completa é exibida uma única vez. O banco grava somente o SHA-256 da chave.
+- nome e e-mail
+- perfil
+- status da conta
+- assinatura
+- conexão do GPT
+- último uso
 
-## 4. Vincular casos
+Ações administrativas:
 
-Ao cadastrar um novo caso em `/new-case.html`, selecione o “Usuário GPT responsável”. O caso recebe `owner_id` e passa a ser invisível aos demais usuários da Action.
+- suspender ou reativar conta
+- revogar conexão GPT
 
-## 5. GPT pessoal
+A criação de usuários não ocorre no painel administrativo.
 
-Para este modelo de distribuição, cada advogado deve ter sua própria cópia do GPT e configurar a autenticação da Action com a chave individual gerada para ele. O cabeçalho utilizado é:
+## Banco
 
-`X-Veredicta-Key: vrd_live_...`
+A base multiusuário continua usando `veredicta_users` e `owner_id`. Para o OAuth execute também:
 
-Use o `openapi.yaml` incluído no pacote.
+`supabase/migration_v3_11_gpt_oauth.sql`
 
-## 6. Isolamento
+## Cobrança
 
-`/api/gpt/cases`, `/api/gpt/case`, `/api/gpt/analysis`, histórico e detalhe de análise passam a operar somente dentro do `user_id` resolvido pela chave. Tentativas de consultar UUID de outro usuário retornam “não encontrado”.
+Usuário comum: `active` ou `trialing` libera site e GPT.
 
-## 7. Bloqueio e rotação
-
-Em `/admin-users.html` você pode suspender o usuário ou gerar uma nova chave. A rotação revoga todas as chaves ativas anteriores daquele usuário.
-
-## Importante
-
-Esta versão implementa multiusuário e isolamento por chave. Pagamento, criação automática por checkout e e-mail de boas-vindas ainda não estão ligados nesta versão. Eles podem ser adicionados depois usando o mesmo `veredicta_users.id` como vínculo.
+Administrador: `role=admin` é isento de cobrança.
