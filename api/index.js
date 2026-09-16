@@ -5,14 +5,14 @@ import { db, supabaseConfigStatus } from '../lib/supabase.js';
 import { signUpUser, signInUser, recoverPassword } from '../lib/userAuth.js';
 import { createCheckoutSession, createBillingPortalSession, retrieveStripeEvent, stripeConfigStatus } from '../lib/stripe.js';
 import { sendWelcomeEmail } from '../lib/email.js';
-import { createAuthorizationCode, exchangeAuthorizationCode, refreshOAuthToken, oauthConfigStatus, validateOAuthClient, validateRedirectUri, revokeUserOAuth } from '../lib/oauth.js';
+import { createAuthorizationCode, exchangeAuthorizationCode, refreshOAuthToken, oauthConfigStatus, validateOAuthClient, validateOAuthRedirectUri, revokeUserOAuth } from '../lib/oauth.js';
 import { verifyAnalysis, FINAL_CLASSES, mpText, memoText } from '../lib/legal.js';
 
 const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','requer-correcao','concluido','erro']);
 const AUDIT_RECOMMENDATIONS = new Set(['liberar','corrigir','escalar para revisão humana aprofundada']);
 const AUDIT_STATUSES = new Set(['confirmado','divergente','não encontrado','opinião sem precedente']);
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
-const APP_VERSION = '3.11.0';
+const APP_VERSION = '3.12.0';
 const VALIDATOR_VERSION = '3.8.1';
 
 function requestBaseUrl(req){
@@ -998,7 +998,7 @@ async function oauthAuthorize(req,res){
 
   if(responseType!=='code') return json(res,400,{error:'unsupported_response_type'});
   if(!validateOAuthClient(clientId,'',{requireSecret:false})) return json(res,400,{error:'invalid_client'});
-  if(!validateRedirectUri(redirectUri)) return json(res,400,{error:'redirect_uri não autorizado'});
+  if(!await validateOAuthRedirectUri(clientId,redirectUri)) return json(res,400,{error:'redirect_uri não autorizado'});
 
   if(decision==='deny'){
     return json(res,200,{redirect_to:appendQuery(redirectUri,{error:'access_denied',state})});
@@ -1018,6 +1018,36 @@ async function oauthAuthorize(req,res){
     userId:profile.id,clientId,redirectUri,scope,codeChallenge,codeChallengeMethod
   });
   return json(res,200,{redirect_to:appendQuery(redirectUri,{code:out.code,state})});
+}
+
+function oauthProtectedResource(req,res){
+  if(req.method!=='GET')return json(res,405,{error:'Método não permitido'});
+  const base=requestBaseUrl(req);
+  res.setHeader('Cache-Control','public, max-age=300');
+  return json(res,200,{
+    resource:`${base}/mcp`,
+    authorization_servers:[base],
+    scopes_supported:['veredicta'],
+    bearer_methods_supported:['header'],
+    resource_documentation:`${base}/MCP_MIGRATION.md`
+  });
+}
+
+function oauthAuthorizationServer(req,res){
+  if(req.method!=='GET')return json(res,405,{error:'Método não permitido'});
+  const base=requestBaseUrl(req);
+  res.setHeader('Cache-Control','public, max-age=300');
+  return json(res,200,{
+    issuer:base,
+    authorization_endpoint:`${base}/oauth/authorize`,
+    token_endpoint:`${base}/api/oauth/token`,
+    response_types_supported:['code'],
+    grant_types_supported:['authorization_code','refresh_token'],
+    code_challenge_methods_supported:['S256'],
+    scopes_supported:['veredicta'],
+    token_endpoint_auth_methods_supported:['none','client_secret_basic','client_secret_post'],
+    client_id_metadata_document_supported:true
+  });
 }
 
 async function oauthToken(req,res){
@@ -1141,6 +1171,8 @@ export default async function handler(req,res){
       case 'billing': return await billing(req,res);
       case 'oauth-authorize': return await oauthAuthorize(req,res);
       case 'oauth-token': return await oauthToken(req,res);
+      case 'oauth-protected-resource': return oauthProtectedResource(req,res);
+      case 'oauth-authorization-server': return oauthAuthorizationServer(req,res);
       case 'cases': return await cases(req,res);
       case 'config': return await config(req,res);
       case 'admin-users': return await adminUsers(req,res);

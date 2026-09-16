@@ -8,7 +8,7 @@ const adminJs=fs.readFileSync(new URL('../admin-users.js',import.meta.url),'utf8
 const openapi=fs.readFileSync(new URL('../openapi.yaml',import.meta.url),'utf8');
 const migration=fs.readFileSync(new URL('../supabase/migration_v3_11_gpt_oauth.sql',import.meta.url),'utf8');
 const vercel=fs.readFileSync(new URL('../vercel.json',import.meta.url),'utf8');
-assert.match(api,/APP_VERSION = '3\.11\.0'/);
+assert.match(api,/APP_VERSION = '3\.(?:11\.[0-9]+|1[2-9]\.[0-9]+|[2-9][0-9]\.[0-9]+)'/);
 assert.match(api,/async function oauthAuthorize/);
 assert.match(api,/async function oauthToken/);
 assert.match(auth,/authType:'oauth'/);
