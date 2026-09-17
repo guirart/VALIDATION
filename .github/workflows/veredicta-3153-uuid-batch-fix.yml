@@ -1,0 +1,137 @@
+name: Apply Veredicta 3.15.3 UUID batch fixes
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/veredicta-3153-uuid-batch-fix.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Patch UUID identity and batch tooling
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          # 1) UI: remove name-based identity warning entirely.
+          p=Path('app.js')
+          s=p.read_text(encoding='utf-8')
+          old="""function identityWarning(c){
+  const text = norm(c?.contract_text || '');
+  const client = norm(c?.client_name || '');
+  if(!client || client.length < 4 || !text) return '';
+  if(text.includes(client)) return '';
+  return `<div class=\"identity-warning\"><b>⚠ Verificação de identidade:</b> o nome do cliente cadastrado não foi localizado literalmente no texto do dossiê. Confira se o contrato pertence ao caso correto antes da revisão jurídica.</div>`;
+}
+"""
+          new="""function identityWarning(c){
+  // Identidade canônica: exclusivamente o UUID case.id. Nome, client_name e title são dados informativos.
+  return '';
+}
+"""
+          if old in s:
+              s=s.replace(old,new)
+          else:
+              raise SystemExit('identityWarning block not found')
+          p.write_text(s,encoding='utf-8')
+
+          # 2) MCP: expose one-call batch dossier retrieval.
+          p=Path('lib/mcp.js')
+          s=p.read_text(encoding='utf-8')
+          needle="server.registerTool('listar_casos_veredicta'"
+          if "listar_lote_casos_veredicta" not in s:
+              pos=s.find(needle)
+              if pos<0: raise SystemExit('listar_casos tool not found')
+              end=s.find("\n server.registerTool('criar_caso_veredicta'",pos)
+              if end<0: raise SystemExit('insert location not found')
+              tool="\n server.registerTool('listar_lote_casos_veredicta',{title:'Listar lote completo por UUID',description:'Retorna até 100 dossiês completos de uma fila em uma única chamada. Use para processar lotes sem associar casos por nome. A identidade é sempre case_id UUID.',inputSchema:{status:z.enum(['pendente','em-analise','aguardando-revisao','requer-correcao','concluido','erro']).default('pendente'),environment:z.enum(['production','test']).default('test'),limit:z.number().int().min(1).max(100).default(100)},outputSchema:{data:z.record(z.string(),z.unknown())},annotations:READ_ONLY,_meta:toolMeta()},async({status,environment,limit},e)=>callVeredicta(e,`/api/gpt-batch-cases?status=${encodeURIComponent(status)}&environment=${encodeURIComponent(environment)}&limit=${encodeURIComponent(limit)}`));"
+              s=s[:end]+tool+s[end:]
+          s=s.replace("version:'3.15.3'","version:'3.15.3'")
+          p.write_text(s,encoding='utf-8')
+
+          # 3) OpenAPI: expose environment/run_id on case listing and batch endpoint.
+          p=Path('openapi.yaml')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('version: 3.15.2','version: 3.15.3',1)
+          if '/api/gpt-batch-cases:' not in s:
+              block="""
+  /api/gpt-batch-cases:
+    get:
+      operationId: listarLoteCasosVeredicta
+      summary: Retorna até 100 dossiês completos da fila em uma única chamada, identificados exclusivamente por UUID.
+      description: O nome do cliente e o título nunca devem ser usados para associar identidade. Use case_id UUID como chave canônica.
+      security:
+        - VeredictaOAuth: [veredicta]
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema: {type: string, default: pendente}
+        - name: environment
+          in: query
+          required: false
+          schema: {type: string, enum: [production, test], default: test}
+        - name: limit
+          in: query
+          required: false
+          schema: {type: integer, minimum: 1, maximum: 100, default: 100}
+      responses:
+        \"200\":
+          description: Lote de dossiês completos com case_id e contract_sha256.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: {type: boolean}
+                  identity_rule: {type: string}
+                  total: {type: integer}
+                  cases:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        case_id: {type: string, format: uuid}
+                        external_test_id: {type: string}
+                        title: {type: string}
+                        client_name: {type: string}
+                        contract_text: {type: string}
+                        contract_sha256: {type: string}
+                        status: {type: string}
+                        environment: {type: string}
+                        run_id: {type: string}
+"""
+              s=s.replace('\ncomponents:\n',block+'\ncomponents:\n')
+          p.write_text(s,encoding='utf-8')
+
+          # 4) Version markers.
+          for name in ['api/index.js','package.json','package-lock.json']:
+              p=Path(name)
+              if not p.exists(): continue
+              s=p.read_text(encoding='utf-8')
+              s=s.replace("3.15.2","3.15.3")
+              p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit patch
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo 'Nothing to patch.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app.js lib/mcp.js openapi.yaml api/index.js package.json package-lock.json
+          git commit -m 'fix: UUID-only identity and batch dossier retrieval'
+          git push origin main
