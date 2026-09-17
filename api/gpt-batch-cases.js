@@ -14,34 +14,17 @@ export default async function handler(req,res){
     const status=String(req.query?.status||'pendente').trim();
     const environment=String(req.query?.environment||'test').trim()==='production'?'production':'test';
     const limit=Math.max(1,Math.min(100,Number(req.query?.limit||100)||100));
+    const externalTestPrefix=String(req.query?.external_test_prefix||'').trim();
     if(!ALLOWED_STATUS.has(status))return json(res,400,{error:'status inválido'});
-    const rows=await db(`cases?owner_id=eq.${encodeURIComponent(principal.userId)}&environment=eq.${encodeURIComponent(environment)}&status=eq.${encodeURIComponent(status)}&select=id,external_test_id,synthetic,environment,run_id,training_round,training_order,title,client_name,contract_text,status,created_at,updated_at&order=created_at.asc&limit=${limit}`);
+    if(externalTestPrefix&&!/^VEREDICTA-(?:TEST-|REG-\d{3}-)/.test(externalTestPrefix))return json(res,400,{error:'external_test_prefix inválido'});
+    const prefixFilter=externalTestPrefix?`&external_test_id=like.${encodeURIComponent(externalTestPrefix+'*')}`:'';
+    const rows=await db(`cases?owner_id=eq.${encodeURIComponent(principal.userId)}&environment=eq.${encodeURIComponent(environment)}&status=eq.${encodeURIComponent(status)}${prefixFilter}&select=id,external_test_id,synthetic,environment,run_id,training_round,training_order,title,client_name,contract_text,status,created_at,updated_at&order=created_at.asc&limit=${limit}`);
     return json(res,200,{
       ok:true,
-      identity_rule:'case.id UUID é a única identidade canônica. Ignore nome, client_name e title para associação.',
-      status,
-      environment,
-      total:rows.length,
-      cases:rows.map(row=>({
-        case_id:row.id,
-        external_test_id:row.external_test_id,
-        synthetic:row.synthetic,
-        environment:row.environment,
-        run_id:row.run_id,
-        training_round:row.training_round,
-        training_order:row.training_order,
-        title:row.title,
-        client_name:row.client_name,
-        contract_text:row.contract_text,
-        contract_sha256:sha(row.contract_text),
-        status:row.status,
-        created_at:row.created_at,
-        updated_at:row.updated_at
-      })),
+      identity_rule:'case.id UUID é a única identidade canônica. external_test_id serve apenas para selecionar o lote sintético; ignore nome, client_name e title para associação.',
+      status,environment,external_test_prefix:externalTestPrefix||null,total:rows.length,
+      cases:rows.map(row=>({case_id:row.id,external_test_id:row.external_test_id,synthetic:row.synthetic,environment:row.environment,run_id:row.run_id,training_round:row.training_round,training_order:row.training_order,title:row.title,client_name:row.client_name,contract_text:row.contract_text,contract_sha256:sha(row.contract_text),status:row.status,created_at:row.created_at,updated_at:row.updated_at})),
       app_version:APP_VERSION
     });
-  }catch(error){
-    console.error('[GPT_BATCH_CASES]',error);
-    return json(res,500,{ok:false,error:error?.message||'Falha ao listar lote',app_version:APP_VERSION});
-  }
+  }catch(error){console.error('[GPT_BATCH_CASES]',error);return json(res,500,{ok:false,error:error?.message||'Falha ao listar lote',app_version:APP_VERSION});}
 }
