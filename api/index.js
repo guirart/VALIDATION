@@ -12,7 +12,7 @@ const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','re
 const AUDIT_RECOMMENDATIONS = new Set(['liberar','corrigir','escalar para revisão humana aprofundada']);
 const AUDIT_STATUSES = new Set(['confirmado','divergente','não encontrado','opinião sem precedente']);
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
-const APP_VERSION = '3.14.5';
+const APP_VERSION = '3.14.6';
 const VALIDATOR_VERSION = '3.8.1';
 const LEGAL_SOURCE_VERSION = process.env.LEGAL_SOURCE_VERSION || `MP-1.376-2026-sha256-${sha(mpText).slice(0,16)}`;
 const MEMORANDUM_VERSION = process.env.MEMORANDUM_VERSION || `MEMORANDO-15-PONTOS-sha256-${sha(memoText).slice(0,16)}`;
@@ -707,6 +707,95 @@ async function gptAnalysis(req,res){
 }
 
 
+async function gptAnalysisStart(req,res){
+  const principal=await requireActionAuth(req,res);
+  if(!principal)return;
+  if(req.method!=='POST')return json(res,405,{error:'Método não permitido'});
+  const body=await readJson(req);
+  const caseId=String(body?.case_id||'').trim();
+  const sourceHash=String(body?.source_contract_sha256||'').trim().toLowerCase();
+  if(!caseId||!sourceHash)return json(res,400,{ok:false,error:'case_id e source_contract_sha256 são obrigatórios',app_version:APP_VERSION});
+  const rows=await db(`cases?id=eq.${encodeURIComponent(caseId)}&owner_id=eq.${encodeURIComponent(principal.userId)}&select=id,contract_text&limit=1`);
+  if(!rows.length)return json(res,404,{ok:false,error:'Caso não encontrado',case_id:caseId,app_version:APP_VERSION});
+  const currentHash=sha(rows[0].contract_text);
+  if(sourceHash!==currentHash)return json(res,409,{ok:false,error:'A análise não corresponde ao dossiê atual do caso.',case_id:caseId,app_version:APP_VERSION});
+  const draftId=crypto.randomUUID();
+  const analystMeta={
+    final_classification:body?.analyst_final_classification,
+    summary:String(body?.analyst_summary||'')
+  };
+  const auditMeta={
+    final_classification:body?.audit_final_classification,
+    recommendation:body?.audit_recommendation,
+    summary:String(body?.audit_summary||'')
+  };
+  if(!FINAL_CLASSES.has(analystMeta.final_classification)||!FINAL_CLASSES.has(auditMeta.final_classification)||!AUDIT_RECOMMENDATIONS.has(auditMeta.recommendation))
+    return json(res,400,{ok:false,error:'Metadados de classificação/auditoria inválidos',app_version:APP_VERSION});
+  await db('audit_logs',{method:'POST',body:JSON.stringify({
+    case_id:caseId,owner_id:principal.userId,event_type:'analysis_draft_started',
+    payload:{draft_id:draftId,source_contract_sha256:sourceHash,analyst:analystMeta,audit:auditMeta,app_version:APP_VERSION,validator_version:VALIDATOR_VERSION}
+  })});
+  return json(res,200,{ok:true,draft_id:draftId,case_id:caseId,expected_points:15,app_version:APP_VERSION,validator_version:VALIDATOR_VERSION});
+}
+
+async function gptAnalysisPoint(req,res){
+  const principal=await requireActionAuth(req,res);
+  if(!principal)return;
+  if(req.method!=='POST')return json(res,405,{error:'Método não permitido'});
+  const body=await readJson(req);
+  const draftId=String(body?.draft_id||'').trim();
+  const caseId=String(body?.case_id||'').trim();
+  const analystPoint=body?.analyst_point;
+  const auditFinding=body?.audit_finding;
+  const point=Number(analystPoint?.point);
+  if(!draftId||!caseId||!Number.isInteger(point)||point<1||point>15)return json(res,400,{ok:false,error:'draft_id, case_id e analyst_point.point (1-15) são obrigatórios',app_version:APP_VERSION});
+  if(Number(auditFinding?.point)!==point)return json(res,400,{ok:false,error:'audit_finding.point deve corresponder ao analyst_point.point',app_version:APP_VERSION});
+  const owned=await db(`cases?id=eq.${encodeURIComponent(caseId)}&owner_id=eq.${encodeURIComponent(principal.userId)}&select=id&limit=1`);
+  if(!owned.length)return json(res,404,{ok:false,error:'Caso não encontrado',case_id:caseId,app_version:APP_VERSION});
+  await db('audit_logs',{method:'POST',body:JSON.stringify({
+    case_id:caseId,owner_id:principal.userId,event_type:'analysis_draft_point',
+    payload:{draft_id:draftId,point,analyst_point:analystPoint,audit_finding:auditFinding,app_version:APP_VERSION}
+  })});
+  return json(res,200,{ok:true,draft_id:draftId,case_id:caseId,point,stored:true,app_version:APP_VERSION});
+}
+
+async function gptAnalysisFinalize(req,res){
+  const principal=await requireActionAuth(req,res);
+  if(!principal)return;
+  if(req.method!=='POST')return json(res,405,{error:'Método não permitido'});
+  const body=await readJson(req);
+  const draftId=String(body?.draft_id||'').trim();
+  const caseId=String(body?.case_id||'').trim();
+  if(!draftId||!caseId)return json(res,400,{ok:false,error:'draft_id e case_id são obrigatórios',app_version:APP_VERSION});
+
+  const starts=await db(`audit_logs?case_id=eq.${encodeURIComponent(caseId)}&owner_id=eq.${encodeURIComponent(principal.userId)}&event_type=eq.analysis_draft_started&select=id,payload,created_at&order=created_at.desc&limit=500`);
+  const start=starts.find(x=>x?.payload?.draft_id===draftId);
+  if(!start)return json(res,404,{ok:false,error:'Rascunho de análise não encontrado',draft_id:draftId,case_id:caseId,app_version:APP_VERSION});
+
+  const rows=await db(`audit_logs?case_id=eq.${encodeURIComponent(caseId)}&owner_id=eq.${encodeURIComponent(principal.userId)}&event_type=eq.analysis_draft_point&select=id,payload,created_at&order=created_at.desc&limit=2000`);
+  const byPoint=new Map();
+  for(const row of rows){
+    if(row?.payload?.draft_id!==draftId)continue;
+    const n=Number(row?.payload?.point);
+    if(Number.isInteger(n)&&n>=1&&n<=15&&!byPoint.has(n))byPoint.set(n,row.payload);
+  }
+  const missing=[]; for(let n=1;n<=15;n++)if(!byPoint.has(n))missing.push(n);
+  if(missing.length)return json(res,409,{ok:false,error:'Rascunho incompleto',draft_id:draftId,case_id:caseId,missing_points:missing,stored_points:[...byPoint.keys()].sort((a,b)=>a-b),app_version:APP_VERSION});
+
+  const analystPoints=[]; const findings=[];
+  for(let n=1;n<=15;n++){ analystPoints.push(byPoint.get(n).analyst_point); findings.push(byPoint.get(n).audit_finding); }
+  const assembled={
+    case_id:caseId,
+    source_contract_sha256:start.payload.source_contract_sha256,
+    analyst:{...start.payload.analyst,points:analystPoints},
+    audit:{...start.payload.audit,findings}
+  };
+  await db('audit_logs',{method:'POST',body:JSON.stringify({case_id:caseId,owner_id:principal.userId,event_type:'analysis_draft_finalizing',payload:{draft_id:draftId,point_count:15,app_version:APP_VERSION}})});
+  req.body=assembled;
+  return await gptAnalysis(req,res);
+}
+
+
 function testImportEnabled() {
   return String(process.env.TEST_IMPORT_ENABLED || '').toLowerCase() === 'true';
 }
@@ -1215,6 +1304,9 @@ export default async function handler(req,res){
       case 'gpt-cases': return await gptCases(req,res);
       case 'gpt-case': return await gptCase(req,res);
       case 'gpt-analysis': return await gptAnalysis(req,res);
+      case 'gpt-analysis-start': return await gptAnalysisStart(req,res);
+      case 'gpt-analysis-point': return await gptAnalysisPoint(req,res);
+      case 'gpt-analysis-finalize': return await gptAnalysisFinalize(req,res);
       case 'source-status': return await sourceStatus(req,res);
       case 'legal-sources': return await legalSources(req,res);
       case 'gpt-analysis-history': return await gptAnalysisHistory(req,res);

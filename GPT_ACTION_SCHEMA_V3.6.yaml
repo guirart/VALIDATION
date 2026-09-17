@@ -339,6 +339,76 @@ paths:
                   app_version: {type: string}
                   validator_version: {type: string}
 
+
+  /api/gpt/analysis-start:
+    post:
+      operationId: iniciarEnvioAnaliseVeredicta
+      summary: Inicia envio fracionado de uma análise jurídica auditada.
+      security:
+        - VeredictaOAuth: [veredicta]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [case_id, source_contract_sha256, analyst_final_classification, analyst_summary, audit_final_classification, audit_recommendation, audit_summary]
+              properties:
+                case_id: {type: string, format: uuid}
+                source_contract_sha256: {type: string}
+                analyst_final_classification: {type: string}
+                analyst_summary: {type: string}
+                audit_final_classification: {type: string}
+                audit_recommendation: {type: string}
+                audit_summary: {type: string}
+      responses:
+        "200":
+          description: Rascunho iniciado.
+
+  /api/gpt/analysis-point:
+    post:
+      operationId: enviarPontoAnaliseVeredicta
+      summary: Envia um ponto e seu finding para um rascunho de análise.
+      security:
+        - VeredictaOAuth: [veredicta]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [draft_id, case_id, analyst_point, audit_finding]
+              properties:
+                draft_id: {type: string, format: uuid}
+                case_id: {type: string, format: uuid}
+                analyst_point: {type: object, additionalProperties: true}
+                audit_finding: {type: object, additionalProperties: true}
+      responses:
+        "200":
+          description: Ponto armazenado.
+
+  /api/gpt/analysis-finalize:
+    post:
+      operationId: finalizarEnvioAnaliseVeredicta
+      summary: Finaliza, valida e grava um rascunho fracionado.
+      security:
+        - VeredictaOAuth: [veredicta]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [draft_id, case_id]
+              properties:
+                draft_id: {type: string, format: uuid}
+                case_id: {type: string, format: uuid}
+      responses:
+        "200":
+          description: Análise processada pelo quality gate.
+        "409":
+          description: Rascunho incompleto ou hash divergente.
+
   /api/gpt/test-import:
     post:
       operationId: importarCasosSinteticosVeredicta

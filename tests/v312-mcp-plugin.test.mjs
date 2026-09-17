@@ -43,7 +43,7 @@ const plugin=JSON.parse(fs.readFileSync(new URL('../plugins/veredicta/.codex-plu
 const mcp=JSON.parse(fs.readFileSync(new URL('../plugins/veredicta/.mcp.json',import.meta.url),'utf8'));
 const vercel=JSON.parse(fs.readFileSync(new URL('../vercel.json',import.meta.url),'utf8'));
 assert.equal(plugin.name,'veredicta');
-assert.equal(plugin.version,'3.14.5');
+assert.equal(plugin.version,'3.14.6');
 assert.ok(plugin.skills);
 assert.equal(mcp.mcpServers.veredicta.url,'https://validation-six-tawny.vercel.app/mcp');
 assert.ok(vercel.rewrites.some(rule=>rule.source==='/mcp'&&rule.destination==='/api/mcp'));

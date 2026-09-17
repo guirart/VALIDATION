@@ -79,6 +79,18 @@
       "destination": "/api?action=gpt-analysis"
     },
     {
+      "source": "/api/gpt/analysis-start",
+      "destination": "/api?action=gpt-analysis-start"
+    },
+    {
+      "source": "/api/gpt/analysis-point",
+      "destination": "/api?action=gpt-analysis-point"
+    },
+    {
+      "source": "/api/gpt/analysis-finalize",
+      "destination": "/api?action=gpt-analysis-finalize"
+    },
+    {
       "source": "/api/gpt/source-status",
       "destination": "/api?action=source-status"
     },

@@ -1,6 +1,6 @@
 {
   "name": "veredicta-mp1376-app",
-  "version": "3.14.5",
+  "version": "3.14.6",
   "private": true,
   "type": "module",
   "scripts": {
@@ -36,7 +36,8 @@
     "test:v311": "node tests/v311-admin-oauth.test.mjs",
     "test:v312": "node tests/v312-mcp-plugin.test.mjs",
     "test:training-dataset": "node tests/v3144-training-dataset.test.mjs",
-    "test:uuid-identity": "node tests/v3145-uuid-identity.test.mjs"
+    "test:uuid-identity": "node tests/v3145-uuid-identity.test.mjs",
+    "test:staged-analysis": "node tests/v3146-staged-analysis.test.mjs"
   },
   "devDependencies": {
     "vercel": "latest"

@@ -357,3 +357,15 @@ Regras obrigatórias:
 12. Se a regra for condicional e o estágio atual estiver documentalmente comprovado, sem descumprimento presente, use `applicability=condicional`, `evidence_status=comprovado`, `legal_result=atende`, `display_status=atinge`, deixando no `reasoning` o dever futuro e a respectiva janela legal.
 13. Só use `parcialmente_comprovado`, `nao_comprovado` ou `nao_consta` em P5/P12/P15 se estiver faltando prova que JÁ DEVERIA EXISTIR no estágio atual. A mera inexistência de aprovação, minuta ou data de contratação FUTURA não é falta documental atual.
 14. Em P15, nunca use a data da operação originária como data da futura contratação. Se a futura contratação ainda não ocorreu e isso é compatível com a etapa atual, registre a janela de 120 dias no raciocínio e não gere `PARCIAL` por ausência da data futura.
+
+## Envio fracionado de análise — v3.14.6
+
+Para reduzir o tamanho das chamadas de escrita, prefira este fluxo para `begin_test` e análises completas:
+
+1. `iniciar_envio_analise_veredicta` com `case_id`, hash do contrato e metadados finais.
+2. `enviar_ponto_analise_veredicta` uma vez para cada ponto 1–15, sempre usando o mesmo `draft_id` e `case_id`.
+3. `finalizar_envio_analise_veredicta` para montar a análise no servidor, executar o validador 3.8.1 e gravar o resultado.
+
+Não use nomes, `title` ou `client_name` para localizar ou associar o rascunho. O vínculo é exclusivamente por `case_id` UUID; `draft_id` identifica apenas a tentativa de submissão em andamento.
+
+A ferramenta `enviar_analise_veredicta` permanece disponível por compatibilidade, mas o fluxo fracionado é preferencial quando houver payload grande ou falha de transporte antes de o Veredicta receber a análise.
