@@ -68,7 +68,7 @@
     },
     {
       "source": "/api/gpt/cases",
-      "destination": "/api?action=gpt-cases"
+      "destination": "/api/gpt-cases"
     },
     {
       "source": "/api/gpt/case",
