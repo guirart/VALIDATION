@@ -1,6 +1,14 @@
-# Loop autônomo `/begin_test` — Veredicta 3.15.0
+# Loop autônomo `/begin_test` — Veredicta 3.15.2
 
 Use este modo somente em ambiente de teste. O objetivo é obter **100 acertos consecutivos em uma única rodada vencedora**, e não 100 tentativas acumuladas.
+
+## Regra de despacho obrigatória
+
+`/begin_test` possui prioridade sobre o fluxo normal de análise de casos. Depois de validar as fontes, o próximo tool call DEVE ser `iniciar_treinamento_veredicta`.
+
+Não chame `listar_casos_veredicta` antes de iniciar a execução. Não consulte `status=pendente` para decidir se existe trabalho. A fila comum pertence ao fluxo de produção; a fila de treinamento nasce do `run_id`.
+
+Se `listar_casos_veredicta` retornar zero casos por engano durante um `/begin_test`, isso NÃO encerra o teste: volte imediatamente ao fluxo correto chamando `iniciar_treinamento_veredicta`.
 
 ## Identidade e isolamento
 
@@ -12,19 +20,12 @@ Use este modo somente em ambiente de teste. O objetivo é obter **100 acertos co
 
 ## Geração
 
-Cada rodada criada pelo backend contém exatamente 100 casos inéditos:
-
-- 25 enquadráveis;
-- 25 parcialmente enquadráveis;
-- 25 não enquadráveis;
-- 25 inconclusivos.
-
-A ordem é embaralhada por seed reproduzível. A seed do run pode constar do relatório técnico; sementes internas de caso e o gabarito não são fornecidos ao analisador.
+Cada rodada criada pelo backend contém exatamente 100 casos inéditos: 25 enquadráveis, 25 parcialmente enquadráveis, 25 não enquadráveis e 25 inconclusivos. A ordem é embaralhada por seed reproduzível. A seed do run pode constar do relatório técnico; sementes internas de caso e o gabarito não são fornecidos ao analisador.
 
 ## Execução obrigatória
 
 1. Consulte `consultar_status_veredicta` e valide app, validator, hashes e conteúdo das fontes.
-2. Chame `iniciar_treinamento_veredicta` uma única vez. Guarde o `run_id` retornado.
+2. Sem listar casos pendentes, chame `iniciar_treinamento_veredicta` uma única vez e guarde o `run_id`.
 3. Chame `proximo_caso_treinamento_veredicta(run_id)`.
 4. Analise o dossiê cegamente e faça auditoria adversarial dos 15 pontos.
 5. Grave a análise. Prefira o fluxo fracionado: iniciar envio, enviar 15 pontos e finalizar.
