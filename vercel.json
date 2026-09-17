@@ -24,7 +24,7 @@
     },
     {
       "source": "/oauth/authorize",
-      "destination": "/oauth-authorize.html"
+      "destination": "/oauth-authorize"
     },
     {
       "source": "/api/oauth/authorize",
