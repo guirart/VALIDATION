@@ -1,0 +1,1055 @@
+{
+  "batch_id": "VEREDICTA-REGRESSAO-100-V2",
+  "gold": [
+    {
+      "external_test_id": "VEREDICTA-REG-002-001",
+      "expected_classification": "enquadrável",
+      "expected_points": {},
+      "expected_defects": []
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-002",
+      "expected_classification": "enquadrável",
+      "expected_points": {},
+      "expected_defects": []
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-003",
+      "expected_classification": "enquadrável",
+      "expected_points": {},
+      "expected_defects": []
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-004",
+      "expected_classification": "enquadrável",
+      "expected_points": {},
+      "expected_defects": []
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-005",
+      "expected_classification": "enquadrável",
+      "expected_points": {},
+      "expected_defects": []
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-006",
+      "expected_classification": "enquadrável",
+      "expected_points": {},
+      "expected_defects": []
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-007",
+      "expected_classification": "enquadrável",
+      "expected_points": {},
+      "expected_defects": []
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-008",
+      "expected_classification": "enquadrável",
+      "expected_points": {},
+      "expected_defects": []
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-009",
+      "expected_classification": "enquadrável",
+      "expected_points": {},
+      "expected_defects": []
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-010",
+      "expected_classification": "enquadrável",
+      "expected_points": {},
+      "expected_defects": []
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-011",
+      "expected_classification": "enquadrável",
+      "expected_points": {},
+      "expected_defects": []
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-012",
+      "expected_classification": "enquadrável",
+      "expected_points": {},
+      "expected_defects": []
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-013",
+      "expected_classification": "enquadrável",
+      "expected_points": {},
+      "expected_defects": []
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-014",
+      "expected_classification": "enquadrável",
+      "expected_points": {},
+      "expected_defects": []
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-015",
+      "expected_classification": "enquadrável",
+      "expected_points": {},
+      "expected_defects": []
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-016",
+      "expected_classification": "enquadrável",
+      "expected_points": {},
+      "expected_defects": []
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-017",
+      "expected_classification": "enquadrável",
+      "expected_points": {},
+      "expected_defects": []
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-018",
+      "expected_classification": "enquadrável",
+      "expected_points": {},
+      "expected_defects": []
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-019",
+      "expected_classification": "enquadrável",
+      "expected_points": {},
+      "expected_defects": []
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-020",
+      "expected_classification": "enquadrável",
+      "expected_points": {},
+      "expected_defects": []
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-021",
+      "expected_classification": "enquadrável",
+      "expected_points": {},
+      "expected_defects": []
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-022",
+      "expected_classification": "enquadrável",
+      "expected_points": {},
+      "expected_defects": []
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-023",
+      "expected_classification": "enquadrável",
+      "expected_points": {},
+      "expected_defects": []
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-024",
+      "expected_classification": "enquadrável",
+      "expected_points": {},
+      "expected_defects": []
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-025",
+      "expected_classification": "enquadrável",
+      "expected_points": {},
+      "expected_defects": []
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-026",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "9": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "Laudo técnico: ausente para a safra 2024/2025."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-027",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "8": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "Os laudos não estabelecem nexo entre os eventos e a atividade financiada."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-028",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "11": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "Não foi apresentada declaração sobre outras operações ou limite cumulativo."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-029",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "14": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "As garantias ainda não foram avaliadas pela instituição financeira."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-030",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "15": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "A nova operação ainda não foi formalizada."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-031",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "9": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "Laudo técnico: ausente para a safra 2024/2025."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-032",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "8": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "Os laudos não estabelecem nexo entre os eventos e a atividade financiada."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-033",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "11": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "Não foi apresentada declaração sobre outras operações ou limite cumulativo."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-034",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "14": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "As garantias ainda não foram avaliadas pela instituição financeira."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-035",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "15": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "A nova operação ainda não foi formalizada."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-036",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "9": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "Laudo técnico: ausente para a safra 2024/2025."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-037",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "8": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "Os laudos não estabelecem nexo entre os eventos e a atividade financiada."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-038",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "11": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "Não foi apresentada declaração sobre outras operações ou limite cumulativo."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-039",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "14": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "As garantias ainda não foram avaliadas pela instituição financeira."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-040",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "15": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "A nova operação ainda não foi formalizada."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-041",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "9": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "Laudo técnico: ausente para a safra 2024/2025."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-042",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "8": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "Os laudos não estabelecem nexo entre os eventos e a atividade financiada."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-043",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "11": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "Não foi apresentada declaração sobre outras operações ou limite cumulativo."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-044",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "14": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "As garantias ainda não foram avaliadas pela instituição financeira."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-045",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "15": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "A nova operação ainda não foi formalizada."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-046",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "9": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "Laudo técnico: ausente para a safra 2024/2025."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-047",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "8": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "Os laudos não estabelecem nexo entre os eventos e a atividade financiada."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-048",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "11": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "Não foi apresentada declaração sobre outras operações ou limite cumulativo."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-049",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "14": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "As garantias ainda não foram avaliadas pela instituição financeira."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-050",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "15": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "A nova operação ainda não foi formalizada."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-051",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "2": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "Natureza da operação: cartão de crédito empresarial sem destinação rural."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-052",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "6": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "As três safras apresentaram redução de renda de 10%, 12% e 15%."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-053",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "13": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "A devedora está inscrita em Dívida Ativa da União, conforme certidão positiva."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-054",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "10": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "As perdas ocorreram em atividade pecuária sem vínculo com as culturas financiadas."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-055",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "15": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "A nova operação foi aprovada e assinada em 05/07/2026, antes da publicação da MP."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-056",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "2": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "Natureza da operação: cartão de crédito empresarial sem destinação rural."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-057",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "6": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "As três safras apresentaram redução de renda de 10%, 12% e 15%."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-058",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "13": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "A devedora está inscrita em Dívida Ativa da União, conforme certidão positiva."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-059",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "10": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "As perdas ocorreram em atividade pecuária sem vínculo com as culturas financiadas."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-060",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "15": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "A nova operação foi aprovada e assinada em 05/07/2026, antes da publicação da MP."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-061",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "2": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "Natureza da operação: cartão de crédito empresarial sem destinação rural."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-062",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "6": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "As três safras apresentaram redução de renda de 10%, 12% e 15%."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-063",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "13": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "A devedora está inscrita em Dívida Ativa da União, conforme certidão positiva."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-064",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "10": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "As perdas ocorreram em atividade pecuária sem vínculo com as culturas financiadas."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-065",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "15": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "A nova operação foi aprovada e assinada em 05/07/2026, antes da publicação da MP."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-066",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "2": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "Natureza da operação: cartão de crédito empresarial sem destinação rural."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-067",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "6": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "As três safras apresentaram redução de renda de 10%, 12% e 15%."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-068",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "13": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "A devedora está inscrita em Dívida Ativa da União, conforme certidão positiva."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-069",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "10": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "As perdas ocorreram em atividade pecuária sem vínculo com as culturas financiadas."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-070",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "15": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "A nova operação foi aprovada e assinada em 05/07/2026, antes da publicação da MP."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-071",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "2": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "Natureza da operação: cartão de crédito empresarial sem destinação rural."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-072",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "6": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "As três safras apresentaram redução de renda de 10%, 12% e 15%."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-073",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "13": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "A devedora está inscrita em Dívida Ativa da União, conforme certidão positiva."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-074",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "10": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "As perdas ocorreram em atividade pecuária sem vínculo com as culturas financiadas."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-075",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "15": {
+          "legal_result": "nao_atende"
+        }
+      },
+      "expected_defects": [
+        "A nova operação foi aprovada e assinada em 05/07/2026, antes da publicação da MP."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-076",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "6": {
+          "legal_result": "inconclusivo"
+        }
+      },
+      "expected_defects": [
+        "Os percentuais de redução da renda não constam dos documentos apresentados."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-077",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "9": {
+          "legal_result": "inconclusivo"
+        }
+      },
+      "expected_defects": [
+        "Há referência a laudo, mas não consta assinatura, habilitação profissional ou ART."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-078",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "12": {
+          "legal_result": "inconclusivo"
+        }
+      },
+      "expected_defects": [
+        "Não consta informação sobre seguro, Proagro, indenizações ou amortizações."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-079",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "4": {
+          "legal_result": "inconclusivo"
+        }
+      },
+      "expected_defects": [
+        "A situação da operação em 31/05/2026 não consta do dossiê."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-080",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "3": {
+          "legal_result": "inconclusivo"
+        }
+      },
+      "expected_defects": [
+        "A fonte dos recursos da operação não consta do instrumento."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-081",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "6": {
+          "legal_result": "inconclusivo"
+        }
+      },
+      "expected_defects": [
+        "Os percentuais de redução da renda não constam dos documentos apresentados."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-082",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "9": {
+          "legal_result": "inconclusivo"
+        }
+      },
+      "expected_defects": [
+        "Há referência a laudo, mas não consta assinatura, habilitação profissional ou ART."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-083",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "12": {
+          "legal_result": "inconclusivo"
+        }
+      },
+      "expected_defects": [
+        "Não consta informação sobre seguro, Proagro, indenizações ou amortizações."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-084",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "4": {
+          "legal_result": "inconclusivo"
+        }
+      },
+      "expected_defects": [
+        "A situação da operação em 31/05/2026 não consta do dossiê."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-085",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "3": {
+          "legal_result": "inconclusivo"
+        }
+      },
+      "expected_defects": [
+        "A fonte dos recursos da operação não consta do instrumento."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-086",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "6": {
+          "legal_result": "inconclusivo"
+        }
+      },
+      "expected_defects": [
+        "Os percentuais de redução da renda não constam dos documentos apresentados."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-087",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "9": {
+          "legal_result": "inconclusivo"
+        }
+      },
+      "expected_defects": [
+        "Há referência a laudo, mas não consta assinatura, habilitação profissional ou ART."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-088",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "12": {
+          "legal_result": "inconclusivo"
+        }
+      },
+      "expected_defects": [
+        "Não consta informação sobre seguro, Proagro, indenizações ou amortizações."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-089",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "4": {
+          "legal_result": "inconclusivo"
+        }
+      },
+      "expected_defects": [
+        "A situação da operação em 31/05/2026 não consta do dossiê."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-090",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "3": {
+          "legal_result": "inconclusivo"
+        }
+      },
+      "expected_defects": [
+        "A fonte dos recursos da operação não consta do instrumento."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-091",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "6": {
+          "legal_result": "inconclusivo"
+        }
+      },
+      "expected_defects": [
+        "Os percentuais de redução da renda não constam dos documentos apresentados."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-092",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "9": {
+          "legal_result": "inconclusivo"
+        }
+      },
+      "expected_defects": [
+        "Há referência a laudo, mas não consta assinatura, habilitação profissional ou ART."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-093",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "12": {
+          "legal_result": "inconclusivo"
+        }
+      },
+      "expected_defects": [
+        "Não consta informação sobre seguro, Proagro, indenizações ou amortizações."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-094",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "4": {
+          "legal_result": "inconclusivo"
+        }
+      },
+      "expected_defects": [
+        "A situação da operação em 31/05/2026 não consta do dossiê."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-095",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "3": {
+          "legal_result": "inconclusivo"
+        }
+      },
+      "expected_defects": [
+        "A fonte dos recursos da operação não consta do instrumento."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-096",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "6": {
+          "legal_result": "inconclusivo"
+        }
+      },
+      "expected_defects": [
+        "Os percentuais de redução da renda não constam dos documentos apresentados."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-097",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "9": {
+          "legal_result": "inconclusivo"
+        }
+      },
+      "expected_defects": [
+        "Há referência a laudo, mas não consta assinatura, habilitação profissional ou ART."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-098",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "12": {
+          "legal_result": "inconclusivo"
+        }
+      },
+      "expected_defects": [
+        "Não consta informação sobre seguro, Proagro, indenizações ou amortizações."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-099",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "4": {
+          "legal_result": "inconclusivo"
+        }
+      },
+      "expected_defects": [
+        "A situação da operação em 31/05/2026 não consta do dossiê."
+      ]
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-002-100",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "3": {
+          "legal_result": "inconclusivo"
+        }
+      },
+      "expected_defects": [
+        "A fonte dos recursos da operação não consta do instrumento."
+      ]
+    }
+  ]
+}

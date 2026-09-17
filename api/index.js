@@ -715,7 +715,7 @@ function normalizeTestCaseInput(input, index) {
   const clientName = String(input?.client_name || '').trim();
   const contractText = String(input?.contract_text || '').trim();
 
-  if (!/^VEREDICTA-TEST-\d{3,4}$/.test(externalTestId)) {
+  if (!/^VEREDICTA-(?:TEST-\d{3,4}|REG-\d{3}-\d{3,4})$/.test(externalTestId)) {
     throw new Error(`caso ${index + 1}: external_test_id inválido`);
   }
   if (!title || !contractText) {

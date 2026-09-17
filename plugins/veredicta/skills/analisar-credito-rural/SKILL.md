@@ -27,3 +27,7 @@ Mantenha separadas as dimensões `applicability`, `evidence_status`, `legal_resu
 Antes de analisar, leia [workflow-veredicta.md](references/workflow-veredicta.md). Para fundamentação legal e conferência literal, leia [MP_1376_2026_texto_integral.md](references/MP_1376_2026_texto_integral.md) e [15_pontos_analise_MP_1376.md](references/15_pontos_analise_MP_1376.md).
 
 Não crie, edite nem exclua casos. O plugin pode consultar dados e enviar uma nova análise auditada.
+
+## Avaliações de regressão
+
+Quando o usuário pedir treinamento, avaliação ou comparação de versões, leia [evaluation-workflow.md](references/evaluation-workflow.md). Mantenha o gabarito oculto até todas as análises terem sido concluídas e salvas.
