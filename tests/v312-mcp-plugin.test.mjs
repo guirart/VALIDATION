@@ -42,7 +42,7 @@ const plugin=JSON.parse(fs.readFileSync(new URL('../plugins/veredicta/.codex-plu
 const mcp=JSON.parse(fs.readFileSync(new URL('../plugins/veredicta/.mcp.json',import.meta.url),'utf8'));
 const vercel=JSON.parse(fs.readFileSync(new URL('../vercel.json',import.meta.url),'utf8'));
 assert.equal(plugin.name,'veredicta');
-assert.equal(plugin.version,'3.12.0');
+assert.equal(plugin.version,'3.14.1');
 assert.ok(plugin.skills);
 assert.equal(mcp.mcpServers.veredicta.url,'https://validation-six-tawny.vercel.app/mcp');
 assert.ok(vercel.rewrites.some(rule=>rule.source==='/mcp'&&rule.destination==='/api/mcp'));
@@ -68,6 +68,8 @@ const authServer=mockResponse();
 await apiHandler({method:'GET',headers:{host:'veredicta.test','x-forwarded-proto':'https'},query:{action:'oauth-authorization-server'}},authServer);
 assert.equal(authServer.statusCode,200);
 assert.equal(JSON.parse(authServer.body).client_id_metadata_document_supported,true);
+assert.doesNotMatch(fs.readFileSync(new URL('../api/index.js',import.meta.url),'utf8'),/legal_source_version:process\.env\.LEGAL_SOURCE_VERSION\|\|null/);
+assert.match(fs.readFileSync(new URL('../api/index.js',import.meta.url),'utf8'),/MP-1\.376-2026-sha256-/);
 
 await client.close();
 await server.close();

@@ -12,8 +12,10 @@ const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','re
 const AUDIT_RECOMMENDATIONS = new Set(['liberar','corrigir','escalar para revisão humana aprofundada']);
 const AUDIT_STATUSES = new Set(['confirmado','divergente','não encontrado','opinião sem precedente']);
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
-const APP_VERSION = '3.12.0';
+const APP_VERSION = '3.14.1';
 const VALIDATOR_VERSION = '3.8.1';
+const LEGAL_SOURCE_VERSION = process.env.LEGAL_SOURCE_VERSION || `MP-1.376-2026-sha256-${sha(mpText).slice(0,16)}`;
+const MEMORANDUM_VERSION = process.env.MEMORANDUM_VERSION || `MEMORANDO-15-PONTOS-sha256-${sha(memoText).slice(0,16)}`;
 
 function requestBaseUrl(req){
   const forwardedProto=String(req.headers?.['x-forwarded-proto']||'').split(',')[0].trim();
@@ -463,8 +465,8 @@ async function gptCase(req,res){
     contract_sha256:sha(rows[0].contract_text),
     app_version:APP_VERSION,
     validator_version:VALIDATOR_VERSION,
-    legal_source_version:process.env.LEGAL_SOURCE_VERSION||null,
-    memorandum_version:process.env.MEMORANDUM_VERSION||null
+    legal_source_version:LEGAL_SOURCE_VERSION,
+    memorandum_version:MEMORANDUM_VERSION
   });
 }
 
@@ -733,7 +735,7 @@ function normalizeTestCaseInput(input, index) {
   };
 }
 
-async function importSyntheticCases(body) {
+async function importSyntheticCases(body, ownerId) {
   if (!testImportEnabled()) {
     const err = new Error('Importação de testes desativada. Configure TEST_IMPORT_ENABLED=true.');
     err.statusCode = 403;
@@ -743,6 +745,13 @@ async function importSyntheticCases(body) {
   if (body?.environment !== 'test') {
     const err = new Error('environment deve ser exatamente "test".');
     err.statusCode = 400;
+    throw err;
+  }
+
+  const normalizedOwnerId=String(ownerId||'').trim();
+  if(!normalizedOwnerId){
+    const err=new Error('Não foi possível identificar o proprietário da importação.');
+    err.statusCode=401;
     throw err;
   }
 
@@ -765,7 +774,7 @@ async function importSyntheticCases(body) {
   for (const item of normalized) {
     // 1) Idempotência por external_test_id.
     let existing = await db(
-      `cases?external_test_id=eq.${encodeURIComponent(item.external_test_id)}&select=id,title,client_name,status,synthetic,environment,external_test_id&limit=1`
+      `cases?external_test_id=eq.${encodeURIComponent(item.external_test_id)}&owner_id=eq.${encodeURIComponent(normalizedOwnerId)}&select=id,title,client_name,status,synthetic,environment,external_test_id,owner_id&limit=1`
     );
 
     if (existing.length) {
@@ -778,14 +787,38 @@ async function importSyntheticCases(body) {
       continue;
     }
 
+    // Compatibilidade: versões anteriores criaram casos sintéticos sem owner_id.
+    // Somente administradores chegam a este fluxo; o primeiro reenvio adota o órfão.
+    const orphaned=await db(
+      `cases?external_test_id=eq.${encodeURIComponent(item.external_test_id)}&owner_id=is.null&synthetic=eq.true&environment=eq.test&select=id,title,client_name,status,synthetic,environment,external_test_id,owner_id&limit=1`
+    );
+    if(orphaned.length){
+      const adopted=orphaned[0];
+      await db(`cases?id=eq.${encodeURIComponent(adopted.id)}&owner_id=is.null`,{
+        method:'PATCH',
+        body:JSON.stringify({owner_id:normalizedOwnerId})
+      });
+      await db('audit_logs',{
+        method:'POST',
+        body:JSON.stringify({
+          case_id:adopted.id,
+          owner_id:normalizedOwnerId,
+          event_type:'orphaned_synthetic_case_claimed',
+          payload:{batch_id:batchId,external_test_id:item.external_test_id}
+        })
+      });
+      results.push({external_test_id:item.external_test_id,case_id:adopted.id,title:adopted.title,status:'claimed_orphan'});
+      continue;
+    }
+
     // 2) Adoção segura de teste cadastrado manualmente pelo mesmo título.
     existing = await db(
-      `cases?title=eq.${encodeURIComponent(item.title)}&select=id,title,client_name,status,synthetic,environment,external_test_id&limit=1`
+      `cases?title=eq.${encodeURIComponent(item.title)}&owner_id=eq.${encodeURIComponent(normalizedOwnerId)}&select=id,title,client_name,status,synthetic,environment,external_test_id,owner_id&limit=1`
     );
 
     if (existing.length) {
       const adopted = existing[0];
-      await db(`cases?id=eq.${encodeURIComponent(adopted.id)}`,{
+      await db(`cases?id=eq.${encodeURIComponent(adopted.id)}&owner_id=eq.${encodeURIComponent(normalizedOwnerId)}`,{
         method:'PATCH',
         body:JSON.stringify({
           synthetic:true,
@@ -797,6 +830,7 @@ async function importSyntheticCases(body) {
         method:'POST',
         body:JSON.stringify({
           case_id:adopted.id,
+          owner_id:normalizedOwnerId,
           event_type:'synthetic_case_adopted_by_test_import',
           payload:{batch_id:batchId,external_test_id:item.external_test_id}
         })
@@ -820,6 +854,7 @@ async function importSyntheticCases(body) {
         synthetic:true,
         environment:'test',
         external_test_id:item.external_test_id,
+        owner_id:normalizedOwnerId,
         status:'pendente'
       })
     });
@@ -828,6 +863,7 @@ async function importSyntheticCases(body) {
       method:'POST',
       body:JSON.stringify({
         case_id:row.id,
+        owner_id:normalizedOwnerId,
         event_type:'synthetic_case_imported',
         payload:{batch_id:batchId,external_test_id:item.external_test_id}
       })
@@ -849,6 +885,7 @@ async function importSyntheticCases(body) {
     total:list.length,
     created:results.filter(x=>x.status==='created').length,
     adopted:results.filter(x=>x.status==='adopted_existing_title').length,
+    claimed_orphans:results.filter(x=>x.status==='claimed_orphan').length,
     skipped:results.filter(x=>x.status==='skipped_existing_id').length,
     cases:results,
     app_version:APP_VERSION
@@ -863,7 +900,7 @@ async function testImport(req,res){
 
   try {
     const body=await readJson(req);
-    const result=await importSyntheticCases(body);
+    const result=await importSyntheticCases(body,principal.userId);
     return json(res,200,result);
   } catch(e) {
     return json(res,e.statusCode||500,{
@@ -881,7 +918,7 @@ async function testImportUi(req,res){
 
   try {
     const body=await readJson(req);
-    const result=await importSyntheticCases(body);
+    const result=await importSyntheticCases(body,session.profileId);
     return json(res,200,result);
   } catch(e) {
     return json(res,e.statusCode||500,{
@@ -1099,8 +1136,8 @@ async function sourceStatus(req,res){
     app_version:APP_VERSION,
     validator_version:VALIDATOR_VERSION,
     user:{name:principal.name,email:principal.email},
-    legal_source_version:process.env.LEGAL_SOURCE_VERSION||null,
-    memorandum_version:process.env.MEMORANDUM_VERSION||null,
+    legal_source_version:LEGAL_SOURCE_VERSION,
+    memorandum_version:MEMORANDUM_VERSION,
     mp_sha256:sha(mpText),
     memorandum_sha256:sha(memoText),
     instruction:'O GPT deve usar as cópias da MP e do memorando anexadas como Knowledge, conferir as versões e usar o contract_sha256 retornado por gpt-case no envio da análise.'
