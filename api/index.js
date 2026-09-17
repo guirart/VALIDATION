@@ -12,7 +12,7 @@ const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','re
 const AUDIT_RECOMMENDATIONS = new Set(['liberar','corrigir','escalar para revisão humana aprofundada']);
 const AUDIT_STATUSES = new Set(['confirmado','divergente','não encontrado','opinião sem precedente']);
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
-const APP_VERSION = '3.14.2';
+const APP_VERSION = '3.14.3';
 const VALIDATOR_VERSION = '3.8.1';
 const LEGAL_SOURCE_VERSION = process.env.LEGAL_SOURCE_VERSION || `MP-1.376-2026-sha256-${sha(mpText).slice(0,16)}`;
 const MEMORANDUM_VERSION = process.env.MEMORANDUM_VERSION || `MEMORANDO-15-PONTOS-sha256-${sha(memoText).slice(0,16)}`;
@@ -1140,7 +1140,11 @@ async function sourceStatus(req,res){
     memorandum_version:MEMORANDUM_VERSION,
     mp_sha256:sha(mpText),
     memorandum_sha256:sha(memoText),
-    instruction:'O GPT deve usar as cópias da MP e do memorando anexadas como Knowledge, conferir as versões e usar o contract_sha256 retornado por gpt-case no envio da análise.'
+    sources:{
+      legal_source:{version:LEGAL_SOURCE_VERSION,sha256:sha(mpText),content:mpText},
+      memorandum:{version:MEMORANDUM_VERSION,sha256:sha(memoText),content:memoText}
+    },
+    instruction:'Use somente trechos literais de sources.legal_source.content em mp_quote. Confira os hashes e use o contract_sha256 retornado por gpt-case no envio da análise.'
   });
 }
 
