@@ -35,9 +35,12 @@ export default async function handler(req,res){
     const body=await readJson(req).catch(()=>({}));
     const seed=String(body?.seed||`dashboard-${Date.now()}-${crypto.randomBytes(8).toString('hex')}`);
     const active=await db(`training_runs?owner_id=eq.${encodeURIComponent(session.profileId)}&status=eq.running&select=*&order=started_at.desc&limit=1`);
-    if(active.length){
+    if(active.length&&String(active[0].app_version||'')===APP_VERSION){
       const count=await db(`cases?owner_id=eq.${encodeURIComponent(session.profileId)}&run_id=eq.${encodeURIComponent(active[0].id)}&select=id`);
       return json(res,200,{ok:true,reused:true,run_id:active[0].id,round:Number(active[0].round),case_count:count.length,app_version:APP_VERSION});
+    }
+    if(active.length){
+      await db(`training_runs?id=eq.${encodeURIComponent(active[0].id)}`,{method:'PATCH',body:JSON.stringify({status:'cancelled',completed_at:new Date().toISOString(),blocked_reason:`superseded_by_${APP_VERSION}`})}).catch(()=>{});
     }
     const [run]=await db('training_runs',{method:'POST',body:JSON.stringify({
       owner_id:session.profileId,seed,round:1,max_rounds:TRAINING_MAX_ROUNDS,attempts:0,correct:0,errors:0,streak:0,status:'running',
