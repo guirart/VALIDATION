@@ -1,0 +1,805 @@
+{
+  "batch_id": "VEREDICTA-REGRESSAO-100-V3",
+  "gold": [
+    {
+      "external_test_id": "VEREDICTA-REG-003-0001",
+      "expected_classification": "enquadrável",
+      "expected_points": {}
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0002",
+      "expected_classification": "enquadrável",
+      "expected_points": {}
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0003",
+      "expected_classification": "enquadrável",
+      "expected_points": {}
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0004",
+      "expected_classification": "enquadrável",
+      "expected_points": {}
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0005",
+      "expected_classification": "enquadrável",
+      "expected_points": {}
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0006",
+      "expected_classification": "enquadrável",
+      "expected_points": {}
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0007",
+      "expected_classification": "enquadrável",
+      "expected_points": {}
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0008",
+      "expected_classification": "enquadrável",
+      "expected_points": {}
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0009",
+      "expected_classification": "enquadrável",
+      "expected_points": {}
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0010",
+      "expected_classification": "enquadrável",
+      "expected_points": {}
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0011",
+      "expected_classification": "enquadrável",
+      "expected_points": {}
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0012",
+      "expected_classification": "enquadrável",
+      "expected_points": {}
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0013",
+      "expected_classification": "enquadrável",
+      "expected_points": {}
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0014",
+      "expected_classification": "enquadrável",
+      "expected_points": {}
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0015",
+      "expected_classification": "enquadrável",
+      "expected_points": {}
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0016",
+      "expected_classification": "enquadrável",
+      "expected_points": {}
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0017",
+      "expected_classification": "enquadrável",
+      "expected_points": {}
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0018",
+      "expected_classification": "enquadrável",
+      "expected_points": {}
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0019",
+      "expected_classification": "enquadrável",
+      "expected_points": {}
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0020",
+      "expected_classification": "enquadrável",
+      "expected_points": {}
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0021",
+      "expected_classification": "enquadrável",
+      "expected_points": {}
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0022",
+      "expected_classification": "enquadrável",
+      "expected_points": {}
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0023",
+      "expected_classification": "enquadrável",
+      "expected_points": {}
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0024",
+      "expected_classification": "enquadrável",
+      "expected_points": {}
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0025",
+      "expected_classification": "enquadrável",
+      "expected_points": {}
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0026",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "9": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0027",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "8": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0028",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "11": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0029",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "14": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0030",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "15": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0031",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "9": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0032",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "8": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0033",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "11": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0034",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "14": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0035",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "15": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0036",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "9": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0037",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "8": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0038",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "11": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0039",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "14": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0040",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "15": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0041",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "9": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0042",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "8": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0043",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "11": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0044",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "14": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0045",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "15": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0046",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "9": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0047",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "8": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0048",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "11": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0049",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "14": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0050",
+      "expected_classification": "parcialmente enquadrável",
+      "expected_points": {
+        "15": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0051",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "2": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0052",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "6": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0053",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "13": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0054",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "10": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0055",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "15": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0056",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "2": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0057",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "6": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0058",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "13": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0059",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "10": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0060",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "15": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0061",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "2": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0062",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "6": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0063",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "13": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0064",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "10": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0065",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "15": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0066",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "2": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0067",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "6": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0068",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "13": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0069",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "10": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0070",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "15": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0071",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "2": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0072",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "6": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0073",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "13": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0074",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "10": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0075",
+      "expected_classification": "não enquadrável",
+      "expected_points": {
+        "15": {
+          "legal_result": "nao_atende"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0076",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "6": {
+          "legal_result": "inconclusivo"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0077",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "9": {
+          "legal_result": "inconclusivo"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0078",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "12": {
+          "legal_result": "inconclusivo"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0079",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "4": {
+          "legal_result": "inconclusivo"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0080",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "3": {
+          "legal_result": "inconclusivo"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0081",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "6": {
+          "legal_result": "inconclusivo"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0082",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "9": {
+          "legal_result": "inconclusivo"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0083",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "12": {
+          "legal_result": "inconclusivo"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0084",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "4": {
+          "legal_result": "inconclusivo"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0085",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "3": {
+          "legal_result": "inconclusivo"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0086",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "6": {
+          "legal_result": "inconclusivo"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0087",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "9": {
+          "legal_result": "inconclusivo"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0088",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "12": {
+          "legal_result": "inconclusivo"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0089",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "4": {
+          "legal_result": "inconclusivo"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0090",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "3": {
+          "legal_result": "inconclusivo"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0091",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "6": {
+          "legal_result": "inconclusivo"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0092",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "9": {
+          "legal_result": "inconclusivo"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0093",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "12": {
+          "legal_result": "inconclusivo"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0094",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "4": {
+          "legal_result": "inconclusivo"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0095",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "3": {
+          "legal_result": "inconclusivo"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0096",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "6": {
+          "legal_result": "inconclusivo"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0097",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "9": {
+          "legal_result": "inconclusivo"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0098",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "12": {
+          "legal_result": "inconclusivo"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0099",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "4": {
+          "legal_result": "inconclusivo"
+        }
+      }
+    },
+    {
+      "external_test_id": "VEREDICTA-REG-003-0100",
+      "expected_classification": "inconclusivo",
+      "expected_points": {
+        "3": {
+          "legal_result": "inconclusivo"
+        }
+      }
+    }
+  ]
+}

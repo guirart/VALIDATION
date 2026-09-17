@@ -34,4 +34,4 @@ Não crie, edite nem exclua casos. O plugin pode consultar dados e enviar uma no
 
 Quando o usuário pedir treinamento, avaliação ou comparação de versões, leia [evaluation-workflow.md](references/evaluation-workflow.md). Mantenha o gabarito oculto até todas as análises terem sido concluídas e salvas.
 
-Quando o usuário enviar `/begin_test`, leia [training-loop.md](references/training-loop.md) e inicie o coordenador em `scripts/training-loop.mjs`. Continue até 100 acertos consecutivos, salvo interrupção solicitada, bloqueio de autenticação ou erro persistente que exija revisão humana.
+Quando o usuário enviar `/begin_test`, leia [training-loop.md](references/training-loop.md) e use exclusivamente o lote determinístico fornecido por `scripts/training-loop.mjs`. Nunca improvise ou replique contratos. Continue até 100 acertos consecutivos, salvo interrupção solicitada, bloqueio de autenticação ou erro persistente que exija revisão humana.
