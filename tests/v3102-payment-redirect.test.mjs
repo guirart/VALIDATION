@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const stripe=fs.readFileSync(new URL('../lib/stripe.js',import.meta.url),'utf8');
+const app=fs.readFileSync(new URL('../app.js',import.meta.url),'utf8');
+const api=fs.readFileSync(new URL('../api/index.js',import.meta.url),'utf8');
+assert.match(stripe,/if\(customerId\)\{[\s\S]*customer_update\[name\]/);
+assert.match(stripe,/else\{[\s\S]*customer_email=email/);
+assert.match(app,/Redirecionando para o pagamento/);
+assert.match(app,/window\.location\.assign\(paymentUrl\)/);
+assert.match(api,/billing_error/);
+assert.match(api,/const APP_VERSION = '3\.(?:10\.[2-9][0-9]*|1[1-9]\.[0-9]+|[2-9][0-9]\.[0-9]+)'/);
+console.log('v3.10.2 payment redirect: OK');

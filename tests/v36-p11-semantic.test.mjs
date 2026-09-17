@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const source = fs.readFileSync(new URL('../lib/legal.js', import.meta.url),'utf8');
+assert.match(source,/function documentarySilenceSignals/);
+assert.match(source,/p11_subject/);
+assert.match(source,/non_presumption/);
+assert.doesNotMatch(source,/function\s+(?:levenshtein|fuzzyMatch|similarityScore)\b/i);
+const css=fs.readFileSync(new URL('../styles.css', import.meta.url),'utf8');
+assert.match(css,/V3\.6: BOTÕES PASTÉIS/);
+assert.match(css,/#eee3d2/);
+console.log('v3.6 P11 semantic + light pastel UI: OK');

@@ -1,0 +1,176 @@
+openapi: 3.1.0
+info:
+  title: Veredicta API
+  version: "3.3.0"
+  description: API do Veredicta para leitura de casos, análise auditada e importação controlada de casos sintéticos.
+
+servers:
+  - url: https://validation-six-tawny.vercel.app
+
+paths:
+  /api/gpt/source-status:
+    get:
+      operationId: consultarStatusVeredicta
+      summary: Consulta versões das fontes e do validador.
+      security:
+        - VeredictaKey: []
+      responses:
+        "200":
+          description: Status consultado.
+
+  /api/gpt/cases:
+    get:
+      operationId: listarCasosVeredicta
+      summary: Lista casos já cadastrados.
+      security:
+        - VeredictaKey: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Casos listados.
+
+  /api/gpt/case:
+    get:
+      operationId: buscarCasoVeredicta
+      summary: Recupera um caso existente e seu contract_sha256.
+      security:
+        - VeredictaKey: []
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Caso recuperado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  case:
+                    type: object
+                    properties:
+                      id: {type: string}
+                      title: {type: string}
+                      client_name: {type: string}
+                      contract_text: {type: string}
+                      status: {type: string}
+                      synthetic: {type: boolean}
+                      environment: {type: string}
+                      external_test_id: {type: string}
+                  contract_sha256:
+                    type: string
+                  app_version:
+                    type: string
+                  validator_version:
+                    type: string
+
+  /api/gpt/analysis:
+    post:
+      operationId: enviarAnaliseVeredicta
+      summary: Envia análise auditada de um caso existente.
+      security:
+        - VeredictaKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [case_id, source_contract_sha256, analyst, audit]
+              properties:
+                case_id:
+                  type: string
+                source_contract_sha256:
+                  type: string
+                analyst:
+                  type: object
+                  additionalProperties: true
+                audit:
+                  type: object
+                  additionalProperties: true
+      responses:
+        "200":
+          description: Análise processada.
+        "409":
+          description: Hash do dossiê divergente.
+
+  /api/gpt/test-import:
+    post:
+      operationId: importarCasosSinteticosVeredicta
+      summary: Importa exclusivamente casos sintéticos de teste.
+      description: Só deve ser usada quando o usuário ativar explicitamente o IMPORT LOOP DE TESTES.
+      security:
+        - VeredictaKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [environment, batch_id, cases]
+              properties:
+                environment:
+                  type: string
+                  enum: [test]
+                batch_id:
+                  type: string
+                cases:
+                  type: array
+                  minItems: 1
+                  maxItems: 50
+                  items:
+                    type: object
+                    required: [external_test_id, title, contract_text]
+                    properties:
+                      external_test_id:
+                        type: string
+                      title:
+                        type: string
+                      client_name:
+                        type: string
+                      contract_text:
+                        type: string
+      responses:
+        "200":
+          description: Lote processado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: {type: boolean}
+                  batch_id: {type: string}
+                  total: {type: integer}
+                  created: {type: integer}
+                  adopted: {type: integer}
+                  skipped: {type: integer}
+                  cases:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        external_test_id: {type: string}
+                        case_id: {type: string}
+                        title: {type: string}
+                        status: {type: string}
+        "403":
+          description: Importação de testes desativada.
+
+components:
+  schemas: {}
+  securitySchemes:
+    VeredictaKey:
+      type: apiKey
+      in: header
+      name: X-Veredicta-Key
+
+security:
+  - VeredictaKey: []

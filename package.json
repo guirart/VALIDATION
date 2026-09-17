@@ -1,0 +1,46 @@
+{
+  "name": "veredicta-mp1376-app",
+  "version": "3.12.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "check": "node --check api/index.js && node --check api/mcp.js && node --check lib/mcp.js && node --check lib/http.js && node --check lib/supabase.js && node --check lib/legal.js && node --check lib/actionAuth.js && node --check lib/userAuth.js && node --check lib/oauth.js && node --check lib/stripe.js && node --check lib/email.js && node --check app.js && node --check new-case.js && node --check admin-users.js && node --check oauth-authorize.js",
+    "test:citations": "node tests/citation-policy.test.mjs",
+    "test:citation-modes": "node tests/citation-modes.test.mjs",
+    "test:point12": "node tests/point12-policy.test.mjs",
+    "test:v28": "node tests/v28-integrity.test.mjs",
+    "test:auth": "node tests/auth-header.test.mjs",
+    "test:v30": "node tests/v30-diagnostics.test.mjs",
+    "test:ui31": "node tests/v31-ui.test.mjs",
+    "test:theme": "node tests/v32-theme.test.mjs",
+    "test:light-contrast": "node tests/v321-light-contrast.test.mjs",
+    "test:v33": "node tests/v33-test-import.test.mjs",
+    "test:v34": "node tests/v34-analysis-history.test.mjs",
+    "test:v35": "node tests/v35-regression-p11-p12.test.mjs && node tests/v35-behavior.test.mjs",
+    "test:v36": "node tests/v36-p11-semantic.test.mjs",
+    "test:v363": "node tests/v363-sidebar-resize.test.mjs",
+    "test:v364": "node tests/v364-sidebar-drag-collapse.test.mjs",
+    "test:v365": "node tests/v365-sidebar-real-layout.test.mjs",
+    "test:v370": "node tests/v370-final-class-hero.test.mjs",
+    "test:v371": "node tests/v371-comparativo-restaurado.test.mjs",
+    "test:v372": "node tests/v372-status-colors.test.mjs",
+    "test:v373": "node tests/v373-real-color-selectors.test.mjs",
+    "test:v374": "node tests/v374-status-visual-coerente.test.mjs",
+    "test:v38": "node tests/v38-taxonomy.test.mjs",
+    "test:v381": "node tests/v381-test004-regression.test.mjs",
+    "test:auth-loop": "node tests/v381-auth-loop.test.mjs",
+    "test:v39-multiuser": "node tests/v39-multiuser.test.mjs",
+    "test:v310": "node tests/v310-auth-billing.test.mjs",
+    "test:v3103": "node tests/v3103-admin-bypass.test.mjs",
+    "test:v311": "node tests/v311-admin-oauth.test.mjs",
+    "test:v312": "node tests/v312-mcp-plugin.test.mjs"
+  },
+  "devDependencies": {
+    "vercel": "latest"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^4.6.5"
+  }
+}
