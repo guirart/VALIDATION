@@ -113,6 +113,22 @@
     {
       "source": "/api/gpt/analysis-detail",
       "destination": "/api?action=gpt-analysis-detail"
+    },
+    {
+      "source": "/api/gpt/training-start",
+      "destination": "/api?action=training-start"
+    },
+    {
+      "source": "/api/gpt/training-status",
+      "destination": "/api?action=training-status"
+    },
+    {
+      "source": "/api/gpt/training-next",
+      "destination": "/api?action=training-next"
+    },
+    {
+      "source": "/api/gpt/training-record",
+      "destination": "/api?action=training-record"
     }
   ],
   "headers": [

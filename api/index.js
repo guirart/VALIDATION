@@ -7,12 +7,13 @@ import { createCheckoutSession, createBillingPortalSession, retrieveStripeEvent,
 import { sendWelcomeEmail } from '../lib/email.js';
 import { createAuthorizationCode, exchangeAuthorizationCode, refreshOAuthToken, oauthConfigStatus, validateOAuthClient, validateOAuthRedirectUri, revokeUserOAuth } from '../lib/oauth.js';
 import { verifyAnalysis, FINAL_CLASSES, mpText, memoText } from '../lib/legal.js';
+import { TRAINING_MAX_ROUNDS, TRAINING_DISTRIBUTION, generateTrainingRound, compareTrainingResult } from '../lib/training.js';
 
 const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','requer-correcao','concluido','erro']);
 const AUDIT_RECOMMENDATIONS = new Set(['liberar','corrigir','escalar para revisão humana aprofundada']);
 const AUDIT_STATUSES = new Set(['confirmado','divergente','não encontrado','opinião sem precedente']);
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
-const APP_VERSION = '3.14.6';
+const APP_VERSION = '3.15.0';
 const VALIDATOR_VERSION = '3.8.1';
 const LEGAL_SOURCE_VERSION = process.env.LEGAL_SOURCE_VERSION || `MP-1.376-2026-sha256-${sha(mpText).slice(0,16)}`;
 const MEMORANDUM_VERSION = process.env.MEMORANDUM_VERSION || `MEMORANDO-15-PONTOS-sha256-${sha(memoText).slice(0,16)}`;
@@ -402,7 +403,13 @@ async function cases(req,res) {
       if(!rows.length)return json(res,404,{error:'Caso não encontrado'});
       return json(res,200,{case:rows[0]});
     }
-    const rows=await db(`cases?owner_id=eq.${encodeURIComponent(ownerId)}&select=id,title,client_name,status,owner_id,created_at,updated_at,analyses(id,final_classification,quality_gate,auditor_recommendation,created_at),reviews(id,created_at)&order=created_at.desc&limit=200`);
+    const runId=String(req.query?.run_id||'').trim();
+    const environment=String(req.query?.environment||'').trim();
+    // O painel normal exibe produção. Testes históricos/ativos só entram por filtro explícito.
+    const scopeFilter=runId
+      ? `&run_id=eq.${encodeURIComponent(runId)}`
+      : `&environment=eq.${encodeURIComponent(environment==='test'?'test':'production')}`;
+    const rows=await db(`cases?owner_id=eq.${encodeURIComponent(ownerId)}${scopeFilter}&select=id,title,client_name,status,owner_id,synthetic,environment,external_test_id,run_id,training_round,training_order,created_at,updated_at,analyses(id,final_classification,quality_gate,auditor_recommendation,created_at),reviews(id,created_at)&order=created_at.desc&limit=500`);
     return json(res,200,{cases:rows,migration_required:false});
   }
 
@@ -430,12 +437,13 @@ async function gptCases(req,res){
 
   if(req.method==='GET'){
     const status=String(req.query?.status||'').trim();
-    const filter=status&&ALLOWED_STATUS.has(status)
-      ? `&status=eq.${encodeURIComponent(status)}`
-      : '';
+    const runId=String(req.query?.run_id||'').trim();
+    const environment=String(req.query?.environment||'production').trim();
+    const filter=status&&ALLOWED_STATUS.has(status)?`&status=eq.${encodeURIComponent(status)}`:'';
+    const scopeFilter=runId?`&run_id=eq.${encodeURIComponent(runId)}`:`&environment=eq.${encodeURIComponent(environment==='test'?'test':'production')}`;
 
     const rows=await db(
-      `cases?owner_id=eq.${encodeURIComponent(principal.userId)}&select=id,external_test_id,synthetic,environment,title,client_name,status,created_at,updated_at${filter}&order=created_at.desc&limit=50`
+      `cases?owner_id=eq.${encodeURIComponent(principal.userId)}${scopeFilter}&select=id,external_test_id,synthetic,environment,run_id,training_round,training_order,title,client_name,status,created_at,updated_at${filter}&order=created_at.desc&limit=100`
     );
 
     return json(res,200,{cases:rows,user:{name:principal.name,email:principal.email}});
@@ -456,7 +464,7 @@ async function gptCase(req,res){
   if(!principal)return;
   if(req.method!=='GET')return json(res,405,{error:'Método não permitido'});
   const id=String(req.query?.id||'').trim(); if(!id)return json(res,400,{error:'id obrigatório'});
-  const rows=await db(`cases?id=eq.${encodeURIComponent(id)}&owner_id=eq.${encodeURIComponent(principal.userId)}&select=id,external_test_id,synthetic,environment,title,client_name,contract_text,status,created_at,updated_at&limit=1`);
+  const rows=await db(`cases?id=eq.${encodeURIComponent(id)}&owner_id=eq.${encodeURIComponent(principal.userId)}&select=id,external_test_id,synthetic,environment,run_id,training_round,training_order,title,client_name,contract_text,status,created_at,updated_at&limit=1`);
   if(!rows.length)return json(res,404,{error:'Caso não encontrado para este usuário'});
   await db(`cases?id=eq.${encodeURIComponent(id)}&owner_id=eq.${encodeURIComponent(principal.userId)}`,{method:'PATCH',body:JSON.stringify({status:'em-analise',updated_at:new Date().toISOString()})});
   await db('audit_logs',{method:'POST',body:JSON.stringify({case_id:id,owner_id:principal.userId,event_type:'case_fetched_by_gpt_action',payload:{user_email:principal.email}})});
@@ -950,6 +958,192 @@ async function importSyntheticCases(body, ownerId) {
   };
 }
 
+
+async function createTrainingRound(run, ownerId, roundNumber){
+  const generated=generateTrainingRound({runId:run.id,seed:run.seed,round:roundNumber});
+  const casePayload=generated.cases.map(item=>({
+    title:item.title,
+    client_name:item.client_name,
+    contract_text:item.contract_text,
+    synthetic:true,
+    environment:'test',
+    external_test_id:null,
+    owner_id:ownerId,
+    run_id:run.id,
+    training_round:roundNumber,
+    training_order:item.order_index,
+    status:'pendente'
+  }));
+  const created=await db('cases',{method:'POST',body:JSON.stringify(casePayload)});
+  const byOrder=new Map(created.map(row=>[Number(row.training_order),row]));
+  const expectedPayload=generated.cases.map(item=>{
+    const row=byOrder.get(Number(item.order_index));
+    if(!row)throw new Error(`Falha ao correlacionar caso da rodada na ordem ${item.order_index}`);
+    return {
+      run_id:run.id,
+      case_id:row.id,
+      round:roundNumber,
+      expected_classification:item.classification,
+      expected_points:item.expected_points,
+      generation_facts:item.facts,
+      generation_seed:item.generation_seed,
+      order_index:item.order_index,
+      result_status:'pending'
+    };
+  });
+  await db('training_expected',{method:'POST',body:JSON.stringify(expectedPayload)});
+  await db('audit_logs',{method:'POST',body:JSON.stringify({
+    owner_id:ownerId,event_type:'training_round_generated',payload:{
+      run_id:run.id,round:roundNumber,total:100,distribution:TRAINING_DISTRIBUTION,app_version:APP_VERSION,validator_version:VALIDATOR_VERSION
+    }
+  })});
+  return {total:created.length,distribution:generated.distribution};
+}
+
+function trainingRunPublic(run,extra={}){
+  const completed=run.status==='success';
+  return {
+    run_id:run.id,
+    seed:run.seed,
+    round:Number(run.round),
+    max_rounds:Number(run.max_rounds),
+    attempts:Number(run.attempts),
+    correct:Number(run.correct),
+    errors:Number(run.errors),
+    final_streak:Number(run.streak),
+    status:run.status,
+    completed,
+    distribution:run.distribution||TRAINING_DISTRIBUTION,
+    app_version:run.app_version||APP_VERSION,
+    validator_version:run.validator_version||VALIDATOR_VERSION,
+    legal_source_version:run.legal_source_version||LEGAL_SOURCE_VERSION,
+    memorandum_version:run.memorandum_version||MEMORANDUM_VERSION,
+    started_at:run.started_at,
+    completed_at:run.completed_at||null,
+    success_100_100_confirmed:completed && Number(run.streak)===100,
+    ...extra
+  };
+}
+
+async function trainingStart(req,res){
+  const principal=await requireActionAuth(req,res);
+  if(!principal)return;
+  if(principal.role!=='admin')return json(res,403,{error:'Treinamento automatizado restrito ao administrador'});
+  if(req.method!=='POST')return json(res,405,{error:'Método não permitido'});
+  if(!testImportEnabled())return json(res,403,{error:'Treinamento desativado. Configure TEST_IMPORT_ENABLED=true.',app_version:APP_VERSION});
+  const body=await readJson(req);
+  const seed=String(body?.seed||crypto.randomBytes(24).toString('hex')).trim();
+  if(seed.length<8||seed.length>240)return json(res,400,{error:'seed deve conter entre 8 e 240 caracteres'});
+  // 3.15.0: limite de segurança fixo e não relaxável via cliente.
+  const [run]=await db('training_runs',{method:'POST',body:JSON.stringify({
+    owner_id:principal.userId,seed,round:1,max_rounds:TRAINING_MAX_ROUNDS,attempts:0,correct:0,errors:0,streak:0,status:'running',
+    app_version:APP_VERSION,validator_version:VALIDATOR_VERSION,legal_source_version:LEGAL_SOURCE_VERSION,memorandum_version:MEMORANDUM_VERSION,
+    distribution:TRAINING_DISTRIBUTION
+  })});
+  try{
+    await createTrainingRound(run,principal.userId,1);
+  }catch(error){
+    await db(`training_runs?id=eq.${encodeURIComponent(run.id)}&owner_id=eq.${encodeURIComponent(principal.userId)}`,{method:'PATCH',body:JSON.stringify({status:'cancelled',completed_at:new Date().toISOString()})});
+    throw error;
+  }
+  return json(res,201,{ok:true,...trainingRunPublic(run,{round_cases:100,next_step:'Chame proximo_caso_treinamento_veredicta e processe autonomamente até success ou blocked/regression_detected.'})});
+}
+
+async function trainingStatus(req,res){
+  const principal=await requireActionAuth(req,res);
+  if(!principal)return;
+  if(req.method!=='GET')return json(res,405,{error:'Método não permitido'});
+  const requested=String(req.query?.run_id||'').trim();
+  const path=requested
+    ? `training_runs?id=eq.${encodeURIComponent(requested)}&owner_id=eq.${encodeURIComponent(principal.userId)}&select=*&limit=1`
+    : `training_runs?owner_id=eq.${encodeURIComponent(principal.userId)}&select=*&order=started_at.desc&limit=1`;
+  const rows=await db(path);
+  if(!rows.length)return json(res,404,{ok:false,error:'Execução de treinamento não encontrada',app_version:APP_VERSION});
+  const run=rows[0];
+  const roundRows=await db(`training_expected?run_id=eq.${encodeURIComponent(run.id)}&round=eq.${encodeURIComponent(run.round)}&select=result_status,order_index`);
+  const roundStats={pending:0,correct:0,wrong:0,skipped_after_error:0};
+  for(const x of roundRows)roundStats[x.result_status]=(roundStats[x.result_status]||0)+1;
+  return json(res,200,{ok:true,...trainingRunPublic(run,{round_stats:roundStats,active_case_count:roundRows.length})});
+}
+
+async function trainingNext(req,res){
+  const principal=await requireActionAuth(req,res);
+  if(!principal)return;
+  if(principal.role!=='admin')return json(res,403,{error:'Treinamento automatizado restrito ao administrador'});
+  if(req.method!=='GET')return json(res,405,{error:'Método não permitido'});
+  const runId=String(req.query?.run_id||'').trim();
+  if(!runId)return json(res,400,{error:'run_id é obrigatório'});
+  const runs=await db(`training_runs?id=eq.${encodeURIComponent(runId)}&owner_id=eq.${encodeURIComponent(principal.userId)}&select=*&limit=1`);
+  if(!runs.length)return json(res,404,{error:'Execução de treinamento não encontrada'});
+  const run=runs[0];
+  if(run.status!=='running')return json(res,200,{ok:true,...trainingRunPublic(run),case:null});
+  const pending=await db(`training_expected?run_id=eq.${encodeURIComponent(runId)}&round=eq.${encodeURIComponent(run.round)}&result_status=eq.pending&select=case_id,order_index&order=order_index.asc&limit=1`);
+  if(!pending.length)return json(res,409,{ok:false,error:'Rodada sem caso pendente, mas execução ainda marcada como running.',run_id:runId,round:run.round});
+  const caseId=pending[0].case_id;
+  const rows=await db(`cases?id=eq.${encodeURIComponent(caseId)}&owner_id=eq.${encodeURIComponent(principal.userId)}&run_id=eq.${encodeURIComponent(runId)}&select=id,title,client_name,contract_text,status,run_id,training_round,training_order,created_at,updated_at&limit=1`);
+  if(!rows.length)return json(res,404,{error:'Caso de treinamento não encontrado'});
+  const c=rows[0];
+  await db(`cases?id=eq.${encodeURIComponent(caseId)}&owner_id=eq.${encodeURIComponent(principal.userId)}`,{method:'PATCH',body:JSON.stringify({status:'em-analise',updated_at:new Date().toISOString()})});
+  return json(res,200,{
+    ok:true,run_id:runId,round:Number(run.round),streak:Number(run.streak),attempts:Number(run.attempts),
+    case:{...c,status:'em-analise'},contract_sha256:sha(c.contract_text),
+    app_version:APP_VERSION,validator_version:VALIDATOR_VERSION,legal_source_version:LEGAL_SOURCE_VERSION,memorandum_version:MEMORANDUM_VERSION
+  });
+}
+
+async function trainingRecord(req,res){
+  const principal=await requireActionAuth(req,res);
+  if(!principal)return;
+  if(principal.role!=='admin')return json(res,403,{error:'Treinamento automatizado restrito ao administrador'});
+  if(req.method!=='POST')return json(res,405,{error:'Método não permitido'});
+  const body=await readJson(req);
+  const runId=String(body?.run_id||'').trim();
+  const caseId=String(body?.case_id||'').trim();
+  const analysisId=String(body?.analysis_id||'').trim();
+  if(!runId||!caseId||!analysisId)return json(res,400,{error:'run_id, case_id e analysis_id são obrigatórios'});
+  const runs=await db(`training_runs?id=eq.${encodeURIComponent(runId)}&owner_id=eq.${encodeURIComponent(principal.userId)}&select=*&limit=1`);
+  if(!runs.length)return json(res,404,{error:'Execução de treinamento não encontrada'});
+  let run=runs[0];
+  if(run.status!=='running')return json(res,409,{error:'Execução não está em andamento',...trainingRunPublic(run)});
+  const expectedRows=await db(`training_expected?run_id=eq.${encodeURIComponent(runId)}&case_id=eq.${encodeURIComponent(caseId)}&round=eq.${encodeURIComponent(run.round)}&result_status=eq.pending&select=*&limit=1`);
+  if(!expectedRows.length)return json(res,409,{error:'Caso não é o pendente da rodada atual ou já foi avaliado'});
+  const expected=expectedRows[0];
+  const analyses=await db(`analyses?id=eq.${encodeURIComponent(analysisId)}&case_id=eq.${encodeURIComponent(caseId)}&owner_id=eq.${encodeURIComponent(principal.userId)}&select=id,case_id,analyst_json,audit_json,final_classification,quality_gate,auditor_recommendation,created_at&limit=1`);
+  if(!analyses.length)return json(res,404,{error:'Análise gravada não encontrada para este caso'});
+  const analysis=analyses[0];
+  const comparison=compareTrainingResult(expected,analysis);
+  const correct=Boolean(analysis.quality_gate)&&comparison.correct;
+  const finalComparison={...comparison,quality_gate:Boolean(analysis.quality_gate),correct};
+  // O comparativo completo permanece no servidor. A resposta ao agente não revela o gabarito.
+  const publicComparison={correct,quality_gate:Boolean(analysis.quality_gate),classification_match:comparison.classification_ok,mismatch_points:comparison.point_diffs.filter(x=>!x.ok).map(x=>x.point)};
+  await db(`training_expected?id=eq.${encodeURIComponent(expected.id)}`,{method:'PATCH',body:JSON.stringify({result_status:correct?'correct':'wrong',analysis_id:analysisId,comparison:finalComparison,evaluated_at:new Date().toISOString()})});
+  const attempts=Number(run.attempts)+1;
+  const totalCorrect=Number(run.correct)+(correct?1:0);
+  const errors=Number(run.errors)+(correct?0:1);
+  if(correct){
+    const streak=Number(run.streak)+1;
+    if(streak>=100){
+      const patch={attempts,correct:totalCorrect,errors,streak:100,status:'success',completed_at:new Date().toISOString()};
+      const [updated]=await db(`training_runs?id=eq.${encodeURIComponent(runId)}&owner_id=eq.${encodeURIComponent(principal.userId)}`,{method:'PATCH',body:JSON.stringify(patch)});
+      await db('audit_logs',{method:'POST',body:JSON.stringify({case_id:caseId,analysis_id:analysisId,owner_id:principal.userId,event_type:'training_run_success',payload:{run_id:runId,round:run.round,attempts,errors,final_streak:100,distribution:TRAINING_DISTRIBUTION}})});
+      return json(res,200,{ok:true,correct:true,comparison:publicComparison,...trainingRunPublic(updated,{winning_round:Number(run.round),winning_round_attempts:100,winning_round_correct:100,winning_round_errors:0})});
+    }
+    const [updated]=await db(`training_runs?id=eq.${encodeURIComponent(runId)}&owner_id=eq.${encodeURIComponent(principal.userId)}`,{method:'PATCH',body:JSON.stringify({attempts,correct:totalCorrect,errors,streak})});
+    return json(res,200,{ok:true,correct:true,comparison:publicComparison,...trainingRunPublic(updated,{next_action:'next_case'})});
+  }
+
+  // Erro: encerra imediatamente a rodada, invalida os casos restantes e cria nova rodada.
+  await db(`training_expected?run_id=eq.${encodeURIComponent(runId)}&round=eq.${encodeURIComponent(run.round)}&result_status=eq.pending`,{method:'PATCH',body:JSON.stringify({result_status:'skipped_after_error'})});
+  if(Number(run.round)>=TRAINING_MAX_ROUNDS){
+    const [updated]=await db(`training_runs?id=eq.${encodeURIComponent(runId)}&owner_id=eq.${encodeURIComponent(principal.userId)}`,{method:'PATCH',body:JSON.stringify({attempts,correct:totalCorrect,errors,streak:0,status:'blocked/regression_detected',completed_at:new Date().toISOString()})});
+    return json(res,200,{ok:true,correct:false,comparison:publicComparison,...trainingRunPublic(updated,{blocked_reason:'max_rounds_reached'})});
+  }
+  const nextRound=Number(run.round)+1;
+  const [updated]=await db(`training_runs?id=eq.${encodeURIComponent(runId)}&owner_id=eq.${encodeURIComponent(principal.userId)}`,{method:'PATCH',body:JSON.stringify({attempts,correct:totalCorrect,errors,streak:0,round:nextRound})});
+  await createTrainingRound(updated,principal.userId,nextRound);
+  return json(res,200,{ok:true,correct:false,comparison:publicComparison,...trainingRunPublic(updated,{round_restarted:true,next_action:'next_case'})});
+}
+
 async function testImport(req,res){
   const principal=await requireActionAuth(req,res);
   if(!principal) return;
@@ -1313,6 +1507,10 @@ export default async function handler(req,res){
       case 'gpt-analysis-detail': return await gptAnalysisDetail(req,res);
       case 'test-import': return await testImport(req,res);
       case 'test-import-ui': return await testImportUi(req,res);
+      case 'training-start': return await trainingStart(req,res);
+      case 'training-status': return await trainingStatus(req,res);
+      case 'training-next': return await trainingNext(req,res);
+      case 'training-record': return await trainingRecord(req,res);
       default: return json(res,404,{error:'Ação não encontrada'});
     }
   } catch(e) {

@@ -397,3 +397,9 @@ Regressão recomendada antes da bateria completa: TEST-004, TEST-005, TEST-006 e
 ## Administrador sem cobrança
 
 Defina `VEREDICTA_ADMIN_EMAIL` na Vercel. O e-mail configurado usa o mesmo login Supabase, mas ignora a exigência de assinatura Stripe. Veja `V3.10.3-ADMIN-BILLING-EXEMPT.md`.
+
+## Veredicta 3.15.0 — Autonomous Blind Training Runs
+
+A versão 3.15.0 substitui a orquestração antiga do `/begin_test` por execuções persistentes isoladas por `run_id` UUID. Cada rodada gera 100 casos novos com distribuição 25/25/25/25, embaralhamento por seed reproduzível e gabarito oculto no servidor. Qualquer erro encerra a rodada e cria outra; sucesso somente ocorre com 100/100 consecutivos na mesma rodada. O limite operacional é fixo em `max_rounds=400`.
+
+Antes do deploy, aplique `supabase/migration_v3_15_training_runs.sql`. Casos sintéticos históricos permanecem no banco, mas o painel comum filtra produção por padrão; a execução ativa é consultada por `run_id`.

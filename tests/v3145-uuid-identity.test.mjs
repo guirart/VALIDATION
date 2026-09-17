@@ -6,13 +6,13 @@ const instructions=fs.readFileSync(new URL('../GPT_INSTRUCTIONS.md',import.meta.
 const workflow=fs.readFileSync(new URL('../plugins/veredicta/skills/analisar-credito-rural/references/workflow-veredicta.md',import.meta.url),'utf8');
 const mcp=fs.readFileSync(new URL('../lib/mcp.js',import.meta.url),'utf8');
 
-assert.match(api,/const APP_VERSION = '3\.14\.[5-9]'/);
+assert.match(api,/const APP_VERSION = '(?:3\.14\.[5-9]|3\.15\.0)'/);
 assert.doesNotMatch(api,/cases\?title=eq\.\$\{encodeURIComponent\(item\.title\)\}/);
 assert.doesNotMatch(api,/adopted_existing_title/);
 assert.doesNotMatch(api,/synthetic_case_adopted_by_test_import/);
 assert.match(api,/cases\?external_test_id=eq\.\$\{encodeURIComponent\(item\.external_test_id\)\}&owner_id=eq\./);
-assert.match(api,/select=id,external_test_id,synthetic,environment,title,client_name,status/);
-assert.match(api,/select=id,external_test_id,synthetic,environment,title,client_name,contract_text,status/);
+assert.match(api,/select=id,external_test_id,synthetic,environment,[^`]*title,client_name,status/);
+assert.match(api,/select=id,external_test_id,synthetic,environment,[^`]*title,client_name,contract_text,status/);
 
 for(const text of [instructions,workflow]){
   assert.match(text,/identidade canônica do caso é exclusivamente `case\.id` \(UUID\)/i);

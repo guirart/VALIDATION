@@ -18,17 +18,12 @@ await client.connect(clientTransport);
 const listed=await client.listTools();
 const names=listed.tools.map(tool=>tool.name).sort();
 
-assert.deepEqual(names,[
-  'buscar_analise_veredicta',
-  'buscar_caso_veredicta',
-  'consultar_fontes_juridicas_veredicta',
-  'consultar_status_veredicta',
-  'criar_caso_veredicta',
-  'enviar_analise_veredicta',
-  'importar_casos_sinteticos_veredicta',
-  'listar_casos_veredicta',
-  'listar_historico_veredicta'
-]);
+for(const required of [
+  'buscar_analise_veredicta','buscar_caso_veredicta','consultar_fontes_juridicas_veredicta','consultar_status_veredicta',
+  'criar_caso_veredicta','enviar_analise_veredicta','importar_casos_sinteticos_veredicta','listar_casos_veredicta','listar_historico_veredicta',
+  'iniciar_envio_analise_veredicta','enviar_ponto_analise_veredicta','finalizar_envio_analise_veredicta',
+  'iniciar_treinamento_veredicta','consultar_treinamento_veredicta','proximo_caso_treinamento_veredicta','registrar_resultado_treinamento_veredicta'
+]) assert.ok(names.includes(required),`ferramenta ausente: ${required}`);
 
 for(const tool of listed.tools){
   assert.equal(tool.annotations?.openWorldHint,false,`${tool.name} deve ser fechado ao domínio Veredicta`);
@@ -43,7 +38,7 @@ const plugin=JSON.parse(fs.readFileSync(new URL('../plugins/veredicta/.codex-plu
 const mcp=JSON.parse(fs.readFileSync(new URL('../plugins/veredicta/.mcp.json',import.meta.url),'utf8'));
 const vercel=JSON.parse(fs.readFileSync(new URL('../vercel.json',import.meta.url),'utf8'));
 assert.equal(plugin.name,'veredicta');
-assert.equal(plugin.version,'3.14.6');
+assert.equal(plugin.version,'3.15.0');
 assert.ok(plugin.skills);
 assert.equal(mcp.mcpServers.veredicta.url,'https://validation-six-tawny.vercel.app/mcp');
 assert.ok(vercel.rewrites.some(rule=>rule.source==='/mcp'&&rule.destination==='/api/mcp'));

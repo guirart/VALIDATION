@@ -369,3 +369,20 @@ Para reduzir o tamanho das chamadas de escrita, prefira este fluxo para `begin_t
 Não use nomes, `title` ou `client_name` para localizar ou associar o rascunho. O vínculo é exclusivamente por `case_id` UUID; `draft_id` identifica apenas a tentativa de submissão em andamento.
 
 A ferramenta `enviar_analise_veredicta` permanece disponível por compatibilidade, mas o fluxo fracionado é preferencial quando houver payload grande ou falha de transporte antes de o Veredicta receber a análise.
+
+## /begin_test autônomo — v3.15.0
+
+O `/begin_test` não usa mais a bateria determinística V3 como execução ativa. Ele deve criar um `run_id` persistente no backend com `iniciar_treinamento_veredicta` e repetir autonomamente:
+
+`proximo_caso_treinamento_veredicta -> analisar/auditar -> gravar -> registrar_resultado_treinamento_veredicta`
+
+Regras invariáveis:
+
+- cada rodada contém 100 casos novos, distribuídos 25/25/25/25 entre as quatro classificações;
+- a ordem é embaralhada por seed reproduzível;
+- o gabarito oculto nunca é enviado ao analista;
+- qualquer erro encerra a rodada, zera a sequência e faz o backend criar outra rodada;
+- sucesso somente com 100/100 consecutivos em uma única rodada;
+- `max_rounds=400` é fixo e não pode ser relaxado pelo cliente;
+- após 400 rodadas sem 100/100, o status deve ser `blocked/regression_detected` e `completed=false`;
+- identidade operacional é exclusivamente `run_id` UUID + `case_id` UUID. Nome, título, produtor, cliente, texto ou posição jamais identificam o caso.

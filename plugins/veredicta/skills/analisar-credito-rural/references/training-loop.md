@@ -1,28 +1,43 @@
-# Loop de treinamento `/begin_test`
+# Loop autônomo `/begin_test` — Veredicta 3.15.0
 
-Use este modo somente em ambiente de teste e com casos sintéticos. O objetivo é alcançar 100 acertos consecutivos, não apenas 100 tentativas.
+Use este modo somente em ambiente de teste. O objetivo é obter **100 acertos consecutivos em uma única rodada vencedora**, e não 100 tentativas acumuladas.
 
-## Isolamento
+## Identidade e isolamento
 
-- O gerador/coordenador pode acessar o gabarito.
-- O analista recebe somente o contrato retornado pelo comando `next`.
-- Nunca inclua classificação, defeito esperado ou ponto-alvo no texto enviado ao Veredicta.
-- A comparação só ocorre depois que a análise foi gravada.
+- Cada `/begin_test` cria um `run_id` UUID persistente.
+- Cada caso é identificado exclusivamente por `case.id` UUID e `run_id`.
+- `title`, `client_name`, produtor, nomes das partes, texto e posição não identificam nem deduplicam casos.
+- O gabarito fica exclusivamente no servidor. Nunca peça nem exponha `expected_classification`, `expected_points`, `generation_facts` ou `generation_seed` ao analista.
+- A comparação ocorre somente depois de a análise ter sido gravada.
 
-## Execução
+## Geração
 
-1. Inicie o estado com `node scripts/training-loop.mjs init <estado.json>` e confirme exatamente 25 casos de cada classificação.
-2. Exporte o lote exclusivamente com `node scripts/training-loop.mjs batch <estado.json>`. Envie essa saída sem reescrever IDs, títulos ou contratos. É proibido gerar contratos manualmente ou duplicar uma matriz factual.
-3. Importe com `importar_casos_sinteticos_veredicta`. Exija `batch_id=VEREDICTA-REGRESSAO-100-V3`, 100 casos e IDs de `VEREDICTA-REG-003-0001` a `VEREDICTA-REG-003-0100`. Qualquer diferença invalida a execução.
-4. Obtenha cada caso, em ordem, com `node scripts/training-loop.mjs next <estado.json>`. Recupere no Veredicta o UUID correspondente e confirme que o contrato é idêntico antes da análise.
-5. Analise e envie a resposta auditada.
-6. Salve a resposta em JSON contendo `external_test_id`, `final_classification` e `points`.
-7. Registre com `node scripts/training-loop.mjs record <estado.json> <resposta.json>`.
-8. Se houver erro, leia somente a `lesson` retornada e aplique-a às rodadas seguintes. Não revele o gabarito integral ao analista.
-9. Repita até `completed=true`, que exige `streak=100`.
+Cada rodada criada pelo backend contém exatamente 100 casos inéditos:
 
-Antes da primeira rodada, consulte `consultar_status_veredicta` e carregue `sources`. Confirme que versões e hashes coincidem com os campos de status. Se `sources` não existir, tente `consultar_fontes_juridicas_veredicta`. Interrompa se os conteúdos continuarem ausentes ou divergentes. Para baterias sintéticas, prefira `importar_casos_sinteticos_veredicta`: o backend deve devolver um caso pertencente ao mesmo usuário OAuth, com `environment=test` e `synthetic=true`. Não crie uma cópia pelo endpoint comum se a recuperação falhar; isso contaminaria o ambiente de produção.
+- 25 enquadráveis;
+- 25 parcialmente enquadráveis;
+- 25 não enquadráveis;
+- 25 inconclusivos.
 
-Um acerto soma um ponto e aumenta a sequência. Um erro subtrai um ponto e zera a sequência. As lições são memória de treinamento, não alteração automática dos pesos do modelo nem publicação automática da skill. Antes de incorporá-las permanentemente, revise-as e rode regressão completa.
+A ordem é embaralhada por seed reproduzível. A seed do run pode constar do relatório técnico; sementes internas de caso e o gabarito não são fornecidos ao analisador.
 
-Uma execução cuja distribuição observada seja diferente de 25/25/25/25 deve ser descartada, mesmo que todos os quality gates sejam aprovados. Quality gate mede integridade estrutural e literalidade; não mede acerto contra o gabarito.
+## Execução obrigatória
+
+1. Consulte `consultar_status_veredicta` e valide app, validator, hashes e conteúdo das fontes.
+2. Chame `iniciar_treinamento_veredicta` uma única vez. Guarde o `run_id` retornado.
+3. Chame `proximo_caso_treinamento_veredicta(run_id)`.
+4. Analise o dossiê cegamente e faça auditoria adversarial dos 15 pontos.
+5. Grave a análise. Prefira o fluxo fracionado: iniciar envio, enviar 15 pontos e finalizar.
+6. Somente depois de obter `analysis_id`, chame `registrar_resultado_treinamento_veredicta(run_id, case_id, analysis_id)`.
+7. Se `correct=true`, prossiga imediatamente para o próximo caso.
+8. Se `correct=false`, não tente corrigir o mesmo caso para preservar a avaliação cega. O backend encerra a rodada, zera `streak` e gera automaticamente uma nova rodada balanceada.
+9. Continue sem solicitar novo comando ao usuário até `status=success` ou `status=blocked/regression_detected`.
+10. `success` só é válido com `final_streak=100` e confirmação `success_100_100_confirmed=true`.
+
+## Limite operacional
+
+`max_rounds = 400` é fixo. O limite não reduz o critério de aprovação. Se a rodada 400 falhar, o backend retorna `blocked/regression_detected`, `completed=false`.
+
+## Relatório final
+
+Informe no mínimo: `run_id`, seed, attempts, rounds, correct, errors, final_streak, status, distribuição, app_version, validator_version, versões das fontes e confirmação 100/100. Não misture casos históricos com o `run_id` corrente.

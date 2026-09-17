@@ -5,7 +5,7 @@ const api=fs.readFileSync(new URL('../api/index.js',import.meta.url),'utf8');
 const mcp=fs.readFileSync(new URL('../lib/mcp.js',import.meta.url),'utf8');
 const vercel=fs.readFileSync(new URL('../vercel.json',import.meta.url),'utf8');
 
-assert.match(api,/const APP_VERSION = '3\.14\.6'/);
+assert.match(api,/const APP_VERSION = '(?:3\.14\.6|3\.15\.0)'/);
 assert.match(api,/async function gptAnalysisStart/);
 assert.match(api,/async function gptAnalysisPoint/);
 assert.match(api,/async function gptAnalysisFinalize/);
