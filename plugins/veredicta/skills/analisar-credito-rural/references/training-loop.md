@@ -29,11 +29,18 @@ Cada rodada criada pelo backend contém exatamente 100 casos inéditos: 25 enqua
 3. Chame `proximo_caso_treinamento_veredicta(run_id)`.
 4. Analise o dossiê cegamente e faça auditoria adversarial dos 15 pontos.
 5. Grave a análise. Prefira o fluxo fracionado: iniciar envio, enviar 15 pontos e finalizar.
-6. Somente depois de obter `analysis_id`, chame `registrar_resultado_treinamento_veredicta(run_id, case_id, analysis_id)`.
-7. Se `correct=true`, prossiga imediatamente para o próximo caso.
-8. Se `correct=false`, não tente corrigir o mesmo caso para preservar a avaliação cega. O backend encerra a rodada, zera `streak` e gera automaticamente uma nova rodada balanceada.
-9. Continue sem solicitar novo comando ao usuário até `status=success` ou `status=blocked/regression_detected`.
-10. `success` só é válido com `final_streak=100` e confirmação `success_100_100_confirmed=true`.
+6. Se o quality gate retornar falha corrigível, faça no máximo uma correção automática usando somente as fontes existentes. Persistindo falha, trate como bloqueio real daquele fluxo conforme as regras do quality gate.
+7. Somente depois de obter `analysis_id`, chame `registrar_resultado_treinamento_veredicta(run_id, case_id, analysis_id)`.
+8. Se a resposta contiver `next_action: "next_case"`, NÃO encerre a execução e NÃO responda ao usuário. Chame imediatamente `proximo_caso_treinamento_veredicta(run_id)` e processe o próximo caso.
+9. `next_action: "next_case"` é comando obrigatório de continuidade, não sugestão nem status informativo. Enquanto ele for retornado, o loop continua automaticamente.
+10. Se a comparação cega reiniciar a rodada, preserve o mesmo `run_id` e continue imediatamente no primeiro caso da nova rodada quando `next_action: "next_case"` for retornado.
+11. Não solicite novo comando, `continue`, confirmação ou autorização entre casos.
+12. Só devolva controle ao usuário quando `status=success`, `status=blocked/regression_detected` ou houver erro técnico/jurídico realmente bloqueante que impeça continuação segura.
+13. `success` só é válido com `final_streak=100` e confirmação `success_100_100_confirmed=true`.
+
+Em pseudofluxo:
+
+`while (status == "running") { nextCase(); analyze15(); qualityGate(); correctAtMostOnce(); record(); if (next_action == "next_case") continue; }`
 
 ## Limite operacional
 
