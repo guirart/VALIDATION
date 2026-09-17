@@ -3,7 +3,7 @@ import { json, readJson, requireAuth } from '../lib/http.js';
 import { db } from '../lib/supabase.js';
 import { TRAINING_MAX_ROUNDS, TRAINING_DISTRIBUTION, generateTrainingRound } from '../lib/training.js';
 
-const APP_VERSION='3.15.2';
+const APP_VERSION='3.15.5';
 const VALIDATOR_VERSION='3.8.1';
 
 async function createRound(run,ownerId){
