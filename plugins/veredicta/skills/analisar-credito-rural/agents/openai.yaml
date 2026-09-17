@@ -1,4 +1,0 @@
-interface:
-  display_name: "Analisar crédito rural"
-  short_description: "Analisa casos Veredicta em 15 pontos"
-  default_prompt: "Analise meus casos pendentes no Veredicta."

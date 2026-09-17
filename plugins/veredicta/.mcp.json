@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "veredicta": {
-      "type": "http",
-      "url": "https://validation-six-tawny.vercel.app/mcp"
-    }
-  }
-}
