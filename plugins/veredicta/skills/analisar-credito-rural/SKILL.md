@@ -30,9 +30,13 @@ Ao receber exatamente `/begin_test` ou `begin_test`:
 4. chame `proximo_caso_treinamento_veredicta(run_id)`;
 5. analise, audite e grave o caso;
 6. chame `registrar_resultado_treinamento_veredicta(run_id, case_id, analysis_id)`;
-7. repita autonomamente até `status=success` ou `status=blocked/regression_detected`.
+7. interprete `next_action: "next_case"` como uma ORDEM DE CONTINUIDADE IMEDIATA: chame `proximo_caso_treinamento_veredicta(run_id)` novamente na mesma execução, sem encerrar a resposta, sem pedir confirmação e sem devolver controle ao usuário;
+8. repita autonomamente o ciclo `proximo caso -> análise/auditoria -> quality gate -> única correção automática permitida -> registro do resultado` enquanto o backend retornar `next_action: "next_case"` ou `status: "running"` com trabalho pendente;
+9. só finalize o `/begin_test` quando o backend retornar `status=success`, `status=blocked/regression_detected` ou um erro realmente bloqueante que impeça qualquer continuação segura.
 
-É PROIBIDO usar `listar_casos_veredicta?status=pendente` como etapa inicial ou como condição de existência para `/begin_test`. Zero casos pendentes não significa ausência de trabalho: `iniciar_treinamento_veredicta` cria a rodada e seus 100 casos.
+É PROIBIDO tratar `next_action: "next_case"` como sugestão, mensagem informativa ou ponto de parada. Ele significa que o teste continua automaticamente para o próximo caso.
+
+Também é PROIBIDO usar `listar_casos_veredicta?status=pendente` como etapa inicial ou como condição de existência para `/begin_test`. Zero casos pendentes não significa ausência de trabalho: `iniciar_treinamento_veredicta` cria a rodada e seus 100 casos.
 
 ## Regras essenciais
 
@@ -50,4 +54,4 @@ Não crie, edite nem exclua casos de produção. Casos de treinamento são criad
 
 Quando o usuário pedir treinamento, avaliação ou comparação de versões, leia [evaluation-workflow.md](references/evaluation-workflow.md). Mantenha o gabarito oculto até todas as análises terem sido concluídas e salvas.
 
-Quando o usuário enviar `/begin_test`, leia [training-loop.md](references/training-loop.md) e inicie uma execução persistente com `iniciar_treinamento_veredicta`. Não use o lote determinístico V3 como bateria ativa. Não liste a fila comum antes de iniciar o treinamento. Processe autonomamente `proximo_caso_treinamento_veredicta -> análise/auditoria -> gravação -> registrar_resultado_treinamento_veredicta` até `status=success` ou `status=blocked/regression_detected`. O sucesso exige uma única rodada 100/100; qualquer erro reinicia a sequência e o backend gera nova rodada. `max_rounds` é fixo em 400.
+Quando o usuário enviar `/begin_test`, leia [training-loop.md](references/training-loop.md) e inicie uma execução persistente com `iniciar_treinamento_veredicta`. Não use o lote determinístico V3 como bateria ativa. Não liste a fila comum antes de iniciar o treinamento. Processe autonomamente `proximo_caso_treinamento_veredicta -> análise/auditoria -> gravação -> registrar_resultado_treinamento_veredicta -> next_case` sem parar entre casos. Enquanto `registrar_resultado_treinamento_veredicta` devolver `next_action: "next_case"`, faça imediatamente a próxima chamada e continue o loop. Só pare em `status=success`, `status=blocked/regression_detected` ou erro bloqueante. O sucesso exige uma única rodada 100/100; qualquer erro reinicia a sequência e o backend gera nova rodada. `max_rounds` é fixo em 400.
