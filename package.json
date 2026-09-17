@@ -1,11 +1,11 @@
 {
   "name": "veredicta-mp1376-app",
-  "version": "3.15.1",
+  "version": "3.15.2",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vercel dev",
-    "check": "node --check api/index.js && node --check api/mcp.js && node --check lib/mcp.js && node --check lib/http.js && node --check lib/supabase.js && node --check lib/legal.js && node --check lib/actionAuth.js && node --check lib/userAuth.js && node --check lib/oauth.js && node --check lib/stripe.js && node --check lib/email.js && node --check app.js && node --check new-case.js && node --check admin-users.js && node --check oauth-authorize.js && node --check lib/training.js",
+    "check": "node --check api/index.js && node --check api/mcp.js && node --check lib/mcp.js && node --check lib/stagedTestImport.js && node --check api/gpt-test-import-start.js && node --check api/gpt-test-import-case.js && node --check api/gpt-test-import-finalize.js && node --check lib/http.js && node --check lib/supabase.js && node --check lib/legal.js && node --check lib/actionAuth.js && node --check lib/userAuth.js && node --check lib/oauth.js && node --check lib/stripe.js && node --check lib/email.js && node --check app.js && node --check new-case.js && node --check admin-users.js && node --check oauth-authorize.js && node --check lib/training.js",
     "test:citations": "node tests/citation-policy.test.mjs",
     "test:citation-modes": "node tests/citation-modes.test.mjs",
     "test:point12": "node tests/point12-policy.test.mjs",
