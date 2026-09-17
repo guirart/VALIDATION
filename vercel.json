@@ -52,7 +52,7 @@
     },
     {
       "source": "/api/cases",
-      "destination": "/api?action=cases"
+      "destination": "/api/cases-all"
     },
     {
       "source": "/api/config",
