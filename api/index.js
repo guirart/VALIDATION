@@ -439,9 +439,14 @@ async function gptCases(req,res){
     return json(res,200,{cases:rows,user:{name:principal.name,email:principal.email}});
   }
 
-  return json(res,405,{
-    error:'Criação ou alteração de casos pelo GPT não é permitida.'
-  });
+  if(req.method==='POST'){
+    const body=await readJson(req);
+    if(!body?.title||!body?.contract_text) return json(res,400,{error:'Título e texto do contrato são obrigatórios'});
+    const [row]=await db('cases',{method:'POST',body:JSON.stringify({title:String(body.title).slice(0,180),client_name:String(body.client_name||'').slice(0,180),contract_text:String(body.contract_text),owner_id:principal.userId,status:'pendente'})});
+    await db('audit_logs',{method:'POST',body:JSON.stringify({case_id:row.id,owner_id:principal.userId,event_type:'case_created_by_mcp',payload:{title:row.title,owner_email:principal.email}})});
+    return json(res,201,{case:row,user:{name:principal.name,email:principal.email}});
+  }
+  return json(res,405,{error:'Método não permitido'});
 }
 
 async function gptCase(req,res){
@@ -748,8 +753,8 @@ async function importSyntheticCases(body) {
     err.statusCode = 400;
     throw err;
   }
-  if (!list.length || list.length > 50) {
-    const err = new Error('cases deve conter entre 1 e 50 casos.');
+  if (!list.length || list.length > 100) {
+    const err = new Error('cases deve conter entre 1 e 100 casos.');
     err.statusCode = 400;
     throw err;
   }

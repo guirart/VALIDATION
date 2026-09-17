@@ -22,7 +22,9 @@ assert.deepEqual(names,[
   'buscar_analise_veredicta',
   'buscar_caso_veredicta',
   'consultar_status_veredicta',
+  'criar_caso_veredicta',
   'enviar_analise_veredicta',
+  'importar_casos_sinteticos_veredicta',
   'listar_casos_veredicta',
   'listar_historico_veredicta'
 ]);
