@@ -12,7 +12,7 @@ const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','re
 const AUDIT_RECOMMENDATIONS = new Set(['liberar','corrigir','escalar para revisão humana aprofundada']);
 const AUDIT_STATUSES = new Set(['confirmado','divergente','não encontrado','opinião sem precedente']);
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
-const APP_VERSION = '3.14.4';
+const APP_VERSION = '3.14.5';
 const VALIDATOR_VERSION = '3.8.1';
 const LEGAL_SOURCE_VERSION = process.env.LEGAL_SOURCE_VERSION || `MP-1.376-2026-sha256-${sha(mpText).slice(0,16)}`;
 const MEMORANDUM_VERSION = process.env.MEMORANDUM_VERSION || `MEMORANDO-15-PONTOS-sha256-${sha(memoText).slice(0,16)}`;
@@ -435,7 +435,7 @@ async function gptCases(req,res){
       : '';
 
     const rows=await db(
-      `cases?owner_id=eq.${encodeURIComponent(principal.userId)}&select=id,title,client_name,status,created_at,updated_at${filter}&order=created_at.desc&limit=50`
+      `cases?owner_id=eq.${encodeURIComponent(principal.userId)}&select=id,external_test_id,synthetic,environment,title,client_name,status,created_at,updated_at${filter}&order=created_at.desc&limit=50`
     );
 
     return json(res,200,{cases:rows,user:{name:principal.name,email:principal.email}});
@@ -456,7 +456,7 @@ async function gptCase(req,res){
   if(!principal)return;
   if(req.method!=='GET')return json(res,405,{error:'Método não permitido'});
   const id=String(req.query?.id||'').trim(); if(!id)return json(res,400,{error:'id obrigatório'});
-  const rows=await db(`cases?id=eq.${encodeURIComponent(id)}&owner_id=eq.${encodeURIComponent(principal.userId)}&select=id,title,client_name,contract_text,status,created_at,updated_at&limit=1`);
+  const rows=await db(`cases?id=eq.${encodeURIComponent(id)}&owner_id=eq.${encodeURIComponent(principal.userId)}&select=id,external_test_id,synthetic,environment,title,client_name,contract_text,status,created_at,updated_at&limit=1`);
   if(!rows.length)return json(res,404,{error:'Caso não encontrado para este usuário'});
   await db(`cases?id=eq.${encodeURIComponent(id)}&owner_id=eq.${encodeURIComponent(principal.userId)}`,{method:'PATCH',body:JSON.stringify({status:'em-analise',updated_at:new Date().toISOString()})});
   await db('audit_logs',{method:'POST',body:JSON.stringify({case_id:id,owner_id:principal.userId,event_type:'case_fetched_by_gpt_action',payload:{user_email:principal.email}})});
@@ -811,40 +811,10 @@ async function importSyntheticCases(body, ownerId) {
       continue;
     }
 
-    // 2) Adoção segura de teste cadastrado manualmente pelo mesmo título.
-    existing = await db(
-      `cases?title=eq.${encodeURIComponent(item.title)}&owner_id=eq.${encodeURIComponent(normalizedOwnerId)}&select=id,title,client_name,status,synthetic,environment,external_test_id,owner_id&limit=1`
-    );
-
-    if (existing.length) {
-      const adopted = existing[0];
-      await db(`cases?id=eq.${encodeURIComponent(adopted.id)}&owner_id=eq.${encodeURIComponent(normalizedOwnerId)}`,{
-        method:'PATCH',
-        body:JSON.stringify({
-          synthetic:true,
-          environment:'test',
-          external_test_id:item.external_test_id
-        })
-      });
-      await db('audit_logs',{
-        method:'POST',
-        body:JSON.stringify({
-          case_id:adopted.id,
-          owner_id:normalizedOwnerId,
-          event_type:'synthetic_case_adopted_by_test_import',
-          payload:{batch_id:batchId,external_test_id:item.external_test_id}
-        })
-      });
-      results.push({
-        external_test_id:item.external_test_id,
-        case_id:adopted.id,
-        title:adopted.title,
-        status:'adopted_existing_title'
-      });
-      continue;
-    }
-
-    // 3) Criação de caso exclusivamente sintético.
+    // 2) Criação de caso exclusivamente sintético.
+    // IDENTIDADE: title, client_name e contract_text são dados do dossiê, nunca chaves de associação.
+    // Se external_test_id não existe para este owner, um novo UUID deve ser criado mesmo que
+    // já exista outro caso com o mesmo título ou as mesmas partes.
     const [row] = await db('cases',{
       method:'POST',
       body:JSON.stringify({
@@ -884,7 +854,6 @@ async function importSyntheticCases(body, ownerId) {
     batch_id:batchId,
     total:list.length,
     created:results.filter(x=>x.status==='created').length,
-    adopted:results.filter(x=>x.status==='adopted_existing_title').length,
     claimed_orphans:results.filter(x=>x.status==='claimed_orphan').length,
     skipped:results.filter(x=>x.status==='skipped_existing_id').length,
     cases:results,
