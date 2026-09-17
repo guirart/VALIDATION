@@ -2,7 +2,7 @@ openapi: 3.1.0
 
 info:
   title: Veredicta API
-  version: 3.11.0
+  version: 3.14.2
   description: >
     API multiusuário do Veredicta. A autenticação preferencial é OAuth: cada usuário conecta sua própria conta
     do Veredicta ao GPT e a API limita casos e análises ao respectivo proprietário. Chaves antigas continuam
@@ -12,6 +12,34 @@ servers:
   - url: https://validation-six-tawny.vercel.app
 
 paths:
+
+  /api/gpt/legal-sources:
+    get:
+      operationId: consultarFontesJuridicasVeredicta
+      summary: Retorna os textos integrais usados pelo quality gate.
+      security:
+        - VeredictaOAuth: [veredicta]
+      responses:
+        "200":
+          description: Fontes jurídicas versionadas.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  legal_source:
+                    type: object
+                    properties:
+                      version: {type: string}
+                      sha256: {type: string}
+                      content: {type: string}
+                  memorandum:
+                    type: object
+                    properties:
+                      version: {type: string}
+                      sha256: {type: string}
+                      content: {type: string}
+                  instruction: {type: string}
 
   /api/gpt/source-status:
     get:

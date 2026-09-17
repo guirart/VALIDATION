@@ -83,6 +83,10 @@
       "destination": "/api?action=source-status"
     },
     {
+      "source": "/api/gpt/legal-sources",
+      "destination": "/api?action=legal-sources"
+    },
+    {
       "source": "/api/gpt/test-import",
       "destination": "/api?action=test-import"
     },

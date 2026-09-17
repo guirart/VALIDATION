@@ -12,7 +12,7 @@ const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','re
 const AUDIT_RECOMMENDATIONS = new Set(['liberar','corrigir','escalar para revisão humana aprofundada']);
 const AUDIT_STATUSES = new Set(['confirmado','divergente','não encontrado','opinião sem precedente']);
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
-const APP_VERSION = '3.14.1';
+const APP_VERSION = '3.14.2';
 const VALIDATOR_VERSION = '3.8.1';
 const LEGAL_SOURCE_VERSION = process.env.LEGAL_SOURCE_VERSION || `MP-1.376-2026-sha256-${sha(mpText).slice(0,16)}`;
 const MEMORANDUM_VERSION = process.env.MEMORANDUM_VERSION || `MEMORANDO-15-PONTOS-sha256-${sha(memoText).slice(0,16)}`;
@@ -1144,6 +1144,26 @@ async function sourceStatus(req,res){
   });
 }
 
+async function legalSources(req,res){
+  const principal=await requireActionAuth(req,res);
+  if(!principal)return;
+  if(req.method!=='GET')return json(res,405,{error:'Método não permitido'});
+  res.setHeader('Cache-Control','private, max-age=300');
+  return json(res,200,{
+    legal_source:{
+      version:LEGAL_SOURCE_VERSION,
+      sha256:sha(mpText),
+      content:mpText
+    },
+    memorandum:{
+      version:MEMORANDUM_VERSION,
+      sha256:sha(memoText),
+      content:memoText
+    },
+    instruction:'Use somente trechos literais destes conteúdos em mp_quote. Não parafraseie dentro do campo de citação.'
+  });
+}
+
 
 async function adminUsers(req,res){
   const session=requireAuth(req,res); if(!session)return;
@@ -1223,6 +1243,7 @@ export default async function handler(req,res){
       case 'gpt-case': return await gptCase(req,res);
       case 'gpt-analysis': return await gptAnalysis(req,res);
       case 'source-status': return await sourceStatus(req,res);
+      case 'legal-sources': return await legalSources(req,res);
       case 'gpt-analysis-history': return await gptAnalysisHistory(req,res);
       case 'gpt-analysis-detail': return await gptAnalysisDetail(req,res);
       case 'test-import': return await testImport(req,res);

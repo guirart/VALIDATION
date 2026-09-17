@@ -9,7 +9,7 @@ Use exclusivamente os casos recuperados pelas ferramentas do Veredicta. Um contr
 
 ## Fluxo
 
-1. Na primeira análise da conversa, chame `consultar_status_veredicta` e confirme as versões retornadas.
+1. Na primeira análise da conversa, chame `consultar_status_veredicta` e confirme as versões retornadas. Em seguida, chame `consultar_fontes_juridicas_veredicta` e use os conteúdos devolvidos como fonte exclusiva das citações da MP e do memorando.
 2. Se o usuário não informou UUID, use `listar_casos_veredicta`. Se houver mais de um candidato plausível, peça que ele escolha.
 3. Use `buscar_caso_veredicta` e trabalhe somente com o texto e o `contract_sha256` retornados.
 4. Faça uma análise jurídica inicial dos 15 pontos.
@@ -25,6 +25,8 @@ Nunca invente fatos, cláusulas, datas, documentos, dispositivos ou citações. 
 Mantenha separadas as dimensões `applicability`, `evidence_status`, `legal_result` e `display_status`. O campo legado `verdict` não governa a conclusão.
 
 Antes de analisar, leia [workflow-veredicta.md](references/workflow-veredicta.md). Para fundamentação legal e conferência literal, leia [MP_1376_2026_texto_integral.md](references/MP_1376_2026_texto_integral.md) e [15_pontos_analise_MP_1376.md](references/15_pontos_analise_MP_1376.md).
+
+As referências locais orientam o raciocínio, mas os textos retornados por `consultar_fontes_juridicas_veredicta` governam a validação literal. Se os hashes retornados pela ferramenta divergirem dos informados em `consultar_status_veredicta`, interrompa sem enviar. Nunca tente reconstruir uma citação a partir do hash.
 
 Não crie, edite nem exclua casos. O plugin pode consultar dados e enviar uma nova análise auditada.
 

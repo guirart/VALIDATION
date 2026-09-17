@@ -19,6 +19,6 @@ Use este modo somente em ambiente de teste e com casos sintéticos. O objetivo �
 6. Se houver erro, leia somente a `lesson` retornada e aplique-a às rodadas seguintes. Não revele o gabarito integral ao analista.
 7. Repita até `completed=true`, que exige `streak=100`.
 
-Antes da primeira rodada, consulte `consultar_status_veredicta`. Interrompa se as versões da fonte legal ou do memorando estiverem ausentes. Para baterias sintéticas, prefira `importar_casos_sinteticos_veredicta`: o backend deve devolver um caso pertencente ao mesmo usuário OAuth, com `environment=test` e `synthetic=true`. Não crie uma cópia pelo endpoint comum se a recuperação falhar; isso contaminaria o ambiente de produção.
+Antes da primeira rodada, consulte `consultar_status_veredicta` e `consultar_fontes_juridicas_veredicta`. Confirme que versões e hashes coincidem. Interrompa se os conteúdos estiverem ausentes ou divergentes. Para baterias sintéticas, prefira `importar_casos_sinteticos_veredicta`: o backend deve devolver um caso pertencente ao mesmo usuário OAuth, com `environment=test` e `synthetic=true`. Não crie uma cópia pelo endpoint comum se a recuperação falhar; isso contaminaria o ambiente de produção.
 
 Um acerto soma um ponto e aumenta a sequência. Um erro subtrai um ponto e zera a sequência. As lições são memória de treinamento, não alteração automática dos pesos do modelo nem publicação automática da skill. Antes de incorporá-las permanentemente, revise-as e rode regressão completa.
