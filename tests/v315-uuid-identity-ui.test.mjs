@@ -15,5 +15,7 @@ assert.match(app, /const authenticated=await confirmSession\(true\)/, 'O boot de
 assert.match(app, /de 15 pontos foram atingidos/, 'A visão geral deve apresentar um resumo numérico completo');
 assert.match(app, /executive-progress/, 'A visão geral deve apresentar o percentual de atendimento');
 assert.doesNotMatch(app, /class="final-class-stats"/, 'Os números não devem ser repetidos na faixa de classificação');
+assert.match(html, /ai-responsibility-notice/, 'A página deve exibir o aviso de responsabilidade pelo uso de IA');
+assert.match(html, /responsabilidade pela validação, pela estratégia jurídica/, 'O aviso deve atribuir ao advogado a conferência e o uso profissional');
 
 console.log('v3.15 UUID-only identity + simplified navigation: OK');
