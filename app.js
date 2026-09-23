@@ -291,7 +291,7 @@ function renderStats(){
     ['CASOS CADASTRADOS',String(cases.length),`${analyzed} com análise gravada`],
     ['REVISÕES HUMANAS',String(reviewed),`${pending} casos pendentes/em análise`]
   ].map(x=>`<div class="stat-card"><span>${x[0]}</span><b>${x[1]}</b><small>${x[2]}</small></div>`).join('');
-  $('#tests-note').textContent=`${cases.length} caso${cases.length===1?'':'s'} nesta instância — navegue pelo histórico lateral`;
+  if($('#tests-note')) $('#tests-note').textContent='';
 }
 
 function historyClassificationClass(value=''){
@@ -355,7 +355,7 @@ function renderTabs(){ renderHistory(); }
 async function openCase(id,rerenderTabs=true){
   selectedId=id;if(rerenderTabs)renderTabs();
   $('#case-view').innerHTML='<div class="loading-card">Carregando caso…</div>';
-  try{const out=await api('/api/cases?id='+encodeURIComponent(id));selectedCase=out.case;if($('#analysis-section-title'))$('#analysis-section-title').textContent=selectedCase.title||'Análise selecionada';renderCase();renderResolution();renderTabs()}
+  try{const out=await api('/api/cases?id='+encodeURIComponent(id));selectedCase=out.case;renderCase();renderResolution();renderTabs()}
   catch(err){$('#case-view').innerHTML=`<div class="error-card">${esc(err.message)}</div>`}
 }
 function shortClass(v=''){return v.replace('parcialmente enquadrável','parcial').replace('não enquadrável','não enquadrável')}
