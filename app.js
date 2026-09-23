@@ -292,7 +292,7 @@ function renderHistory(){
   const filtered=cases.filter(c=>{
     if(!q)return true;
     const a=latest(c.analyses);
-    return norm([c.title,c.client_name,c.status,a?.final_classification].join(' ')).includes(q);
+    return norm([c.id,c.external_test_id,c.title,c.status,a?.final_classification].join(' ')).includes(q);
   });
   $('#case-history').innerHTML=filtered.length?filtered.map(c=>{
     const a=latest(c.analyses);
@@ -303,7 +303,7 @@ function renderHistory(){
       <span class="history-dot ${a?'done':'pending'}"></span>
       <span class="history-content">
         <b class="history-title">${esc(c.title)}</b>
-        <small>${esc(c.client_name||'cliente não informado')}</small>
+        <small class="history-uid">UUID ${esc(c.id)}</small>
         <span class="history-meta"><em class="${classCss}">${esc(shortClass(classification))}</em><time>${fmtDate(c.updated_at||c.created_at)}</time></span>
       </span>
     </button>`;
@@ -319,15 +319,6 @@ async function openCase(id,rerenderTabs=true){
 }
 function shortClass(v=''){return v.replace('parcialmente enquadrável','parcial').replace('não enquadrável','não enquadrável')}
 
-function identityWarning(c){
-  const text = norm(c?.contract_text || '');
-  const client = norm(c?.client_name || '');
-  if(!client || client.length < 4 || !text) return '';
-  if(text.includes(client)) return '';
-  return `<div class="identity-warning"><b>⚠ Verificação de identidade:</b> o nome do cliente cadastrado não foi localizado literalmente no texto do dossiê. Confira se o contrato pertence ao caso correto antes da revisão jurídica.</div>`;
-}
-
-
 function pointsMap(a){return new Map(((a?.analyst_json?.points)||[]).map(p=>[Number(p.point??p.number),p]))}
 function findingsMap(a){return new Map(((a?.audit_json?.findings)||[]).map(f=>[Number(f.point),f]))}
 function countVerdicts(a){
@@ -337,7 +328,7 @@ function countVerdicts(a){
 }
 function gridHtml(a){
   const pm=pointsMap(a);const counts=countVerdicts(a);
-  return `<div class="memo15">
+  return `<div id="case-points" class="memo15">
     <div class="memo15-head"><b>Checklist dos 15 pontos do memorando — status neste contrato</b><span>${counts.atinge} atingidos · ${counts.parcial} parcial · ${counts.atencao} atenção · ${counts.ausente} não consta/não se aplica</span></div>
     <div class="memo-grid">
       ${CHECKLIST_15.map(item=>{
@@ -364,7 +355,7 @@ function filterBarHtml(a){
 }
 function pointCardsHtml(a){
   const pm=pointsMap(a), fm=findingsMap(a);
-  return `<div class="checkpoint-list">${CHECKLIST_15.map(item=>{
+  return `<div id="case-evidence" class="checkpoint-list">${CHECKLIST_15.map(item=>{
     const p=pm.get(item.point);const f=fm.get(item.point);const v=p?visualVerdictClass(p):'ausente';
     const label=p?verdictLabel(p.verdict,p.display_label):'pendente';
     const hidden=currentFilter!=='all'&&currentFilter!==v?' checkpoint-hidden':'';
@@ -423,11 +414,11 @@ function classificationHeroHtml(a){
 function renderCase(){
   const c=selectedCase;if(!c)return renderEmptyCase();
   const a=latest(c.analyses||[]);const aj=a?.analyst_json||{};const au=a?.audit_json||{};
-  let html=`<article class="analysis-sheet">
+  let html=`<div class="case-detail-layout"><article id="case-overview" class="analysis-sheet">
     <div class="case-head">
-      <div><h3>${esc(c.title)}</h3><div class="source-line">caso ${esc(c.id)} · ${esc(c.client_name||'cliente não informado')} · ${esc(c.status)}</div></div>
+      <div><span class="case-eyebrow">ANÁLISE DO CASO</span><h3>${esc(c.title)}</h3><div class="source-line">UUID ${esc(c.id)} · ${esc(c.status)}</div></div>
       <button id="analyze-btn" class="btn btn-outline">${a?'reanalisar no GPT':'analisar no GPT'}</button>
-    </div>${identityWarning(c)}`;
+    </div>`;
 
   if(a){
     html+=classificationHeroHtml(a);
@@ -443,7 +434,18 @@ function renderCase(){
     html+=`<div class="no-analysis"><h4>Ainda não analisado</h4><p>O caso está salvo. Clique em <b>analisar no GPT</b>; o GPT buscará o contrato pela Action, fará os 15 pontos + auditoria e gravará o resultado aqui.</p><code>Analise o caso ${esc(c.id)}.</code></div>`;
   }
 
-  html+='</article>';
+  const environment=c.environment||'production';
+  html+=`</article><aside class="case-context-card">
+    <div class="case-context-head"><span>DADOS DO CASO</span><h3>Identificação técnica</h3></div>
+    <dl class="case-context-list">
+      <div><dt>UUID único</dt><dd>${esc(c.id)}</dd></div>
+      <div><dt>Status</dt><dd><span class="context-status">${esc(c.status||'—')}</span></dd></div>
+      <div><dt>Ambiente</dt><dd>${esc(environment)}</dd></div>
+      <div><dt>Atualização</dt><dd>${fmtDate(c.updated_at||c.created_at)}</dd></div>
+    </dl>
+    <div class="case-context-note"><b>Vínculo seguro</b><p>O nome não participa da identificação. Consulta, análise e gravação usam somente este UUID.</p></div>
+    ${a?`<div class="case-context-quality"><span>QUALITY GATE</span><b class="${a.quality_gate?'quality-ok':'quality-blocked'}">${a.quality_gate?'Liberado':'Bloqueado'}</b><small>Análise ${esc(a.id)}</small></div>`:''}
+  </aside></div>`;
   $('#case-view').innerHTML=html;
 
   $('#analyze-btn')?.addEventListener('click',()=>openInGpt(c));
@@ -456,7 +458,7 @@ function renderEmptyCase(){
 }
 
 async function openInGpt(c){
-  const command=`Busque o caso ${c.id} (${c.title}) no Veredicta e faça a análise completa seguindo suas instruções. Execute os 15 pontos, a auditoria adversarial e envie a análise auditada de volta ao Veredicta.`;
+  const command=`Busque exclusivamente pelo UUID ${c.id} no Veredicta e faça a análise completa seguindo suas instruções. Ignore nomes e títulos para fins de identificação. Execute os 15 pontos, a auditoria adversarial e envie a análise auditada de volta ao mesmo UUID.`;
   try{await navigator.clipboard.writeText(command)}catch{}
   if(customGptUrl){window.open(customGptUrl,'_blank','noopener,noreferrer');alert('GPT aberto. O comando do caso foi copiado para a área de transferência.')}
   else alert('Comando copiado. Abra o seu GPT Veredicta e cole o comando. Configure CUSTOM_GPT_URL na Vercel para abrir automaticamente.');
@@ -545,6 +547,16 @@ function initTheme(){
 }
 
 initTheme();
+
+// Navegação simples pelas quatro áreas do caso selecionado.
+document.querySelectorAll('.analysis-nav-btn').forEach(button=>{
+  button.addEventListener('click',()=>{
+    const target=document.getElementById(button.dataset.scrollTarget);
+    if(!target)return;
+    document.querySelectorAll('.analysis-nav-btn').forEach(item=>item.classList.toggle('active',item===button));
+    target.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+});
 
 
 

@@ -124,6 +124,12 @@
       </div>
 
       <main class="page">
+      <nav class="analysis-nav" aria-label="Seções do caso">
+        <button class="analysis-nav-btn active" type="button" data-scroll-target="case-overview">Visão geral</button>
+        <button class="analysis-nav-btn" type="button" data-scroll-target="case-points">15 pontos</button>
+        <button class="analysis-nav-btn" type="button" data-scroll-target="case-evidence">Evidências</button>
+        <button class="analysis-nav-btn" type="button" data-scroll-target="resolution-section">Pendências</button>
+      </nav>
       <section id="stats" class="stats-grid"></section>
 
       <section class="section analysis-section">
@@ -135,7 +141,7 @@
         </div>
         <div class="info-box compact-info">
           <span class="info-icon">i</span>
-          <p>Use o histórico lateral para navegar entre análises antigas. O conteúdo completo do caso selecionado aparece abaixo.</p>
+          <p>Cada caso é identificado e recuperado exclusivamente pelo UUID. Nomes e títulos são apenas informativos.</p>
         </div>
 
         <div id="case-view" class="case-view">
