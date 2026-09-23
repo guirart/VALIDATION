@@ -75,6 +75,10 @@
       "destination": "/api?action=gpt-case"
     },
     {
+      "source": "/api/gpt/petition-register",
+      "destination": "/api?action=gpt-petition-register"
+    },
+    {
       "source": "/api/gpt/petition-analyze",
       "destination": "/api?action=gpt-petition-analyze"
     },
