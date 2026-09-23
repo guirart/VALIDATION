@@ -358,6 +358,22 @@ Regras obrigatórias:
 13. Só use `parcialmente_comprovado`, `nao_comprovado` ou `nao_consta` em P5/P12/P15 se estiver faltando prova que JÁ DEVERIA EXISTIR no estágio atual. A mera inexistência de aprovação, minuta ou data de contratação FUTURA não é falta documental atual.
 14. Em P15, nunca use a data da operação originária como data da futura contratação. Se a futura contratação ainda não ocorreu e isso é compatível com a etapa atual, registre a janela de 120 dias no raciocínio e não gere `PARCIAL` por ausência da data futura.
 
+## V3.16 — FLUXO RÁPIDO SEM REDUÇÃO DE QUALIDADE
+
+Esta seção prevalece sobre a preferência de transporte da v3.14.6.
+
+Para análises comuns, o fluxo preferencial é:
+
+1. Obter `source-status` somente quando as versões/fontes ainda não estiverem conhecidas na sessão atual ou houver indício de mudança.
+2. Buscar o caso exclusivamente pelo UUID com `gpt-case` e registrar `contract_sha256`.
+3. Preparar os 15 pontos e os 15 findings da auditoria antes de escrever no backend.
+4. Enviar tudo em uma única chamada com `enviar_analise_veredicta`.
+5. Se o quality gate rejeitar, usar `validation_error_details`, `validation_debug` e `failed_points` retornados pela própria resposta. Não faça nova leitura do caso só para descobrir o erro.
+6. Faça no máximo uma correção completa, limitada aos pontos recusados, preservando os pontos já válidos.
+7. Use o fluxo fracionado `iniciar_envio_analise_veredicta -> enviar_ponto_analise_veredicta -> finalizar_envio_analise_veredicta` apenas quando houver falha de transporte, limite de payload ou necessidade explícita de retomada.
+
+Regras de qualidade permanecem idênticas: 15 pontos, auditoria adversarial com 15 findings, hash obrigatório, validador 3.8.1 e revisão humana obrigatória quando aplicável. Otimização de latência nunca autoriza pular auditoria, reduzir citações ou relaxar o quality gate.
+
 ## Envio fracionado de análise — v3.14.6
 
 Para reduzir o tamanho das chamadas de escrita, prefira este fluxo para `begin_test` e análises completas:
