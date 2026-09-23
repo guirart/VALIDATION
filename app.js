@@ -266,10 +266,11 @@ async function loadCases(keep=false){
   else{selectedId=null;selectedCase=null;renderEmptyCase();renderResolution()}
 }
 function renderStats(){
+  const stats=$('#stats');
   const analyzed=cases.filter(c=>(c.analyses||[]).length).length;
   const reviewed=cases.filter(c=>(c.reviews||[]).length).length;
   const pending=cases.filter(c=>c.status==='pendente'||c.status==='em-analise').length;
-  $('#stats').innerHTML=[
+  if(stats)stats.innerHTML=[
     ['AGENTES CONFIGURADOS','2','analista + auditor'],
     ['FONTES DE REFERÊNCIA','2','MP integral + memorando'],
     ['CASOS CADASTRADOS',String(cases.length),`${analyzed} com análise gravada`],
