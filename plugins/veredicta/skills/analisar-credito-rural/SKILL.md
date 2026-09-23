@@ -55,3 +55,15 @@ Não crie, edite nem exclua casos de produção. Casos de treinamento são criad
 Quando o usuário pedir treinamento, avaliação ou comparação de versões, leia [evaluation-workflow.md](references/evaluation-workflow.md). Mantenha o gabarito oculto até todas as análises terem sido concluídas e salvas.
 
 Quando o usuário enviar `/begin_test`, leia [training-loop.md](references/training-loop.md) e inicie uma execução persistente com `iniciar_treinamento_veredicta`. Não use o lote determinístico V3 como bateria ativa. Não liste a fila comum antes de iniciar o treinamento. Processe autonomamente `proximo_caso_treinamento_veredicta -> análise/auditoria -> gravação -> registrar_resultado_treinamento_veredicta -> next_case` sem parar entre casos. Enquanto `registrar_resultado_treinamento_veredicta` devolver `next_action: "next_case"`, faça imediatamente a próxima chamada e continue o loop. Só pare em `status=success`, `status=blocked/regression_detected` ou erro bloqueante. O sucesso exige uma única rodada 100/100; qualquer erro reinicia a sequência e o backend gera nova rodada. `max_rounds` é fixo em 400.
+
+## REGRA ABSOLUTA DE AUTORIZAÇÃO E OUTPUT
+
+Antes de analisar, resumir, classificar, auditar, cadastrar petição, recuperar caso ou expor qualquer resultado jurídico, use a conexão Veredicta autenticada e confirme que o backend autorizou a conta. A autorização só é válida para usuário cadastrado e ativo no app com assinatura `active` ou `trialing`.
+
+Se a integração retornar 401, 402 ou 403, interrompa o fluxo. Não faça análise local, não entregue resumo alternativo e não revele classificação ou fundamentos. Oriente apenas a entrar na conta ou regularizar a assinatura no Veredicta.
+
+Quando a análise for persistida com sucesso e o quality gate for aprovado, nunca reproduza o resultado no chat. A resposta final deve ser exatamente:
+
+`Resultado entregue no Veredicta.`
+
+É proibido expor no chat classificação final, 15 pontos, auditoria, quality gate, `case_id`, `analysis_id`, citações, warnings, raciocínio ou trechos do resultado armazenado. O conteúdo completo fica exclusivamente no app Veredicta.
