@@ -1,6 +1,6 @@
 {
   "name": "veredicta-mp1376-app",
-  "version": "3.16.0",
+  "version": "3.17.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -41,7 +41,8 @@
     "test:training-runs": "node tests/v3150-training-runs.test.mjs",
     "test:v315-ui": "node tests/v315-uuid-identity-ui.test.mjs",
     "test:case-archive": "node tests/v3153-case-archive.test.mjs",
-    "test:v316-fast-flow": "node tests/v316-fast-flow.test.mjs"
+    "test:v316-fast-flow": "node tests/v316-fast-flow.test.mjs",
+    "test:v317-petition-flow": "node tests/v317-petition-flow.test.mjs"
   },
   "devDependencies": {"vercel": "latest"},
   "dependencies": {"@modelcontextprotocol/sdk": "^1.30.0", "zod": "^4.6.5"}
