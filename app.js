@@ -342,8 +342,7 @@ function renderHistory(){
   $('#case-history').innerHTML=filtered.length?folders.map(folder=>{
     const items=filtered.filter(c=>archiveGroupForCase(c)===folder.key);
     if(!items.length)return '';
-    const containsSelected=items.some(c=>c.id===selectedId);
-    const shouldOpen=Boolean(q)||containsSelected||folder.key==='active'||folder.key==='review';
+    const shouldOpen=Boolean(q);
     return `<details class="archive-folder" data-folder="${folder.key}" ${shouldOpen?'open':''}>
       <summary><span class="archive-folder-icon" aria-hidden="true"></span><b>${esc(folder.label)}</b><em>${items.length}</em><span class="archive-folder-chevron" aria-hidden="true">›</span></summary>
       <div class="archive-folder-cases">${items.map(historyItemHtml).join('')}</div>
