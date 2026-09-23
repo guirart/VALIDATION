@@ -430,6 +430,70 @@ async function cases(req,res) {
   return json(res,405,{error:'Método não permitido'});
 }
 
+async function review(req,res){
+  const session=requireAuth(req,res); if(!session)return;
+  if(req.method!=='POST') return json(res,405,{error:'Método não permitido'});
+
+  const body=await readJson(req);
+  const caseId=String(body?.case_id||'').trim();
+  if(!caseId) return json(res,400,{error:'case_id é obrigatório'});
+
+  const ownerId=session.profileId;
+  const rows=await db(`cases?id=eq.${encodeURIComponent(caseId)}&owner_id=eq.${encodeURIComponent(ownerId)}&select=id,title,status,updated_at&limit=1`);
+  if(!rows.length) return json(res,404,{error:'Caso não encontrado'});
+  const c=rows[0];
+
+  if(c.status==='pendente'||c.status==='em-analise'){
+    return json(res,409,{error:'O caso ainda não está pronto para revisão humana.'});
+  }
+
+  const analyses=await db(`analyses?case_id=eq.${encodeURIComponent(caseId)}&owner_id=eq.${encodeURIComponent(ownerId)}&select=id,created_at&order=created_at.desc&limit=1`);
+  if(!analyses.length) return json(res,409,{error:'Não há análise gravada para este caso.'});
+  const analysisId=analyses[0].id;
+
+  const existing=await db(`reviews?case_id=eq.${encodeURIComponent(caseId)}&owner_id=eq.${encodeURIComponent(ownerId)}&decision=eq.aprovado&select=id,case_id,analysis_id,decision,created_at&order=created_at.desc&limit=1`);
+  if(existing.length){
+    if(c.status!=='concluido'){
+      await db(`cases?id=eq.${encodeURIComponent(caseId)}&owner_id=eq.${encodeURIComponent(ownerId)}`,{
+        method:'PATCH',
+        body:JSON.stringify({status:'concluido',updated_at:new Date().toISOString()})
+      });
+    }
+    return json(res,200,{ok:true,review:existing[0],status:'concluido',already_reviewed:true});
+  }
+
+  const [reviewRow]=await db('reviews',{
+    method:'POST',
+    body:JSON.stringify({
+      case_id:caseId,
+      analysis_id:analysisId,
+      reviewer_name:String(session.name||session.email||'Advogado').slice(0,180),
+      decision:'aprovado',
+      notes:'Pendências conferidas e marcadas como resolvidas pelo advogado no painel do Veredicta.',
+      owner_id:ownerId
+    })
+  });
+
+  await Promise.all([
+    db(`cases?id=eq.${encodeURIComponent(caseId)}&owner_id=eq.${encodeURIComponent(ownerId)}`,{
+      method:'PATCH',
+      body:JSON.stringify({status:'concluido',updated_at:new Date().toISOString()})
+    }),
+    db('audit_logs',{
+      method:'POST',
+      body:JSON.stringify({
+        case_id:caseId,
+        analysis_id:analysisId,
+        owner_id:ownerId,
+        event_type:'human_review_completed',
+        payload:{review_id:reviewRow.id,reviewer_name:String(session.name||session.email||'Advogado')}
+      })
+    })
+  ]);
+
+  return json(res,200,{ok:true,review:reviewRow,status:'concluido'});
+}
+
 async function gptCases(req,res){
   // Cada chave GPT enxerga somente os casos do seu próprio usuário.
   const principal=await requireActionAuth(req,res);
