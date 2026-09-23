@@ -348,7 +348,7 @@ function renderHistory(){
       <div class="archive-folder-cases">${items.length?items.map(historyItemHtml).join(''):'<div class="history-empty history-empty-folder">Nenhum caso revisado ainda.</div>'}</div>
     </details>`;
   }).join(''):`<div class="history-empty">Nenhum caso encontrado no arquivo.</div>`;
-  $$$('.history-item').forEach(b=>b.addEventListener('click',()=>openCase(b.dataset.id)));
+  $('.history-item').forEach(b=>b.addEventListener('click',()=>openCase(b.dataset.id)));
 }
 function renderTabs(){ renderHistory(); }
 async function openCase(id,rerenderTabs=true){
@@ -506,8 +506,8 @@ function renderCase(){
   $('#case-view').innerHTML=html;
 
   $('#analyze-btn')?.addEventListener('click',()=>openInGpt(c));
-  $$$('.filter-chip').forEach(b=>b.addEventListener('click',()=>{currentFilter=b.dataset.filter;renderCase()}));
-  $$$('[data-expand]').forEach(b=>b.addEventListener('click',()=>{$$$('.checkpoint:not(.checkpoint-hidden)').forEach(d=>d.open=b.dataset.expand==='1')}));
+  $('.filter-chip').forEach(b=>b.addEventListener('click',()=>{currentFilter=b.dataset.filter;renderCase()}));
+  $('[data-expand]').forEach(b=>b.addEventListener('click',()=>{$('.checkpoint:not(.checkpoint-hidden)').forEach(d=>d.open=b.dataset.expand==='1')}));
   applyCaseView();
 }
 
