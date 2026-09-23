@@ -214,6 +214,12 @@ REGRA AUTOMÁTICA PARA PETIÇÕES:
 7. Se o quality gate recusar, use os diagnósticos retornados e faça no máximo uma correção da análise do mesmo UUID; não crie um segundo caso para a mesma petição.
 8. Revisão humana continua obrigatória quando indicada pelo sistema.
 
+FALHA SEGURA DE CATÁLOGO:
+- Se `cadastrar_e_analisar_peticao_veredicta` não aparecer entre as ferramentas disponíveis, NÃO substitua por `criar_caso_veredicta`.
+- Não aceite como sucesso um caso apenas cadastrado com status `pendente`.
+- Informe que a integração MCP/Action está desatualizada e precisa ser recarregada antes de repetir o fluxo.
+- Para petição, sucesso operacional significa obrigatoriamente: caso criado + `analysis_id` gravado + 15 pontos + auditoria adversarial processados no mesmo UUID.
+
 Para contratos, laudos ou outros documentos que NÃO sejam petições, mantenha o fluxo normal salvo instrução expressa do usuário para cadastrar.
 
 
