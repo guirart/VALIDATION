@@ -336,7 +336,7 @@ function renderHistory(){
   const folders=[
     {key:'active',label:'Em andamento'},
     {key:'review',label:'Aguardando revisão'},
-    {key:'completed',label:'Concluídos'},
+    {key:'completed',label:'Casos revisados'},
     {key:'other',label:'Outros casos'}
   ];
   $('#case-history').innerHTML=filtered.length?folders.map(folder=>{
@@ -544,15 +544,39 @@ function renderResolution(){
   const groups=[...new Set(items.map(i=>i.group))];
   const checked=items.filter(i=>state[i.id]).length;
   const pct=items.length?Math.round(checked/items.length*100):100;
+  const caseReviewed=String(selectedCase?.status||'').toLowerCase()==='concluido';
+  const allResolved=items.length>0 && checked===items.length;
   panel.innerHTML=`<div class="resolution-top">
       <p>Os itens dos pontos 1–15 se ajustam automaticamente ao caso selecionado: pontos com veredito <b>atinge</b> não aparecem aqui.</p>
-      <div class="progress-row"><div class="progress"><span style="width:${pct}%"></span></div><b>${checked} / ${items.length} resolvidos</b><button id="clear-resolution">limpar marcações</button></div>
+      <div class="progress-row"><div class="progress"><span style="width:${pct}%"></span></div><b>${checked} / ${items.length} resolvidos</b><button id="clear-resolution" ${caseReviewed?'disabled':''}>limpar marcações</button></div>
+      ${caseReviewed
+        ? '<div class="review-complete-panel reviewed"><span class="review-complete-icon">✓</span><div><b>Caso revisado</b><small>Este caso já foi encerrado pela revisão humana e está arquivado em “Casos revisados”.</small></div></div>'
+        : allResolved
+          ? '<div class="review-complete-panel ready"><div><b>Todas as pendências foram marcadas como resolvidas.</b><small>Finalize a revisão humana para mover este caso para a caixa “Casos revisados”.</small></div><button id="complete-review" class="btn btn-primary">Considerar caso revisado</button></div>'
+          : ''}
     </div>
-    <div class="resolution-list">${groups.map(g=>`<div class="resolve-group"><h4>${esc(g)}</h4>${items.filter(i=>i.group===g).map(i=>`<label class="resolve-item ${state[i.id]?'done':''}"><input type="checkbox" data-resolve="${esc(i.id)}" ${state[i.id]?'checked':''}><span>${i.text}</span></label>`).join('')}</div>`).join('')}</div>`;
-  $$('[data-resolve]').forEach(cb=>cb.addEventListener('change',()=>{
+    <div class="resolution-list">${groups.map(g=>`<div class="resolve-group"><h4>${esc(g)}</h4>${items.filter(i=>i.group===g).map(i=>`<label class="resolve-item ${state[i.id]?'done':''}"><input type="checkbox" data-resolve="${esc(i.id)}" ${state[i.id]?'checked':''} ${caseReviewed?'disabled':''}><span>${i.text}</span></label>`).join('')}</div>`).join('')}</div>`;
+  $('[data-resolve]').forEach(cb=>cb.addEventListener('change',()=>{
     const s=loadResolutionState();s[cb.dataset.resolve]=cb.checked;saveResolutionState(s);renderResolution();
   }));
   $('#clear-resolution')?.addEventListener('click',()=>{localStorage.removeItem(resolutionStateKey());renderResolution()});
+  $('#complete-review')?.addEventListener('click',async()=>{
+    const button=$('#complete-review');
+    if(!selectedCase?.id || !allResolved || !button)return;
+    const original=button.textContent;
+    button.disabled=true;
+    button.textContent='Finalizando revisão…';
+    try{
+      await api('/api/review',{method:'POST',body:JSON.stringify({case_id:selectedCase.id})});
+      await loadCases(true);
+      activeCaseView='resolution';
+      applyCaseView();
+    }catch(err){
+      button.disabled=false;
+      button.textContent=original;
+      alert(err.message||'Não foi possível concluir a revisão.');
+    }
+  });
   applyCaseView();
 }
 
