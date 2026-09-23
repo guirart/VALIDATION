@@ -8,7 +8,7 @@ assert.doesNotMatch(app, /function identityWarning\(/, 'A interface não deve va
 assert.doesNotMatch(app, /\[c\.title,c\.client_name,c\.status/, 'A busca não deve depender do nome do cliente');
 assert.match(app, /UUID \$\{esc\(c\.id\)\}/, 'O UUID deve ser exibido como identificador técnico');
 assert.match(app, /Busque exclusivamente pelo UUID \$\{c\.id\}/, 'O comando ao GPT deve vincular o caso pelo UUID');
-assert.match(html, /identificado e recuperado exclusivamente pelo UUID/, 'A regra precisa estar clara para o usuário');
+assert.doesNotMatch(html, /class="info-box compact-info"/, 'A faixa informativa branca não deve ocupar espaço na análise');
 assert.match(html, /data-case-view="points"/, 'A navegação simplificada deve oferecer uma página independente para os 15 pontos');
 assert.doesNotMatch(app, /case-context-card/, 'O quadro de identificação técnica deve ter sido removido');
 assert.match(app, /const authenticated=await confirmSession\(true\)/, 'O boot deve restaurar a sessão existente');
