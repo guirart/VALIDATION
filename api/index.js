@@ -399,9 +399,24 @@ async function cases(req,res) {
   if(req.method==='GET') {
     const id=String(req.query?.id||'').trim();
     if(id){
-      const rows=await db(`cases?id=eq.${encodeURIComponent(id)}&owner_id=eq.${encodeURIComponent(ownerId)}&select=*,analyses(*),reviews(*)&limit=1`);
+      // A tela do caso não precisa transferir o texto integral da petição/contrato.
+      // Buscar case + todo o histórico de analyses(*) fazia casos antigos ficarem presos
+      // em "Carregando caso..." por causa do payload muito grande.
+      const rows=await db(
+        `cases?id=eq.${encodeURIComponent(id)}&owner_id=eq.${encodeURIComponent(ownerId)}&select=id,title,client_name,status,owner_id,synthetic,environment,external_test_id,run_id,training_round,training_order,created_at,updated_at&limit=1`
+      );
       if(!rows.length)return json(res,404,{error:'Caso não encontrado'});
-      return json(res,200,{case:rows[0]});
+
+      const [analyses,reviews]=await Promise.all([
+        db(
+          `analyses?case_id=eq.${encodeURIComponent(id)}&owner_id=eq.${encodeURIComponent(ownerId)}&select=id,case_id,final_classification,quality_gate,auditor_recommendation,analyst_json,audit_json,legal_source_version,memorandum_version,created_at&order=created_at.desc&limit=1`
+        ),
+        db(
+          `reviews?case_id=eq.${encodeURIComponent(id)}&owner_id=eq.${encodeURIComponent(ownerId)}&select=id,case_id,analysis_id,decision,created_at&order=created_at.desc&limit=20`
+        )
+      ]);
+
+      return json(res,200,{case:{...rows[0],analyses,reviews}});
     }
     const runId=String(req.query?.run_id||'').trim();
     const environment=String(req.query?.environment||'').trim();
