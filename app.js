@@ -341,11 +341,11 @@ function renderHistory(){
   ];
   $('#case-history').innerHTML=filtered.length?folders.map(folder=>{
     const items=filtered.filter(c=>archiveGroupForCase(c)===folder.key);
-    if(!items.length)return '';
+    if(!items.length && folder.key!=='completed')return '';
     const shouldOpen=Boolean(q);
     return `<details class="archive-folder" data-folder="${folder.key}" ${shouldOpen?'open':''}>
       <summary><span class="archive-folder-icon" aria-hidden="true"></span><b>${esc(folder.label)}</b><em>${items.length}</em><span class="archive-folder-chevron" aria-hidden="true">›</span></summary>
-      <div class="archive-folder-cases">${items.map(historyItemHtml).join('')}</div>
+      <div class="archive-folder-cases">${items.length?items.map(historyItemHtml).join(''):'<div class="history-empty history-empty-folder">Nenhum caso revisado ainda.</div>'}</div>
     </details>`;
   }).join(''):`<div class="history-empty">Nenhum caso encontrado no arquivo.</div>`;
   $$('.history-item').forEach(b=>b.addEventListener('click',()=>openCase(b.dataset.id)));
@@ -545,7 +545,7 @@ function renderResolution(){
   const checked=items.filter(i=>state[i.id]).length;
   const pct=items.length?Math.round(checked/items.length*100):100;
   const caseReviewed=String(selectedCase?.status||'').toLowerCase()==='concluido';
-  const allResolved=items.length>0 && checked===items.length;
+  const allResolved=checked===items.length;
   panel.innerHTML=`<div class="resolution-top">
       <p>Os itens dos pontos 1–15 se ajustam automaticamente ao caso selecionado: pontos com veredito <b>atinge</b> não aparecem aqui.</p>
       <div class="progress-row"><div class="progress"><span style="width:${pct}%"></span></div><b>${checked} / ${items.length} resolvidos</b><button id="clear-resolution" ${caseReviewed?'disabled':''}>limpar marcações</button></div>
