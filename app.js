@@ -496,7 +496,11 @@ function renderCase(){
       <div class="report-foot">análise ${esc(a.id)} · fonte ${esc(a.legal_source_version||'não informada')} · memorando ${esc(a.memorandum_version||'não informado')} · criada em ${fmtDate(a.created_at)}</div>
     </article>`;
   }else{
-    html+=`<div class="no-analysis"><h4>Ainda não analisado</h4><p>O caso está salvo. Clique em <b>analisar no GPT</b>; o GPT buscará o contrato pelo UUID, fará os 15 pontos e gravará o resultado aqui.</p><code>Analise o caso ${esc(c.id)}.</code></div></article>`;
+    if(String(c.status||'').toLowerCase()==='em-analise'){
+      html+=`<div class="no-analysis analysis-progress" role="status" aria-live="polite"><h4>Analisando conforme MP...</h4><p>A análise jurídica está em andamento. Os detalhes intermediários permanecem ocultos e o resultado será exibido aqui quando estiver concluído.</p></div></article>`;
+    }else{
+      html+=`<div class="no-analysis"><h4>Ainda não analisado</h4><p>O caso está salvo. Clique em <b>analisar no GPT</b>; o GPT buscará o contrato pelo UUID, fará os 15 pontos e gravará o resultado aqui.</p><code>Analise o caso ${esc(c.id)}.</code></div></article>`;
+    }
   }
   html+='</div>';
   $('#case-view').innerHTML=html;
