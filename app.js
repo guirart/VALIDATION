@@ -5,6 +5,7 @@ let selectedId = null;
 let selectedCase = null;
 let customGptUrl = '';
 let currentFilter = 'all';
+let activeCaseView = 'overview';
 
 const CHECKLIST_15 = [
   {point:1,title:'Natureza do instrumento',legal_reference:'art. 1º, caput / art. 7º',description:'A MP cria uma via administrativa e depende de regulamentação; não substitui a análise jurídica nem promete automatismos.',resolve:'Confirmar a natureza do instrumento e registrar que a MP autoriza linhas de composição, sem transformar o enquadramento técnico em aprovação automática. Conferir a regulamentação do CMN vigente.'},
@@ -154,7 +155,7 @@ function showAuthMessage(text,type='info'){
   el.dataset.type=type;
 }
 async function boot(){
-  authState='unauthenticated';
+  authState='checking';
   showLogin();
   clearRuntimeError();
   setAuthMode('login');
@@ -162,6 +163,20 @@ async function boot(){
   if(qs.get('payment')==='success') showAuthMessage('Pagamento concluído. Se o e-mail já foi confirmado, entre com sua conta.','success');
   if(qs.get('payment')==='cancelled') showAuthMessage('Pagamento cancelado. Sua conta permanece sem acesso até a assinatura ser concluída.','warning');
   if(qs.get('email_confirmed')==='1') showAuthMessage('E-mail confirmado. Conclua o pagamento, se ainda estiver pendente, e depois faça login.','success');
+  const authenticated=await confirmSession(true);
+  if(!authenticated){
+    authState='unauthenticated';
+    showLogin();
+    return;
+  }
+  showApp();
+  try{
+    await loadConfig();
+    await loadCases();
+  }catch(err){
+    console.error('Sessão restaurada, mas falhou o carregamento de dados:',err);
+    showRuntimeError('Sessão restaurada. Falha ao carregar dados: '+(err?.message||'erro desconhecido'));
+  }
 }
 $('#tab-login')?.addEventListener('click',()=>setAuthMode('login'));
 $('#tab-register')?.addEventListener('click',()=>setAuthMode('register'));
@@ -415,7 +430,7 @@ function classificationHeroHtml(a){
 function renderCase(){
   const c=selectedCase;if(!c)return renderEmptyCase();
   const a=latest(c.analyses||[]);const aj=a?.analyst_json||{};const au=a?.audit_json||{};
-  let html=`<div class="case-detail-layout"><article id="case-overview" class="analysis-sheet">
+  let html=`<div class="case-pages"><article id="case-overview" class="analysis-sheet case-panel" data-case-panel="overview">
     <div class="case-head">
       <div><span class="case-eyebrow">ANÁLISE DO CASO</span><h3>${esc(c.title)}</h3><div class="source-line">UUID ${esc(c.id)} · ${esc(c.status)}</div></div>
       <button id="analyze-btn" class="btn btn-outline">${a?'reanalisar no GPT':'analisar no GPT'}</button>
@@ -426,32 +441,27 @@ function renderCase(){
     html+=`<div class="summary-box">
       <p><b>Resumo:</b> ${esc(aj.summary||au.summary||'')}</p>
       <p><b>Auditoria:</b> ${esc(a.auditor_recommendation||'—')} · quality gate ${a.quality_gate?'liberado':'bloqueado'}</p>
-    </div>
-    ${gridHtml(a)}
-    ${filterBarHtml(a)}
-    ${pointCardsHtml(a)}
-    <div class="report-foot">análise ${esc(a.id)} · fonte ${esc(a.legal_source_version||'não informada')} · memorando ${esc(a.memorandum_version||'não informado')} · criada em ${fmtDate(a.created_at)}</div>`;
+    </div></article>
+    <article class="analysis-sheet case-panel" data-case-panel="points">
+      <div class="panel-page-head"><span>15 PONTOS</span><h3>Quadro de enquadramento</h3><p>Resultado individual de cada requisito jurídico analisado.</p></div>
+      ${gridHtml(a)}
+    </article>
+    <article class="analysis-sheet case-panel" data-case-panel="evidence">
+      <div class="panel-page-head"><span>EVIDÊNCIAS</span><h3>Fontes, fundamentos e auditoria</h3><p>Abra cada ponto para consultar as citações e a verificação adversarial.</p></div>
+      ${filterBarHtml(a)}
+      ${pointCardsHtml(a)}
+      <div class="report-foot">análise ${esc(a.id)} · fonte ${esc(a.legal_source_version||'não informada')} · memorando ${esc(a.memorandum_version||'não informado')} · criada em ${fmtDate(a.created_at)}</div>
+    </article>`;
   }else{
-    html+=`<div class="no-analysis"><h4>Ainda não analisado</h4><p>O caso está salvo. Clique em <b>analisar no GPT</b>; o GPT buscará o contrato pela Action, fará os 15 pontos + auditoria e gravará o resultado aqui.</p><code>Analise o caso ${esc(c.id)}.</code></div>`;
+    html+=`<div class="no-analysis"><h4>Ainda não analisado</h4><p>O caso está salvo. Clique em <b>analisar no GPT</b>; o GPT buscará o contrato pelo UUID, fará os 15 pontos e gravará o resultado aqui.</p><code>Analise o caso ${esc(c.id)}.</code></div></article>`;
   }
-
-  const environment=c.environment||'production';
-  html+=`</article><aside class="case-context-card">
-    <div class="case-context-head"><span>DADOS DO CASO</span><h3>Identificação técnica</h3></div>
-    <dl class="case-context-list">
-      <div><dt>UUID único</dt><dd>${esc(c.id)}</dd></div>
-      <div><dt>Status</dt><dd><span class="context-status">${esc(c.status||'—')}</span></dd></div>
-      <div><dt>Ambiente</dt><dd>${esc(environment)}</dd></div>
-      <div><dt>Atualização</dt><dd>${fmtDate(c.updated_at||c.created_at)}</dd></div>
-    </dl>
-    <div class="case-context-note"><b>Vínculo seguro</b><p>O nome não participa da identificação. Consulta, análise e gravação usam somente este UUID.</p></div>
-    ${a?`<div class="case-context-quality"><span>QUALITY GATE</span><b class="${a.quality_gate?'quality-ok':'quality-blocked'}">${a.quality_gate?'Liberado':'Bloqueado'}</b><small>Análise ${esc(a.id)}</small></div>`:''}
-  </aside></div>`;
+  html+='</div>';
   $('#case-view').innerHTML=html;
 
   $('#analyze-btn')?.addEventListener('click',()=>openInGpt(c));
   $$('.filter-chip').forEach(b=>b.addEventListener('click',()=>{currentFilter=b.dataset.filter;renderCase()}));
   $$('[data-expand]').forEach(b=>b.addEventListener('click',()=>{$$('.checkpoint:not(.checkpoint-hidden)').forEach(d=>d.open=b.dataset.expand==='1')}));
+  applyCaseView();
 }
 
 function renderEmptyCase(){
@@ -496,6 +506,7 @@ function renderResolution(){
     const s=loadResolutionState();s[cb.dataset.resolve]=cb.checked;saveResolutionState(s);renderResolution();
   }));
   $('#clear-resolution')?.addEventListener('click',()=>{localStorage.removeItem(resolutionStateKey());renderResolution()});
+  applyCaseView();
 }
 
 setInterval(async()=>{
@@ -549,13 +560,30 @@ function initTheme(){
 
 initTheme();
 
-// Navegação simples pelas quatro áreas do caso selecionado.
+function applyCaseView(){
+  const requested=activeCaseView;
+  const panel=document.querySelector(`[data-case-panel="${requested}"]`);
+  if(requested!=='resolution' && !panel && selectedCase) activeCaseView='overview';
+  document.querySelectorAll('[data-case-panel]').forEach(item=>{
+    item.classList.toggle('active',item.dataset.casePanel===activeCaseView);
+  });
+  document.querySelectorAll('.analysis-nav-btn').forEach(item=>{
+    const active=item.dataset.caseView===activeCaseView;
+    item.classList.toggle('active',active);
+    item.setAttribute('aria-selected',String(active));
+  });
+  const resolution=document.querySelector('#resolution-section');
+  if(resolution)resolution.classList.toggle('active-page',activeCaseView==='resolution');
+  const caseView=document.querySelector('#case-view');
+  if(caseView)caseView.classList.toggle('hidden-page',activeCaseView==='resolution');
+  document.querySelector('.compact-info')?.classList.toggle('hidden-page',activeCaseView!=='overview');
+}
+
+// As quatro opções são páginas independentes, não atalhos de rolagem.
 document.querySelectorAll('.analysis-nav-btn').forEach(button=>{
   button.addEventListener('click',()=>{
-    const target=document.getElementById(button.dataset.scrollTarget);
-    if(!target)return;
-    document.querySelectorAll('.analysis-nav-btn').forEach(item=>item.classList.toggle('active',item===button));
-    target.scrollIntoView({behavior:'smooth',block:'start'});
+    activeCaseView=button.dataset.caseView||'overview';
+    applyCaseView();
   });
 });
 
