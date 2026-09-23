@@ -392,7 +392,6 @@ function pointCardsHtml(a){
 function classificationHeroHtml(a){
   const final=String(a?.final_classification||'').trim();
   const n=norm(final);
-  const c=countVerdicts(a);
 
   let key='neutral', icon='•', subtitle='Classificação final da análise.';
   if(n==='enquadravel'){
@@ -417,12 +416,6 @@ function classificationHeroHtml(a){
         <strong>${esc(final||'—')}</strong>
         <small>${esc(subtitle)}</small>
       </div>
-    </div>
-    <div class="final-class-stats" aria-label="Resumo dos 15 pontos">
-      <div><b>${c.atinge}</b><span>atendidos</span></div>
-      <div><b>${c.parcial}</b><span>parciais</span></div>
-      <div><b>${c.atencao}</b><span>atenção</span></div>
-      <div><b>${c.ausente}</b><span>não consta</span></div>
     </div>
   </section>`;
 }

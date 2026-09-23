@@ -3062,6 +3062,7 @@ html[data-theme="dark"] .analysis-nav-btn.active{background:#17243a!important;bo
 
 /* Resumo executivo da visão geral */
 .executive-summary{margin:20px 28px;border:1px solid var(--ui-line);border-radius:11px;background:#fff;overflow:hidden}
+.final-class-hero{grid-template-columns:1fr!important}
 .executive-summary-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:18px 20px 13px}
 .executive-summary-head span{display:block;margin-bottom:6px;color:#718096;font:700 9px/1.2 system-ui;letter-spacing:.1em}
 .executive-summary-head h4{margin:0;color:var(--ui-text);font:700 18px/1.25 system-ui}

@@ -14,5 +14,6 @@ assert.doesNotMatch(app, /case-context-card/, 'O quadro de identificação técn
 assert.match(app, /const authenticated=await confirmSession\(true\)/, 'O boot deve restaurar a sessão existente');
 assert.match(app, /de 15 pontos foram atingidos/, 'A visão geral deve apresentar um resumo numérico completo');
 assert.match(app, /executive-progress/, 'A visão geral deve apresentar o percentual de atendimento');
+assert.doesNotMatch(app, /class="final-class-stats"/, 'Os números não devem ser repetidos na faixa de classificação');
 
 console.log('v3.15 UUID-only identity + simplified navigation: OK');
