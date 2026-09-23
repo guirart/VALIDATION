@@ -12,5 +12,7 @@ assert.doesNotMatch(html, /class="info-box compact-info"/, 'A faixa informativa 
 assert.match(html, /data-case-view="points"/, 'A navegação simplificada deve oferecer uma página independente para os 15 pontos');
 assert.doesNotMatch(app, /case-context-card/, 'O quadro de identificação técnica deve ter sido removido');
 assert.match(app, /const authenticated=await confirmSession\(true\)/, 'O boot deve restaurar a sessão existente');
+assert.match(app, /de 15 pontos foram atingidos/, 'A visão geral deve apresentar um resumo numérico completo');
+assert.match(app, /executive-progress/, 'A visão geral deve apresentar o percentual de atendimento');
 
 console.log('v3.15 UUID-only identity + simplified navigation: OK');

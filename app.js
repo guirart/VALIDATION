@@ -427,6 +427,31 @@ function classificationHeroHtml(a){
   </section>`;
 }
 
+function executiveSummaryHtml(a){
+  const c=countVerdicts(a);
+  const achievedPercent=Math.round((c.atinge/15)*100);
+  const pending=c.parcial+c.atencao+c.ausente;
+  const recommendation=String(a?.auditor_recommendation||'não informada');
+  const gate=a?.quality_gate===true;
+  return `<section class="executive-summary" aria-label="Resumo executivo dos 15 pontos">
+    <div class="executive-summary-head">
+      <div><span>RESUMO EXECUTIVO</span><h4>${c.atinge} de 15 pontos foram atingidos</h4></div>
+      <b class="executive-percent">${achievedPercent}%</b>
+    </div>
+    <div class="executive-progress" aria-label="${achievedPercent}% dos pontos atingidos"><span style="width:${achievedPercent}%"></span></div>
+    <div class="executive-metrics">
+      <div class="metric-achieved"><b>${c.atinge}/15</b><span>pontos atingidos</span></div>
+      <div class="metric-partial"><b>${c.parcial}</b><span>resultados parciais</span></div>
+      <div class="metric-attention"><b>${c.atencao}</b><span>pontos de atenção</span></div>
+      <div class="metric-missing"><b>${c.ausente}</b><span>não consta ou não se aplica</span></div>
+    </div>
+    <div class="executive-status">
+      <p><b>Situação geral:</b> ${pending===0?'todos os requisitos analisados foram atendidos':`${pending} ponto${pending===1?' exige':'s exigem'} verificação, complementação ou providência`}.</p>
+      <p><b>Quality gate:</b> <span class="${gate?'quality-ok':'quality-blocked'}">${gate?'liberado':'bloqueado'}</span> · <b>Recomendação da auditoria:</b> ${esc(recommendation)}.</p>
+    </div>
+  </section>`;
+}
+
 function renderCase(){
   const c=selectedCase;if(!c)return renderEmptyCase();
   const a=latest(c.analyses||[]);const aj=a?.analyst_json||{};const au=a?.audit_json||{};
@@ -438,6 +463,7 @@ function renderCase(){
 
   if(a){
     html+=classificationHeroHtml(a);
+    html+=executiveSummaryHtml(a);
     html+=`<div class="summary-box">
       <p><b>Resumo:</b> ${esc(aj.summary||au.summary||'')}</p>
       <p><b>Auditoria:</b> ${esc(a.auditor_recommendation||'—')} · quality gate ${a.quality_gate?'liberado':'bloqueado'}</p>

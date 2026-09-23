@@ -3059,3 +3059,20 @@ html[data-theme="dark"] .analysis-nav-btn.active{background:#17243a!important;bo
 
 @media(max-width:900px){.analysis-nav{grid-template-columns:repeat(2,minmax(0,1fr))!important;position:relative!important;top:auto!important}}
 @media(max-width:520px){.analysis-nav{grid-template-columns:1fr!important}.analysis-nav-btn{min-height:62px!important}}
+
+/* Resumo executivo da visão geral */
+.executive-summary{margin:20px 28px;border:1px solid var(--ui-line);border-radius:11px;background:#fff;overflow:hidden}
+.executive-summary-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:18px 20px 13px}
+.executive-summary-head span{display:block;margin-bottom:6px;color:#718096;font:700 9px/1.2 system-ui;letter-spacing:.1em}
+.executive-summary-head h4{margin:0;color:var(--ui-text);font:700 18px/1.25 system-ui}
+.executive-percent{color:var(--ui-blue);font:700 24px/1 system-ui}
+.executive-progress{height:6px;margin:0 20px 18px;border-radius:999px;background:#e8edf4;overflow:hidden}
+.executive-progress span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#2563eb,#60a5fa)}
+.executive-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--ui-line);border-bottom:1px solid var(--ui-line);background:#fafcff}
+.executive-metrics>div{padding:16px 18px;border-right:1px solid var(--ui-line)}.executive-metrics>div:last-child{border-right:0}
+.executive-metrics b{display:block;margin-bottom:5px;font:700 20px/1 system-ui}.executive-metrics span{color:#75839a;font:600 9px/1.35 system-ui;text-transform:uppercase;letter-spacing:.04em}
+.metric-achieved b{color:#15803d}.metric-partial b{color:#b7791f}.metric-attention b{color:#dc2626}.metric-missing b{color:#64748b}
+.executive-status{padding:14px 20px;background:#fff}.executive-status p{margin:3px 0;color:#526179;font-size:11px;line-height:1.5}.executive-status .quality-ok{color:#15803d}.executive-status .quality-blocked{color:#b91c1c}
+html[data-theme="dark"] .executive-summary,html[data-theme="dark"] .executive-status{background:#191c22;border-color:#343943}html[data-theme="dark"] .executive-metrics{background:#15181d;border-color:#343943}html[data-theme="dark"] .executive-metrics>div{border-color:#343943}html[data-theme="dark"] .executive-summary-head h4{color:#edf1f7}html[data-theme="dark"] .executive-status p{color:#b8c1cf}
+@media(max-width:800px){.executive-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.executive-metrics>div:nth-child(2){border-right:0}.executive-metrics>div:nth-child(-n+2){border-bottom:1px solid var(--ui-line)}}
+@media(max-width:520px){.executive-summary{margin:14px}.executive-summary-head{align-items:flex-start}.executive-metrics{grid-template-columns:1fr}.executive-metrics>div{border-right:0!important;border-bottom:1px solid var(--ui-line)}.executive-metrics>div:last-child{border-bottom:0}}
