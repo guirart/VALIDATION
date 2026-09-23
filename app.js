@@ -348,7 +348,7 @@ function renderHistory(){
       <div class="archive-folder-cases">${items.length?items.map(historyItemHtml).join(''):'<div class="history-empty history-empty-folder">Nenhum caso revisado ainda.</div>'}</div>
     </details>`;
   }).join(''):`<div class="history-empty">Nenhum caso encontrado no arquivo.</div>`;
-  $$('.history-item').forEach(b=>b.addEventListener('click',()=>openCase(b.dataset.id)));
+  $$$('.history-item').forEach(b=>b.addEventListener('click',()=>openCase(b.dataset.id)));
 }
 function renderTabs(){ renderHistory(); }
 async function openCase(id,rerenderTabs=true){
@@ -506,8 +506,8 @@ function renderCase(){
   $('#case-view').innerHTML=html;
 
   $('#analyze-btn')?.addEventListener('click',()=>openInGpt(c));
-  $$('.filter-chip').forEach(b=>b.addEventListener('click',()=>{currentFilter=b.dataset.filter;renderCase()}));
-  $$('[data-expand]').forEach(b=>b.addEventListener('click',()=>{$$('.checkpoint:not(.checkpoint-hidden)').forEach(d=>d.open=b.dataset.expand==='1')}));
+  $$$('.filter-chip').forEach(b=>b.addEventListener('click',()=>{currentFilter=b.dataset.filter;renderCase()}));
+  $$$('[data-expand]').forEach(b=>b.addEventListener('click',()=>{$$$('.checkpoint:not(.checkpoint-hidden)').forEach(d=>d.open=b.dataset.expand==='1')}));
   applyCaseView();
 }
 
@@ -556,7 +556,7 @@ function renderResolution(){
           : ''}
     </div>
     <div class="resolution-list">${groups.map(g=>`<div class="resolve-group"><h4>${esc(g)}</h4>${items.filter(i=>i.group===g).map(i=>`<label class="resolve-item ${state[i.id]?'done':''}"><input type="checkbox" data-resolve="${esc(i.id)}" ${state[i.id]?'checked':''} ${caseReviewed?'disabled':''}><span>${i.text}</span></label>`).join('')}</div>`).join('')}</div>`;
-  $('[data-resolve]').forEach(cb=>cb.addEventListener('change',()=>{
+  $$('[data-resolve]').forEach(cb=>cb.addEventListener('change',()=>{
     const s=loadResolutionState();s[cb.dataset.resolve]=cb.checked;saveResolutionState(s);renderResolution();
   }));
   $('#clear-resolution')?.addEventListener('click',()=>{localStorage.removeItem(resolutionStateKey());renderResolution()});
