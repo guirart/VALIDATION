@@ -3098,3 +3098,22 @@ html[data-theme="dark"] .ai-responsibility-notice{background:#2a2317;border-colo
 .archive-folder-cases{display:grid;gap:6px;padding:6px;border-top:1px solid #edf1f6;background:#f8fafc}
 .archive-folder .history-item{margin:0!important;border:1px solid transparent!important}.archive-folder .history-item.active{border-color:#bfdbfe!important}
 html[data-theme="dark"] .archive-folder{background:#191c22;border-color:#343943}html[data-theme="dark"] .archive-folder>summary{color:#e5eaf2}html[data-theme="dark"] .archive-folder>summary:hover,html[data-theme="dark"] .archive-folder-cases{background:#14171c}html[data-theme="dark"] .archive-folder-cases{border-color:#343943}html[data-theme="dark"] .archive-folder-icon{background:#29456f}html[data-theme="dark"] .archive-folder-icon::before{background:#376092}html[data-theme="dark"] .archive-folder>summary em{background:#282d36;color:#c4ccd8}
+
+
+/* v3.17.1 — corrige divisorias da grade dos 15 pontos.
+   A grade atual usa 3 colunas; a regra legada nth-child(4n) removia
+   bordas dos itens 4, 8 e 12, criando linhas verticais interrompidas. */
+.memo-grid .memo-cell{border-right:1px solid var(--ui-line)!important}
+.memo-grid .memo-cell:nth-child(3n){border-right:0!important}
+.memo-grid .memo-blank{display:none!important}
+
+@media(max-width:1180px){
+  .memo-grid .memo-cell{border-right:1px solid var(--ui-line)!important}
+  .memo-grid .memo-cell:nth-child(3n){border-right:1px solid var(--ui-line)!important}
+  .memo-grid .memo-cell:nth-child(2n){border-right:0!important}
+}
+@media(max-width:600px){
+  .memo-grid .memo-cell,
+  .memo-grid .memo-cell:nth-child(2n),
+  .memo-grid .memo-cell:nth-child(3n){border-right:0!important}
+}
