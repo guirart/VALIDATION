@@ -13,7 +13,7 @@ const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','re
 const AUDIT_RECOMMENDATIONS = new Set(['liberar','corrigir','escalar para revisão humana aprofundada']);
 const AUDIT_STATUSES = new Set(['confirmado','divergente','não encontrado','opinião sem precedente']);
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
-const APP_VERSION = '3.17.1';
+const APP_VERSION = '3.17.2';
 const VALIDATOR_VERSION = '3.8.1';
 const LEGAL_SOURCE_VERSION = process.env.LEGAL_SOURCE_VERSION || `MP-1.376-2026-sha256-${sha(mpText).slice(0,16)}`;
 const MEMORANDUM_VERSION = process.env.MEMORANDUM_VERSION || `MEMORANDO-15-PONTOS-sha256-${sha(memoText).slice(0,16)}`;
@@ -457,6 +457,65 @@ async function gptCases(req,res){
     return json(res,201,{case:row,user:{name:principal.name,email:principal.email}});
   }
   return json(res,405,{error:'Método não permitido'});
+}
+
+async function gptPetitionRegister(req,res){
+  const principal=await requireActionAuth(req,res);
+  if(!principal)return;
+  if(req.method!=='POST')return json(res,405,{error:'Método não permitido'});
+
+  const body=await readJson(req);
+  const title=String(body?.title||'').trim();
+  const clientName=String(body?.client_name||'').trim();
+  const petitionText=String(body?.petition_text||'').trim();
+  if(!title||!petitionText)return json(res,400,{
+    ok:false,
+    error:'title e petition_text são obrigatórios',
+    app_version:APP_VERSION,
+    validator_version:VALIDATOR_VERSION
+  });
+
+  const contractSha256=sha(petitionText);
+  const [row]=await db('cases',{method:'POST',body:JSON.stringify({
+    title:title.slice(0,180),
+    client_name:clientName.slice(0,180),
+    contract_text:petitionText,
+    owner_id:principal.userId,
+    status:'em-analise',
+    synthetic:false,
+    environment:'production'
+  })});
+
+  await db('audit_logs',{method:'POST',body:JSON.stringify({
+    case_id:row.id,
+    owner_id:principal.userId,
+    event_type:'petition_registered_for_analysis',
+    payload:{
+      title:row.title,
+      owner_email:principal.email,
+      contract_sha256:contractSha256,
+      app_version:APP_VERSION,
+      validator_version:VALIDATOR_VERSION,
+      flow:'petition_staged_register_and_analyze'
+    }
+  })});
+
+  return json(res,201,{
+    ok:true,
+    flow:'petition_staged_register_and_analyze',
+    case:{
+      id:row.id,
+      title:row.title,
+      client_name:row.client_name,
+      contract_sha256:contractSha256
+    },
+    contract_sha256:contractSha256,
+    registered:true,
+    analyzed:false,
+    next_action:'submit_analysis_same_uuid',
+    app_version:APP_VERSION,
+    validator_version:VALIDATOR_VERSION
+  });
 }
 
 async function gptPetitionAnalyze(req,res){
@@ -1585,6 +1644,7 @@ export default async function handler(req,res){
       case 'admin-users': return await adminUsers(req,res);
       case 'review': return await review(req,res);
       case 'gpt-cases': return await gptCases(req,res);
+      case 'gpt-petition-register': return await gptPetitionRegister(req,res);
       case 'gpt-petition-analyze': return await gptPetitionAnalyze(req,res);
       case 'gpt-case': return await gptCase(req,res);
       case 'gpt-analysis': return await gptAnalysis(req,res);
