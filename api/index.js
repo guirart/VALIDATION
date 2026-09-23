@@ -13,7 +13,7 @@ const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','re
 const AUDIT_RECOMMENDATIONS = new Set(['liberar','corrigir','escalar para revisão humana aprofundada']);
 const AUDIT_STATUSES = new Set(['confirmado','divergente','não encontrado','opinião sem precedente']);
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
-const APP_VERSION = '3.15.2';
+const APP_VERSION = '3.16.0';
 const VALIDATOR_VERSION = '3.8.1';
 const LEGAL_SOURCE_VERSION = process.env.LEGAL_SOURCE_VERSION || `MP-1.376-2026-sha256-${sha(mpText).slice(0,16)}`;
 const MEMORANDUM_VERSION = process.env.MEMORANDUM_VERSION || `MEMORANDO-15-PONTOS-sha256-${sha(memoText).slice(0,16)}`;
@@ -466,8 +466,10 @@ async function gptCase(req,res){
   const id=String(req.query?.id||'').trim(); if(!id)return json(res,400,{error:'id obrigatório'});
   const rows=await db(`cases?id=eq.${encodeURIComponent(id)}&owner_id=eq.${encodeURIComponent(principal.userId)}&select=id,external_test_id,synthetic,environment,run_id,training_round,training_order,title,client_name,contract_text,status,created_at,updated_at&limit=1`);
   if(!rows.length)return json(res,404,{error:'Caso não encontrado para este usuário'});
-  await db(`cases?id=eq.${encodeURIComponent(id)}&owner_id=eq.${encodeURIComponent(principal.userId)}`,{method:'PATCH',body:JSON.stringify({status:'em-analise',updated_at:new Date().toISOString()})});
-  await db('audit_logs',{method:'POST',body:JSON.stringify({case_id:id,owner_id:principal.userId,event_type:'case_fetched_by_gpt_action',payload:{user_email:principal.email}})});
+  await Promise.all([
+    db(`cases?id=eq.${encodeURIComponent(id)}&owner_id=eq.${encodeURIComponent(principal.userId)}`,{method:'PATCH',body:JSON.stringify({status:'em-analise',updated_at:new Date().toISOString()})}),
+    db('audit_logs',{method:'POST',body:JSON.stringify({case_id:id,owner_id:principal.userId,event_type:'case_fetched_by_gpt_action',payload:{user_email:principal.email}})})
+  ]);
   return json(res,200,{
     case:{...rows[0],status:'em-analise'},
     contract_sha256:sha(rows[0].contract_text),
@@ -656,32 +658,33 @@ async function gptAnalysis(req,res){
 
   const status=qualityGate?'aguardando-revisao':'requer-correcao';
 
-  await db(`cases?id=eq.${encodeURIComponent(caseId)}&owner_id=eq.${encodeURIComponent(principal.userId)}`,{
-    method:'PATCH',
-    body:JSON.stringify({status})
-  });
-
-  await db('audit_logs',{
-    method:'POST',
-    body:JSON.stringify({
-      case_id:caseId,
-      analysis_id:analysisRow.id,
-      owner_id:principal.userId,
-      event_type:'analysis_submitted',
-      payload:{
-        quality_gate:qualityGate,
-        recommendation,
-        validation_errors:validationErrors,
-        validation_error_details:validationErrorDetails,
-        quality_gate_reasons:qualityGateReasons,
-        validation_debug:analystCheck.validation_debug,
-        failed_points:failedPoints,
-        contract_sha256:currentContractSha256,
-        app_version:APP_VERSION,
-        validator_version:VALIDATOR_VERSION
-      }
+  await Promise.all([
+    db(`cases?id=eq.${encodeURIComponent(caseId)}&owner_id=eq.${encodeURIComponent(principal.userId)}`,{
+      method:'PATCH',
+      body:JSON.stringify({status})
+    }),
+    db('audit_logs',{
+      method:'POST',
+      body:JSON.stringify({
+        case_id:caseId,
+        analysis_id:analysisRow.id,
+        owner_id:principal.userId,
+        event_type:'analysis_submitted',
+        payload:{
+          quality_gate:qualityGate,
+          recommendation,
+          validation_errors:validationErrors,
+          validation_error_details:validationErrorDetails,
+          quality_gate_reasons:qualityGateReasons,
+          validation_debug:analystCheck.validation_debug,
+          failed_points:failedPoints,
+          contract_sha256:currentContractSha256,
+          app_version:APP_VERSION,
+          validator_version:VALIDATOR_VERSION
+        }
+      })
     })
-  });
+  ]);
 
   stageLog('REQUEST_COMPLETE',{
     case_id:caseId,
@@ -743,7 +746,7 @@ async function gptAnalysisStart(req,res){
     case_id:caseId,owner_id:principal.userId,event_type:'analysis_draft_started',
     payload:{draft_id:draftId,source_contract_sha256:sourceHash,analyst:analystMeta,audit:auditMeta,app_version:APP_VERSION,validator_version:VALIDATOR_VERSION}
   })});
-  return json(res,200,{ok:true,draft_id:draftId,case_id:caseId,expected_points:15,app_version:APP_VERSION,validator_version:VALIDATOR_VERSION});
+  return json(res,200,{ok:true,draft_id:draftId,case_id:caseId,expected_points:15,recommended_transport:'single_payload',app_version:APP_VERSION,validator_version:VALIDATOR_VERSION});
 }
 
 async function gptAnalysisPoint(req,res){
