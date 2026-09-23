@@ -39,7 +39,8 @@
     "test:uuid-identity": "node tests/v3145-uuid-identity.test.mjs",
     "test:staged-analysis": "node tests/v3146-staged-analysis.test.mjs",
     "test:training-runs": "node tests/v3150-training-runs.test.mjs",
-    "test:v315-ui": "node tests/v315-uuid-identity-ui.test.mjs"
+    "test:v315-ui": "node tests/v315-uuid-identity-ui.test.mjs",
+    "test:case-archive": "node tests/v3153-case-archive.test.mjs"
   },
   "devDependencies": {"vercel": "latest"},
   "dependencies": {"@modelcontextprotocol/sdk": "^1.30.0", "zod": "^4.6.5"}

@@ -3085,3 +3085,16 @@ html[data-theme="dark"] .executive-summary,html[data-theme="dark"] .executive-st
 .ai-responsibility-notice p{margin:0;color:#765b2a;font-size:11px;line-height:1.6}
 html[data-theme="dark"] .ai-responsibility-notice{background:#2a2317;border-color:#6d562b;color:#f3ddb1}html[data-theme="dark"] .ai-responsibility-notice h2{color:#ffe2a6}html[data-theme="dark"] .ai-responsibility-notice p{color:#d7c195}
 @media(max-width:600px){.ai-responsibility-notice{margin-top:22px;padding:15px}.ai-responsibility-icon{flex-basis:26px;width:26px;height:26px}}
+
+/* Arquivo lateral de casos */
+.case-history{display:block!important;padding:10px!important}
+.archive-folder{margin:0 0 9px;border:1px solid var(--ui-line);border-radius:10px;background:#fff;overflow:hidden}
+.archive-folder>summary{display:grid;grid-template-columns:24px minmax(0,1fr) auto 16px;gap:8px;align-items:center;padding:12px;cursor:pointer;list-style:none;color:#33425a;user-select:none}
+.archive-folder>summary::-webkit-details-marker{display:none}.archive-folder>summary:hover{background:#f8fafc}
+.archive-folder-icon{position:relative;width:18px;height:14px;border-radius:3px;background:#dce8f8}
+.archive-folder-icon::before{content:"";position:absolute;left:2px;top:-4px;width:8px;height:5px;border-radius:3px 3px 0 0;background:#b8d0ef}
+.archive-folder>summary b{font:700 11px/1.25 system-ui}.archive-folder>summary em{display:grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#eef2f7;color:#6b7890;font:700 9px/1 system-ui;font-style:normal}
+.archive-folder-chevron{color:#8a97aa;font:700 18px/1 system-ui;transition:transform .16s ease}.archive-folder[open] .archive-folder-chevron{transform:rotate(90deg)}
+.archive-folder-cases{display:grid;gap:6px;padding:6px;border-top:1px solid #edf1f6;background:#f8fafc}
+.archive-folder .history-item{margin:0!important;border:1px solid transparent!important}.archive-folder .history-item.active{border-color:#bfdbfe!important}
+html[data-theme="dark"] .archive-folder{background:#191c22;border-color:#343943}html[data-theme="dark"] .archive-folder>summary{color:#e5eaf2}html[data-theme="dark"] .archive-folder>summary:hover,html[data-theme="dark"] .archive-folder-cases{background:#14171c}html[data-theme="dark"] .archive-folder-cases{border-color:#343943}html[data-theme="dark"] .archive-folder-icon{background:#29456f}html[data-theme="dark"] .archive-folder-icon::before{background:#376092}html[data-theme="dark"] .archive-folder>summary em{background:#282d36;color:#c4ccd8}

@@ -303,6 +303,29 @@ function historyClassificationClass(value=''){
   return 'history-class-neutral';
 }
 
+function archiveGroupForCase(c){
+  const status=String(c?.status||'').toLowerCase();
+  if(status==='concluido')return 'completed';
+  if(status==='aguardando-revisao'||status==='requer-correcao')return 'review';
+  if(status==='pendente'||status==='em-analise')return 'active';
+  return 'other';
+}
+
+function historyItemHtml(c){
+  const a=latest(c.analyses);
+  const selected=c.id===selectedId;
+  const classification=a?.final_classification||'ainda não analisado';
+  const classCss=historyClassificationClass(classification);
+  return `<button class="history-item ${classCss} ${selected?'active':''}" data-id="${esc(c.id)}">
+    <span class="history-dot ${a?'done':'pending'}"></span>
+    <span class="history-content">
+      <b class="history-title">${esc(c.title)}</b>
+      <small class="history-uid">UUID ${esc(c.id)}</small>
+      <span class="history-meta"><em class="${classCss}">${esc(shortClass(classification))}</em><time>${fmtDate(c.updated_at||c.created_at)}</time></span>
+    </span>
+  </button>`;
+}
+
 function renderHistory(){
   const q=norm($('#case-search')?.value||'');
   const filtered=cases.filter(c=>{
@@ -310,20 +333,22 @@ function renderHistory(){
     const a=latest(c.analyses);
     return norm([c.id,c.external_test_id,c.title,c.status,a?.final_classification].join(' ')).includes(q);
   });
-  $('#case-history').innerHTML=filtered.length?filtered.map(c=>{
-    const a=latest(c.analyses);
-    const selected=c.id===selectedId;
-    const classification=a?.final_classification||'ainda não analisado';
-    const classCss=historyClassificationClass(classification);
-    return `<button class="history-item ${classCss} ${selected?'active':''}" data-id="${esc(c.id)}">
-      <span class="history-dot ${a?'done':'pending'}"></span>
-      <span class="history-content">
-        <b class="history-title">${esc(c.title)}</b>
-        <small class="history-uid">UUID ${esc(c.id)}</small>
-        <span class="history-meta"><em class="${classCss}">${esc(shortClass(classification))}</em><time>${fmtDate(c.updated_at||c.created_at)}</time></span>
-      </span>
-    </button>`;
-  }).join(''):`<div class="history-empty">Nenhum caso encontrado.</div>`;
+  const folders=[
+    {key:'active',label:'Em andamento'},
+    {key:'review',label:'Aguardando revisão'},
+    {key:'completed',label:'Concluídos'},
+    {key:'other',label:'Outros casos'}
+  ];
+  $('#case-history').innerHTML=filtered.length?folders.map(folder=>{
+    const items=filtered.filter(c=>archiveGroupForCase(c)===folder.key);
+    if(!items.length)return '';
+    const containsSelected=items.some(c=>c.id===selectedId);
+    const shouldOpen=Boolean(q)||containsSelected||folder.key==='active'||folder.key==='review';
+    return `<details class="archive-folder" data-folder="${folder.key}" ${shouldOpen?'open':''}>
+      <summary><span class="archive-folder-icon" aria-hidden="true"></span><b>${esc(folder.label)}</b><em>${items.length}</em><span class="archive-folder-chevron" aria-hidden="true">›</span></summary>
+      <div class="archive-folder-cases">${items.map(historyItemHtml).join('')}</div>
+    </details>`;
+  }).join(''):`<div class="history-empty">Nenhum caso encontrado no arquivo.</div>`;
   $$('.history-item').forEach(b=>b.addEventListener('click',()=>openCase(b.dataset.id)));
 }
 function renderTabs(){ renderHistory(); }
