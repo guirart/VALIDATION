@@ -3167,3 +3167,12 @@ html[data-theme="dark"] .archive-folder{background:#191c22;border-color:#343943}
   .review-complete-panel{align-items:stretch;flex-direction:column}
   .review-complete-panel.reviewed{flex-direction:row;align-items:center}
 }
+
+/* Brand refresh — Veredicta navy + gold */
+.brand{display:inline-flex!important;align-items:center!important;color:inherit!important}
+.brand-logo{display:block;width:210px;height:auto;max-height:48px;object-fit:contain}
+.auth-brand{margin-bottom:18px}
+.auth-logo{display:block;width:min(330px,100%);height:auto}
+.oauth-logo{display:block;width:min(320px,100%);height:auto;margin-bottom:8px}
+html[data-theme="dark"] .brand-logo{background:#fff;border-radius:8px;padding:5px 9px;box-sizing:border-box}
+@media(max-width:760px){.brand-logo{width:165px;max-height:40px}.auth-logo,.oauth-logo{width:min(260px,100%)}}
