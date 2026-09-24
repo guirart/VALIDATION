@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 180" role="img" aria-labelledby="title desc">
+  <title id="title">Veredicta</title>
+  <desc id="desc">Logotipo Veredicta em azul marinho e dourado</desc>
+  <g transform="translate(18 14)">
+    <path d="M24 18h82c-24 3-31 15-24 35l43 102-26 31L42 48C35 31 30 22 24 18Z" fill="#132130"/>
+    <g transform="translate(91 17)" fill="#C79A45">
+      <path d="M0 0h70l-11 8H10Z"/>
+      <path d="M12 13h49l-8 7H19Z"/>
+      <path d="M20 25h33l-5 6H25Z"/>
+      <path d="M25 34h7v52l-7 13Z"/>
+      <path d="M39 34h7v28l-7 13Z"/>
+      <path d="M53 34h7l-19 36v-14Z"/>
+    </g>
+  </g>
+  <text x="190" y="128" fill="#132130" font-family="Georgia, 'Times New Roman', serif" font-size="104" letter-spacing="5">VEREDICTA</text>
+</svg>
