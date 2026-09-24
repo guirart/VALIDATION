@@ -6,7 +6,7 @@ import { signUpUser, signInUser, recoverPassword } from '../lib/userAuth.js';
 import { createCheckoutSession, createBillingPortalSession, retrieveStripeEvent, stripeConfigStatus } from '../lib/stripe.js';
 import { sendWelcomeEmail } from '../lib/email.js';
 import { createAuthorizationCode, exchangeAuthorizationCode, refreshOAuthToken, oauthConfigStatus, validateOAuthClient, validateOAuthRedirectUri, revokeUserOAuth } from '../lib/oauth.js';
-import { verifyAnalysis, FINAL_CLASSES, mpText, memoText, legalRegistryText } from '../lib/legal.js';
+import { verifyAnalysis, FINAL_CLASSES, mpText, memoText, legalRegistryText, cmn5330Text, cmn5334Text } from '../lib/legal.js';
 import { TRAINING_MAX_ROUNDS, TRAINING_DISTRIBUTION, generateTrainingRound, compareTrainingResult } from '../lib/training.js';
 
 const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','requer-correcao','concluido','erro']);
@@ -17,6 +17,8 @@ const APP_VERSION = '3.17.4';
 const VALIDATOR_VERSION = '3.8.1';
 const LEGAL_SOURCE_VERSION = process.env.LEGAL_SOURCE_VERSION || `MP-1.376-2026-sha256-${sha(mpText).slice(0,16)}`;
 const MEMORANDUM_VERSION = process.env.MEMORANDUM_VERSION || `MEMORANDO-15-PONTOS-sha256-${sha(memoText).slice(0,16)}`;
+const CMN_5330_VERSION=`CMN-5.330-2026-sha256-${sha(cmn5330Text).slice(0,16)}`;
+const CMN_5334_VERSION=`CMN-5.334-2026-sha256-${sha(cmn5334Text).slice(0,16)}`;
 const LEGAL_REGISTRY_VERSION = `REGISTRO-FONTES-sha256-${sha(legalRegistryText).slice(0,16)}`;
 const LEGAL_SOURCE_REGISTRY=[
   {id:'MPV-1376-2026',name:'Medida Provisória nº 1.376/2026',authority:'Congresso Nacional',url:'https://www.congressonacional.leg.br/materias/medidas-provisorias/-/mpv/175190',mandatory:true,role:'norma_principal'},
@@ -952,6 +954,10 @@ async function gptAnalysis(req,res){
           legal_source_sha256:sha(mpText),
           memorandum_version:MEMORANDUM_VERSION,
           memorandum_sha256:sha(memoText),
+          cmn_5330_version:CMN_5330_VERSION,
+          cmn_5330_sha256:sha(cmn5330Text),
+          cmn_5334_version:CMN_5334_VERSION,
+          cmn_5334_sha256:sha(cmn5334Text),
           legal_sources_enforced:true,
           legal_validity_check:legalValidity||null
         }
@@ -1676,7 +1682,9 @@ async function sourceStatus(req,res){
     sources:{
       legal_source:{version:LEGAL_SOURCE_VERSION,sha256:sha(mpText),content:mpText},
       memorandum:{version:MEMORANDUM_VERSION,sha256:sha(memoText),content:memoText},
-      legal_registry:{version:LEGAL_REGISTRY_VERSION,sha256:sha(legalRegistryText),content:legalRegistryText}
+      legal_registry:{version:LEGAL_REGISTRY_VERSION,sha256:sha(legalRegistryText),content:legalRegistryText},
+      cmn_5330:{version:CMN_5330_VERSION,sha256:sha(cmn5330Text),content:cmn5330Text},
+      cmn_5334:{version:CMN_5334_VERSION,sha256:sha(cmn5334Text),content:cmn5334Text}
     },
     instruction:'Use somente trechos literais de sources.legal_source.content em mp_quote. Confira os hashes e use o contract_sha256 retornado por gpt-case no envio da análise.'
   });
@@ -1699,6 +1707,8 @@ async function legalSources(req,res){
       content:memoText
     },
     legal_registry:{version:LEGAL_REGISTRY_VERSION,sha256:sha(legalRegistryText),content:legalRegistryText,sources:LEGAL_SOURCE_REGISTRY},
+    cmn_5330:{version:CMN_5330_VERSION,sha256:sha(cmn5330Text),content:cmn5330Text},
+    cmn_5334:{version:CMN_5334_VERSION,sha256:sha(cmn5334Text),content:cmn5334Text},
     instruction:'Use somente trechos literais destes conteúdos em mp_quote. Não parafraseie dentro do campo de citação.'
   });
 }
@@ -1736,8 +1746,8 @@ async function adminUsers(req,res){
         type:src.mandatory?'fonte normativa obrigatória':'fonte normativa condicional',
         official_source:src.authority,
         official_url:src.url||null,
-        version:src.id==='MPV-1376-2026'?LEGAL_SOURCE_VERSION:null,
-        sha256:src.id==='MPV-1376-2026'?sha(mpText):null,
+        version:src.id==='MPV-1376-2026'?LEGAL_SOURCE_VERSION:src.id==='CMN-5330-2026'?CMN_5330_VERSION:src.id==='CMN-5334-2026'?CMN_5334_VERSION:null,
+        sha256:src.id==='MPV-1376-2026'?sha(mpText):src.id==='CMN-5330-2026'?sha(cmn5330Text):src.id==='CMN-5334-2026'?sha(cmn5334Text):null,
         enforced_in_analysis:true,
         enforcement:src.mandatory?'Conferida antes da análise; falha de confirmação bloqueia o pipeline.':'Aplicada quando os fatos do caso acionam sua pertinência.'
       })),
