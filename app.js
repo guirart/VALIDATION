@@ -556,7 +556,7 @@ function renderResolution(){
           : ''}
     </div>
     <div class="resolution-list">${groups.map(g=>`<div class="resolve-group"><h4>${esc(g)}</h4>${items.filter(i=>i.group===g).map(i=>`<label class="resolve-item ${state[i.id]?'done':''}"><input type="checkbox" data-resolve="${esc(i.id)}" ${state[i.id]?'checked':''} ${caseReviewed?'disabled':''}><span>${i.text}</span></label>`).join('')}</div>`).join('')}</div>`;
-  $('[data-resolve]').forEach(cb=>cb.addEventListener('change',()=>{
+  $$('[data-resolve]').forEach(cb=>cb.addEventListener('change',()=>{
     const s=loadResolutionState();s[cb.dataset.resolve]=cb.checked;saveResolutionState(s);renderResolution();
   }));
   $('#clear-resolution')?.addEventListener('click',()=>{localStorage.removeItem(resolutionStateKey());renderResolution()});
