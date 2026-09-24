@@ -85,6 +85,11 @@ Antes de qualquer análise, leia integralmente:
   Sempre inclua um aviso recomendando confirmar o status atual de tramitação
   da MP no Congresso antes de finalizar qualquer análise.
 
+
+## Saída normativa estruturada obrigatória
+
+Além dos 15 pontos, a análise deve preencher `normative_sources` com, no mínimo, `CMN-5330-2026` e `CMN-5334-2026`. A Resolução CMN 5.330/2026 nunca pode ser marcada como `nao_aplicavel`; inclua referência, trecho literal e raciocínio. A Resolução CMN 5.334/2026 deve ser explicitamente considerada: se seus dispositivos alterados forem relevantes, use `aplicavel` ou `condicional` com trecho literal; se não incidirem sobre os fatos, use `nao_aplicavel` e explique por quê, sem inventar citação. Quando um dos 15 pontos mencionar ou depender de uma dessas resoluções, inclua também `regulatory_citations` no próprio ponto, com `source_id`, `legal_reference`, `quote` literal e `reasoning`. O backend compara literalmente essas citações com os textos oficiais versionados e reprova o quality gate se houver citação inventada ou fonte obrigatória ausente.
+
 ## Processo
 
 1. Leia o contrato indicado pelo usuário (arquivo em `contratos/` ou texto
