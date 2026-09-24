@@ -16,8 +16,9 @@
     .admin-hero h1{font:400 34px/1.08 Georgia,serif;margin:5px 0 8px;color:var(--ink)}
     .admin-hero p{margin:0;color:var(--muted);max-width:720px;line-height:1.55}
     .admin-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
-    .admin-stat,.oauth-panel,.users-panel{background:var(--paper);border:1px solid var(--line);border-radius:14px;color:var(--ink)}
+    .admin-stat,.oauth-panel,.users-panel,.legal-panel{background:var(--paper);border:1px solid var(--line);border-radius:14px;color:var(--ink)}
     .admin-stat{padding:16px}.admin-stat span{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}.admin-stat b{display:block;font:400 27px/1.1 Georgia,serif;margin-top:7px;color:var(--ink)}
+    .legal-panel{padding:18px;margin-bottom:18px}.legal-panel h2{font:400 20px Georgia,serif;margin:0 0 12px}.legal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.legal-card{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--paper-2)}.legal-card b{display:block;font-size:13px}.legal-card small{display:block;color:var(--muted);margin-top:6px;line-height:1.5}.legal-card code{font-size:10px;word-break:break-all}.legal-check{margin:0 0 14px;color:var(--muted);font-size:12px}.legal-check strong{color:var(--ink)}@media(max-width:700px){.legal-grid{grid-template-columns:1fr}}
     .oauth-panel{padding:18px;margin-bottom:18px;display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center}.oauth-title{display:flex;align-items:center;gap:9px}.oauth-title h2{font:400 20px Georgia,serif;margin:0}.oauth-panel p{margin:7px 0 0;color:var(--muted);line-height:1.5}.oauth-meta{font:11px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--muted);margin-top:8px}.oauth-meta code{color:var(--ink)}
     .status-dot{width:9px;height:9px;border-radius:50%;display:inline-block}.status-dot.ok{background:#5cb85c}.status-dot.warn{background:#d7a633}
     .users-panel{overflow:hidden}.users-panel-head{padding:18px 18px 15px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:18px;align-items:center}.users-panel-head h2{font:400 21px Georgia,serif;margin:0}.users-panel-head p{color:var(--muted);margin:5px 0 0;font-size:12px}
@@ -58,6 +59,12 @@
           <div id="oauth-meta" class="oauth-meta"></div>
         </div>
         <div><span id="oauth-badge" class="pill-admin">verificando</span></div>
+      </section>
+
+      <section class="legal-panel">
+        <h2>Base jurídica da análise</h2>
+        <div id="legal-last-check" class="legal-check">Carregando última conferência oficial...</div>
+        <div id="legal-sources" class="legal-grid"></div>
       </section>
 
       <section class="users-panel">
