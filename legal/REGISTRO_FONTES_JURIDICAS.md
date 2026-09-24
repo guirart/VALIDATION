@@ -52,5 +52,6 @@ Antes de analisar:
 - confirmar que a regulamentação CMN obrigatória não foi revogada/substituída;
 - identificar as fontes condicionais aplicáveis aos fatos;
 - registrar as fontes efetivamente utilizadas e suas versões;
+- validar literalmente as citações das Resoluções CMN 5.330/2026 e 5.334/2026 contra os textos oficiais versionados no repositório;
 - bloquear a análise quando uma fonte obrigatória não puder ser confirmada;
 - nunca usar notícia, blog, Jusbrasil ou fonte secundária para determinar vigência ou redação normativa.
