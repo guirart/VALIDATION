@@ -3315,3 +3315,46 @@ html[data-theme="dark"] .brand-logo{background:#fff;border-radius:8px;padding:5p
   .point-explain-summary .pill{grid-column:2/3;justify-self:start}
   .point-explain-close{grid-column:3;grid-row:1/3}
 }
+
+/* Refine legal-source links in 15-point cards to match Veredicta palette */
+.memo15-evidence-style .point-explain-laws{
+  background:#fbf7ef !important;
+  border-color:#dfd2bf !important;
+}
+.memo15-evidence-style .point-explain-laws .evidence-label{
+  color:#745725 !important;
+}
+.memo15-evidence-style .official-law-links{
+  gap:7px;
+}
+.memo15-evidence-style .official-law-link{
+  background:#f3eadb !important;
+  color:#4f4029 !important;
+  border:1px solid #d7c29f !important;
+  border-radius:999px !important;
+  padding:7px 11px !important;
+  font-weight:700 !important;
+  box-shadow:none !important;
+}
+.memo15-evidence-style .official-law-link:hover{
+  background:#eadcc4 !important;
+  border-color:#b99a67 !important;
+  color:#3f321f !important;
+  text-decoration:none !important;
+}
+html[data-theme="dark"] .memo15-evidence-style .point-explain-laws{
+  background:#17191d !important;
+  border-color:#343943 !important;
+}
+html[data-theme="dark"] .memo15-evidence-style .point-explain-laws .evidence-label{
+  color:#d5b06e !important;
+}
+html[data-theme="dark"] .memo15-evidence-style .official-law-link{
+  background:#24201a !important;
+  color:#e5cfaa !important;
+  border-color:#5b4930 !important;
+}
+html[data-theme="dark"] .memo15-evidence-style .official-law-link:hover{
+  background:#30281e !important;
+  border-color:#8b6a36 !important;
+}
