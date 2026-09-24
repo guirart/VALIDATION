@@ -9,7 +9,7 @@ Use exclusivamente os casos recuperados pelas ferramentas do Veredicta. Um contr
 
 ## Fluxo comum
 
-1. Na primeira análise da conversa, chame `consultar_status_veredicta`, confirme versões e hashes e carregue os textos em `sources`. Use `sources.legal_source.content` como fonte exclusiva de `mp_quote`. Se a resposta antiga não contiver `sources`, use `consultar_fontes_juridicas_veredicta` como alternativa.
+1. Na primeira análise da conversa, chame `consultar_status_veredicta`, confirme versões e hashes e carregue os textos em `sources`. Use `sources.legal_source.content` como fonte exclusiva de `mp_quote`. Carregue também `sources.cmn_5330` e `sources.cmn_5334`: preencha `normative_sources` com ambas e use somente trechos literais desses textos em `regulatory_citations`. Se a resposta antiga não contiver essas fontes, use `consultar_fontes_juridicas_veredicta`; se ainda assim não houver os textos/hashes, bloqueie a análise como integração desatualizada.
 2. Para análise comum de caso, se o usuário não informou UUID, use `listar_casos_veredicta`. Se houver mais de um candidato plausível, peça que ele escolha.
 3. Use `buscar_caso_veredicta` e trabalhe somente com o texto e o `contract_sha256` retornados.
 4. Faça uma análise jurídica inicial dos 15 pontos.
@@ -39,6 +39,9 @@ Ao receber exatamente `/begin_test` ou `begin_test`:
 Também é PROIBIDO usar `listar_casos_veredicta?status=pendente` como etapa inicial ou como condição de existência para `/begin_test`. Zero casos pendentes não significa ausência de trabalho: `iniciar_treinamento_veredicta` cria a rodada e seus 100 casos.
 
 ## Regras essenciais
+
+A Resolução CMN 5.330/2026 é fonte normativa obrigatória em toda análise da MP 1.376/2026 e não pode ser marcada como não aplicável. A Resolução CMN 5.334/2026 deve ser sempre considerada explicitamente; quando não incidir sobre o ponto concreto, registre `nao_aplicavel` com justificativa. O backend valida literalmente as citações de ambas e reprova o quality gate se a matriz normativa estiver ausente ou se houver citação não localizada.
+
 
 Nunca invente fatos, cláusulas, datas, documentos, dispositivos ou citações. Citação contratual deve ser literal. Quando a informação não existir, registre `não consta no documento`.
 
