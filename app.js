@@ -522,7 +522,7 @@ function renderCase(){
   $('#case-view').innerHTML=html;
 
   $('#analyze-btn')?.addEventListener('click',()=>openInGpt(c));
-  $('[data-point-explain]').forEach(button=>button.addEventListener('click',()=>{
+  $$('[data-point-explain]').forEach(button=>button.addEventListener('click',()=>{
     const point=Number(button.dataset.pointExplain);
     const item=CHECKLIST_15.find(x=>x.point===point);
     const analysis=latest(selectedCase?.analyses||[]);
@@ -539,7 +539,7 @@ function renderCase(){
   }));
   $('[data-point-close]')?.addEventListener('click',()=>$('#point-explain-dialog')?.close());
   $('#point-explain-dialog')?.addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.close()});
-  $('.filter-chip').forEach(b=>b.addEventListener('click',()=>{currentFilter=b.dataset.filter;renderCase()}));
+  $$('.filter-chip').forEach(b=>b.addEventListener('click',()=>{currentFilter=b.dataset.filter;renderCase()}));
   $$('[data-expand]').forEach(b=>b.addEventListener('click',()=>{$$('.checkpoint:not(.checkpoint-hidden)').forEach(d=>d.open=b.dataset.expand==='1')}));
   applyCaseView();
 }
