@@ -90,6 +90,16 @@ Antes de qualquer análise, leia integralmente:
 
 Além dos 15 pontos, a análise deve preencher `normative_sources` com, no mínimo, `CMN-5330-2026` e `CMN-5334-2026`. A Resolução CMN 5.330/2026 nunca pode ser marcada como `nao_aplicavel`; inclua referência, trecho literal e raciocínio. A Resolução CMN 5.334/2026 deve ser explicitamente considerada: se seus dispositivos alterados forem relevantes, use `aplicavel` ou `condicional` com trecho literal; se não incidirem sobre os fatos, use `nao_aplicavel` e explique por quê, sem inventar citação. Quando um dos 15 pontos mencionar ou depender de uma dessas resoluções, inclua também `regulatory_citations` no próprio ponto, com `source_id`, `legal_reference`, `quote` literal e `reasoning`. O backend compara literalmente essas citações com os textos oficiais versionados e reprova o quality gate se houver citação inventada ou fonte obrigatória ausente.
 
+## Separação obrigatória entre IA e motor determinístico
+
+A IA não deve decidir aquilo que o backend pode calcular objetivamente. Sua função é: (a) extrair do documento os fatos em `objective_facts`, sempre sem presumir dados ausentes; e (b) interpretar apenas questões semânticas/jurídicas que não sejam resolvidas por cálculo ou comparação objetiva.
+
+Preencha `objective_facts` com os dados efetivamente encontrados: categoria/programa, tipo da dívida, datas, situação de inadimplência, número e anos das safras, percentual de redução de renda, evento climático, presença de laudo, valores, fontes de recursos, CPR, DAU e processo judicial. Campo não comprovado deve ser omitido, não estimado.
+
+Não calcule nem escolha manualmente `objective_evaluation`. O backend deriva e sobrescreve essa camada. São responsabilidades do motor determinístico: comparação de datas e janelas legais, contagem de safras, pisos de 30%/40%, limites monetários, exclusões objetivas, presença/ausência de requisitos estruturados, hashes, vigência, integridade e validação literal de citações.
+
+A IA permanece responsável por interpretação do conteúdo do laudo, nexo causal, suficiência qualitativa da prova, conflitos entre documentos, identificação semântica de fatos e fundamentação jurídica. Se a conclusão interpretativa parecer contradizer `objective_evaluation`, não altere o resultado objetivo: sinalize a divergência para revisão humana.
+
 ## Processo
 
 1. Leia o contrato indicado pelo usuário (arquivo em `contratos/` ou texto
