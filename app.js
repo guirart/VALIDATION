@@ -455,7 +455,7 @@ function filterBarHtml(a){
 }
 function pointCardsHtml(a){
   const pm=pointsMap(a), fm=findingsMap(a);
-  return `<div id="case-evidence" class="checkpoint-list">${CHECKLIST_15.map(item=>{
+  return `<div id="case-evidence" class="checkpoint-list evidence-polished">${CHECKLIST_15.map(item=>{
     const p=pm.get(item.point);const f=fm.get(item.point);const v=p?visualVerdictClass(p):'ausente';
     const label=p?verdictLabel(p.verdict,p.display_label):'pendente';
     const hidden=currentFilter!=='all'&&currentFilter!==v?' checkpoint-hidden':'';
