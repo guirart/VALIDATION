@@ -3242,3 +3242,76 @@ html[data-theme="dark"] .brand-logo{background:#fff;border-radius:8px;padding:5p
   .point-explain-body{padding:14px 16px 18px}
   .point-explain-meta{grid-template-columns:1fr}
 }
+
+/* 15-point explanation modal aligned with Evidence cards */
+.evidence-style-dialog{
+  width:min(900px,calc(100% - 28px));
+  max-width:900px;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:inherit;
+  box-shadow:none;
+}
+.evidence-style-dialog::backdrop{background:rgba(10,14,20,.45)}
+.point-explain-checkpoint{
+  margin:0;
+  border-radius:12px;
+  overflow:hidden;
+  background:var(--paper);
+  border:1px solid var(--line);
+  box-shadow:0 24px 70px rgba(0,0,0,.22);
+}
+.point-explain-summary{
+  display:grid;
+  grid-template-columns:auto 1fr auto auto;
+  align-items:center;
+  gap:12px;
+  min-height:58px;
+  padding:12px 14px;
+  border-bottom:1px solid var(--line);
+  background:var(--paper-2);
+}
+.point-explain-summary .cp-title{font-weight:600;color:var(--ink)}
+.point-explain-close{
+  width:34px;
+  height:34px;
+  border-radius:8px;
+  border:1px solid var(--line);
+  background:transparent;
+  color:var(--ink);
+  cursor:pointer;
+  font-size:20px;
+  line-height:1;
+}
+.point-explain-copy{
+  margin:0;
+  font-size:13px;
+  line-height:1.6;
+  color:var(--ink);
+}
+.point-explain-laws{margin-top:2px}
+.official-law-links{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.official-law-link{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:8px 10px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:var(--paper-2);
+  color:var(--ink);
+  text-decoration:none;
+  font-size:11px;
+  font-weight:600;
+}
+.official-law-link:hover{text-decoration:underline}
+@media(max-width:700px){
+  .point-explain-summary{grid-template-columns:auto 1fr auto}
+  .point-explain-summary .pill{grid-column:2/3;justify-self:start}
+  .point-explain-close{grid-column:3;grid-row:1/3}
+}
