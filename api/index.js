@@ -1731,17 +1731,16 @@ async function adminUsers(req,res){
     let sourceChecks=[];
     try{sourceChecks=await db('legal_source_checks?source_id=eq.MPV-1376-2026&select=id,source_id,source_url,source_domain,fingerprint,status,relator,prazo,counts,changed,checked_at&order=checked_at.desc&limit=1')}catch{}
     const legalSourcesInUse={
-      legislation:[{
-        id:'MPV-1376-2026',
-        name:'Medida Provisória nº 1.376/2026',
-        type:'legislação principal',
-        official_source:'Congresso Nacional',
-        official_url:CONGRESS_MP1376_URL,
-        version:LEGAL_SOURCE_VERSION,
-        sha256:sha(mpText),
+      legislation:LEGAL_SOURCE_REGISTRY.map(src=>({
+        ...src,
+        type:src.mandatory?'fonte normativa obrigatória':'fonte normativa condicional',
+        official_source:src.authority,
+        official_url:src.url||null,
+        version:src.id==='MPV-1376-2026'?LEGAL_SOURCE_VERSION:null,
+        sha256:src.id==='MPV-1376-2026'?sha(mpText):null,
         enforced_in_analysis:true,
-        enforcement:'Citações normativas são validadas literalmente contra o texto integral carregado pelo Veredicta.'
-      }],
+        enforcement:src.mandatory?'Conferida antes da análise; falha de confirmação bloqueia o pipeline.':'Aplicada quando os fatos do caso acionam sua pertinência.'
+      })),
       interpretive_sources:[{
         id:'MEMORANDO-15-PONTOS',
         name:'Memorando interpretativo — 15 pontos de análise da MP nº 1.376/2026',
