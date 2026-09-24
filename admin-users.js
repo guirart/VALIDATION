@@ -30,6 +30,22 @@ function render(out){
     :'Para ativar o OAuth do GPT, conclua a migration v3.11 e configure o Client Secret e a URL de retorno do ChatGPT na Vercel.';
   $('#oauth-meta').innerHTML=`Client ID: <code>${esc(oauth.client_id||'—')}</code><br>Authorization URL: <code>${esc(oauth.authorization_url||'—')}</code><br>Token URL: <code>${esc(oauth.token_url||'—')}</code>`;
 
+  const monitor=out.legal_monitor||{};
+  const last=monitor.last_check;
+  $('#legal-last-check').innerHTML=last
+    ? `Última conferência oficial: <strong>${esc(when(last.checked_at))}</strong> · Fonte: <strong>Congresso Nacional</strong> · ${last.changed?'alteração detectada':'sem alteração detectada'}`
+    : 'Nenhuma conferência oficial registrada ainda.';
+  const legislation=out.legal_sources_in_use?.legislation||[];
+  const interpretive=out.legal_sources_in_use?.interpretive_sources||[];
+  $('#legal-sources').innerHTML=[...legislation,...interpretive].map(src=>`<div class="legal-card">
+    <b>${esc(src.name)}</b>
+    <small>${esc(src.type)} · ${src.enforced_in_analysis?'USADA E VALIDADA NA ANÁLISE':'somente informativa'}</small>
+    <small>Versão: ${esc(src.version||'—')}</small>
+    <small>SHA-256: <code>${esc(src.sha256||'—')}</code></small>
+    <small>${esc(src.enforcement||'')}</small>
+    ${src.official_url?`<small><a href="${esc(src.official_url)}" target="_blank" rel="noopener">Abrir fonte oficial</a></small>`:''}
+  </div>`).join('');
+
   $('#users-list').innerHTML=users.map(u=>{
     const [sub,subClass]=subscriptionLabel(u.subscription_status,u.role);
     const [status,statusClass]=statusLabel(u.status);
