@@ -412,21 +412,31 @@ function gridHtml(a){
       <div class="memo-cell memo-blank"></div>
     </div>
     <div class="memo-note">Clique em qualquer ponto para entender, em linguagem simples, o que ele verifica. O quadro comparativo abaixo mantém as evidências completas usadas na análise.</div>
-    <dialog id="point-explain-dialog" class="point-explain-dialog" aria-labelledby="point-explain-title">
-      <div class="point-explain-shell">
-        <div class="point-explain-head">
-          <div><span id="point-explain-number" class="point-explain-number"></span><h4 id="point-explain-title"></h4></div>
+    <dialog id="point-explain-dialog" class="point-explain-dialog evidence-style-dialog" aria-labelledby="point-explain-title">
+      <div class="checkpoint point-explain-checkpoint">
+        <div class="point-explain-summary">
+          <span id="point-explain-number" class="cp-num"></span>
+          <span id="point-explain-title" class="cp-title"></span>
+          <span id="point-explain-status" class="pill v-parcial"></span>
           <button type="button" class="point-explain-close" data-point-close aria-label="Fechar explicação">×</button>
         </div>
-        <div class="point-explain-body">
-          <div class="point-explain-section"><span>EM LINGUAGEM SIMPLES</span><p id="point-explain-description"></p></div>
-          <div class="point-explain-section"><span>O QUE CONFERIR NESTE CASO</span><p id="point-explain-action"></p></div>
-          <div class="point-explain-meta">
-            <div><span>Fundamento</span><b id="point-explain-legal"></b></div>
-            <div><span>Status</span><b id="point-explain-status"></b></div>
+        <div class="cp-body">
+          <div class="evidence-grid">
+            <div class="evidence-box">
+              <div class="evidence-label">EM LINGUAGEM SIMPLES</div>
+              <p id="point-explain-description" class="point-explain-copy"></p>
+            </div>
+            <div class="evidence-box">
+              <div class="evidence-label">O QUE CONFERIR NESTE CASO</div>
+              <p id="point-explain-action" class="point-explain-copy"></p>
+            </div>
           </div>
-          <div class="point-explain-laws">
-            <span>LEGISLAÇÃO OFICIAL PERTINENTE</span>
+          <div class="evidence-result-row">
+            <span><b>Fundamento:</b> <span id="point-explain-legal"></span></span>
+            <span><b>Status:</b> <span id="point-explain-status-text"></span></span>
+          </div>
+          <div class="evidence-box point-explain-laws">
+            <div class="evidence-label">LEGISLAÇÃO OFICIAL PERTINENTE</div>
             <div id="point-explain-links" class="official-law-links"></div>
           </div>
         </div>
@@ -572,7 +582,12 @@ function renderCase(){
     $('#point-explain-description').textContent=item.description;
     $('#point-explain-action').textContent=item.resolve;
     $('#point-explain-legal').textContent=p?.legal_reference||item.legal_reference;
-    $('#point-explain-status').textContent=p?verdictLabel(p.verdict,p.display_label):'pendente';
+    const pointStatus=p?verdictLabel(p.verdict,p.display_label):'pendente';
+    const pointClass=p?visualVerdictClass(p):'ausente';
+    const statusPill=$('#point-explain-status');
+    statusPill.textContent=pointStatus;
+    statusPill.className='pill v-'+pointClass;
+    $('#point-explain-status-text').textContent=pointStatus;
     $('#point-explain-links').innerHTML=officialLegalLinksHtml(point);
     if(dialog?.showModal)dialog.showModal();else dialog?.setAttribute('open','');
   }));
