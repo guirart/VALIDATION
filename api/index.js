@@ -18,6 +18,30 @@ const VALIDATOR_VERSION = '3.8.1';
 const LEGAL_SOURCE_VERSION = process.env.LEGAL_SOURCE_VERSION || `MP-1.376-2026-sha256-${sha(mpText).slice(0,16)}`;
 const MEMORANDUM_VERSION = process.env.MEMORANDUM_VERSION || `MEMORANDO-15-PONTOS-sha256-${sha(memoText).slice(0,16)}`;
 
+function mp1376Relevance(text){
+  const raw=String(text||'').trim();
+  const normalized=raw.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const explicit=/\b(mp|medida provisoria)\s*(n[ºo°.]?\s*)?1[.\s]?376\s*\/?\s*2026\b/i.test(normalized);
+  const thematic=[
+    'credito rural','produtor rural','endividamento rural','renegociacao rural',
+    'operacao de credito rural','financiamento rural','custeio rural',
+    'alongamento de divida rural','prorrogacao de divida rural'
+  ].filter(term=>normalized.includes(term));
+  return {accepted:explicit||thematic.length>=2,explicit,thematic};
+}
+
+function rejectUnrelatedMpCase(res,text){
+  const relevance=mp1376Relevance(text);
+  if(relevance.accepted)return false;
+  json(res,422,{
+    ok:false,
+    code:'CASE_OUTSIDE_MP_1376_SCOPE',
+    error:'Caso recusado: o Veredicta aceita somente casos relacionados à MP 1.376/2026.',
+    accepted_scope:'MP 1.376/2026'
+  });
+  return true;
+}
+
 function requestBaseUrl(req){
   const forwardedProto=String(req.headers?.['x-forwarded-proto']||'').split(',')[0].trim();
   const forwardedHost=String(req.headers?.['x-forwarded-host']||'').split(',')[0].trim();
@@ -431,6 +455,7 @@ async function cases(req,res) {
   if(req.method==='POST'){
     const body=await readJson(req);
     if(!body.title||!body.contract_text) return json(res,400,{error:'Título e texto do contrato são obrigatórios'});
+    if(rejectUnrelatedMpCase(res,body.contract_text)) return;
     let targetOwner=ownerId;
     if(session.role==='admin'&&body.owner_user_id) targetOwner=String(body.owner_user_id).trim();
     const owners=await db(`veredicta_users?id=eq.${encodeURIComponent(targetOwner)}&status=eq.active&select=id,name,email&limit=1`);
@@ -554,6 +579,7 @@ async function gptPetitionRegister(req,res){
     validator_version:VALIDATOR_VERSION
   });
 
+  if(rejectUnrelatedMpCase(res,petitionText)) return;
   const contractSha256=sha(petitionText);
   const [row]=await db('cases',{method:'POST',body:JSON.stringify({
     title:title.slice(0,180),
@@ -619,6 +645,7 @@ async function gptPetitionAnalyze(req,res){
     validator_version:VALIDATOR_VERSION
   });
 
+  if(rejectUnrelatedMpCase(res,petitionText)) return;
   const contractSha256=sha(petitionText);
   const [row]=await db('cases',{method:'POST',body:JSON.stringify({
     title:title.slice(0,180),
