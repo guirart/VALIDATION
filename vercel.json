@@ -137,6 +137,10 @@
     {
       "source": "/api/gpt/training-record",
       "destination": "/api?action=training-record"
+    },
+    {
+      "source": "/api/legal/mp1376/check",
+      "destination": "/api?action=congress-mp1376-check"
     }
   ],
   "headers": [
@@ -156,6 +160,12 @@
           "value": "DENY"
         }
       ]
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/legal/mp1376/check",
+      "schedule": "0 11 * * *"
     }
   ]
 }
