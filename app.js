@@ -373,11 +373,27 @@ function gridHtml(a){
     <div class="memo-grid">
       ${CHECKLIST_15.map(item=>{
         const p=pm.get(item.point);const v=p?visualVerdictClass(p):'ausente';const label=p?verdictLabel(p.verdict,p.display_label):'pendente';
-        return `<div class="memo-cell"><span class="memo-num">${String(item.point).padStart(2,'0')}</span><span class="memo-title">${esc(item.title)} <i>(${esc(p?.legal_reference||item.legal_reference)})</i></span><span class="pill v-${v}">${esc(label)}</span></div>`
+        return `<button type="button" class="memo-cell memo-cell-clickable" data-point-explain="${item.point}" aria-label="Explicar ponto ${item.point}: ${esc(item.title)}"><span class="memo-num">${String(item.point).padStart(2,'0')}</span><span class="memo-title">${esc(item.title)} <i>(${esc(p?.legal_reference||item.legal_reference)})</i></span><span class="pill v-${v}">${esc(label)}</span><span class="memo-more" aria-hidden="true">ver explicação</span></button>`
       }).join('')}
       <div class="memo-cell memo-blank"></div>
     </div>
-    <div class="memo-note">A grade resume o resultado; o quadro comparativo abaixo mantém os 15 pontos completos com as evidências usadas na análise.</div>
+    <div class="memo-note">Clique em qualquer ponto para entender, em linguagem simples, o que ele verifica. O quadro comparativo abaixo mantém as evidências completas usadas na análise.</div>
+    <dialog id="point-explain-dialog" class="point-explain-dialog" aria-labelledby="point-explain-title">
+      <div class="point-explain-shell">
+        <div class="point-explain-head">
+          <div><span id="point-explain-number" class="point-explain-number"></span><h4 id="point-explain-title"></h4></div>
+          <button type="button" class="point-explain-close" data-point-close aria-label="Fechar explicação">×</button>
+        </div>
+        <div class="point-explain-body">
+          <div class="point-explain-section"><span>EM LINGUAGEM SIMPLES</span><p id="point-explain-description"></p></div>
+          <div class="point-explain-section"><span>O QUE CONFERIR NESTE CASO</span><p id="point-explain-action"></p></div>
+          <div class="point-explain-meta">
+            <div><span>Fundamento</span><b id="point-explain-legal"></b></div>
+            <div><span>Status</span><b id="point-explain-status"></b></div>
+          </div>
+        </div>
+      </div>
+    </dialog>
   </div>`;
 }
 function filterBarHtml(a){
@@ -506,7 +522,24 @@ function renderCase(){
   $('#case-view').innerHTML=html;
 
   $('#analyze-btn')?.addEventListener('click',()=>openInGpt(c));
-  $$('.filter-chip').forEach(b=>b.addEventListener('click',()=>{currentFilter=b.dataset.filter;renderCase()}));
+  $('[data-point-explain]').forEach(button=>button.addEventListener('click',()=>{
+    const point=Number(button.dataset.pointExplain);
+    const item=CHECKLIST_15.find(x=>x.point===point);
+    const analysis=latest(selectedCase?.analyses||[]);
+    const p=pointsMap(analysis).get(point);
+    if(!item)return;
+    const dialog=$('#point-explain-dialog');
+    $('#point-explain-number').textContent=`PONTO ${String(point).padStart(2,'0')}`;
+    $('#point-explain-title').textContent=item.title;
+    $('#point-explain-description').textContent=item.description;
+    $('#point-explain-action').textContent=item.resolve;
+    $('#point-explain-legal').textContent=p?.legal_reference||item.legal_reference;
+    $('#point-explain-status').textContent=p?verdictLabel(p.verdict,p.display_label):'pendente';
+    if(dialog?.showModal)dialog.showModal();else dialog?.setAttribute('open','');
+  }));
+  $('[data-point-close]')?.addEventListener('click',()=>$('#point-explain-dialog')?.close());
+  $('#point-explain-dialog')?.addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.close()});
+  $('.filter-chip').forEach(b=>b.addEventListener('click',()=>{currentFilter=b.dataset.filter;renderCase()}));
   $$('[data-expand]').forEach(b=>b.addEventListener('click',()=>{$$('.checkpoint:not(.checkpoint-hidden)').forEach(d=>d.open=b.dataset.expand==='1')}));
   applyCaseView();
 }
