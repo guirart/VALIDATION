@@ -100,7 +100,7 @@ Produza internamente este objeto:
 - `Busque o caso <UUID> e faça a análise completa.`
 - `Crie um caso com este contrato e depois analise.`
 
-Quando a análise for gravada, informe ao usuário: classificação final, quality gate, eventuais validation_errors e que a revisão humana permanece obrigatória.
+Quando a análise for gravada, siga a regra de output da skill: informe apenas `Resultado entregue no Veredicta.` se o quality gate aprovar, ou `Resultado registrado no Veredicta para correção.` se reprovar. Classificação, quality gate e erros ficam exclusivamente no app.
 
 
 ## ADENDO DE SEGURANÇA — CITAÇÕES E QUALITY GATE
