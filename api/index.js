@@ -1733,6 +1733,42 @@ async function adminUsers(req,res){
 }
 
 
+const CONGRESS_MP1376_URL='https://www.congressonacional.leg.br/materias/medidas-provisorias/-/mpv/175190';
+
+function congressSnapshot(html){
+  const text=String(html||'').replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<style[\s\S]*?<\/style>/gi,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;|&#160;/gi,' ').replace(/&amp;/gi,'&').replace(/\s+/g,' ').trim();
+  if(!/Medida Provisória\s+n[°ºo]?\s*1376|MPV\s*1376\/2026/i.test(text)) throw new Error('Fonte oficial não confirmou a MPV 1376/2026');
+  const status=(text.match(/Situação Atual[\s\S]{0,700}?(?:Último estado)?\s*([^|]{5,180}?)(?=Relator atual|Prazos abertos|Regime de Urgência)/i)||[])[1]?.trim()||null;
+  const relator=(text.match(/Relator atual\s*([^|]{3,160}?)(?=Prazos abertos|Regime de Urgência|Participe)/i)||[])[1]?.trim()||null;
+  const prazo=(text.match(/Prazos abertos\s*([^|]{3,300}?)(?=Regime de Urgência|Participe)/i)||[])[1]?.trim()||null;
+  const counts={};
+  for(const [key,label] of [['emendas','Emendas'],['requerimentos','Requerimentos'],['outros','Outros']]){
+    const m=text.match(new RegExp(label+'\\s+(\\d+)','i')); counts[key]=m?Number(m[1]):null;
+  }
+  const canonical=[status,relator,prazo,JSON.stringify(counts)].join('|');
+  return {status,relator,prazo,counts,fingerprint:sha(canonical)};
+}
+
+async function congressMp1376Check(req,res){
+  if(req.method!=='GET'&&req.method!=='POST')return json(res,405,{error:'Método não permitido'});
+  const cronSecret=String(process.env.CRON_SECRET||'').trim();
+  const auth=String(req.headers?.authorization||'');
+  const session=getSession(req);
+  if(!(cronSecret&&auth===`Bearer ${cronSecret}`)&&!session) return json(res,401,{error:'Não autorizado'});
+  const response=await fetch(CONGRESS_MP1376_URL,{headers:{'user-agent':'Veredicta/3.17 MP1376 official-source-monitor'}});
+  if(!response.ok) throw new Error(`Congresso Nacional respondeu HTTP ${response.status}`);
+  const snap=congressSnapshot(await response.text());
+  const previous=await db('legal_source_checks?source_id=eq.MPV-1376-2026&select=id,fingerprint,status,relator,prazo,counts,checked_at&order=checked_at.desc&limit=1').catch(()=>[]);
+  const changed=Boolean(previous[0]&&previous[0].fingerprint!==snap.fingerprint);
+  const [record]=await db('legal_source_checks',{method:'POST',body:JSON.stringify({
+    source_id:'MPV-1376-2026',source_url:CONGRESS_MP1376_URL,source_domain:'congressonacional.leg.br',
+    fingerprint:snap.fingerprint,status:snap.status,relator:snap.relator,prazo:snap.prazo,counts:snap.counts,
+    changed,checked_at:new Date().toISOString()
+  })});
+  return json(res,200,{ok:true,official_source_only:true,changed,current:snap,previous:previous[0]||null,check_id:record?.id||null,source:CONGRESS_MP1376_URL});
+}
+
+
 export default async function handler(req,res){
   try {
     switch(action(req)){
@@ -1759,6 +1795,7 @@ export default async function handler(req,res){
       case 'gpt-analysis-finalize': return await gptAnalysisFinalize(req,res);
       case 'source-status': return await sourceStatus(req,res);
       case 'legal-sources': return await legalSources(req,res);
+      case 'congress-mp1376-check': return await congressMp1376Check(req,res);
       case 'gpt-analysis-history': return await gptAnalysisHistory(req,res);
       case 'gpt-analysis-detail': return await gptAnalysisDetail(req,res);
       case 'test-import': return await testImport(req,res);
