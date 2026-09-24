@@ -3514,3 +3514,10 @@ html[data-theme="dark"] .memo15-evidence-style .memo-note{
   .memo15-evidence-style .evidence-grid{grid-template-columns:1fr !important}
   .memo15-evidence-style .cp-body{padding:12px !important}
 }
+
+
+/* 15 pontos — respiro entre titulo da legislacao e links */
+.memo15-evidence-style .point-explain-laws .evidence-label{
+  display:block !important;
+  margin-bottom:10px !important;
+}
