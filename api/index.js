@@ -931,7 +931,12 @@ async function gptAnalysis(req,res){
           failed_points:failedPoints,
           contract_sha256:currentContractSha256,
           app_version:APP_VERSION,
-          validator_version:VALIDATOR_VERSION
+          validator_version:VALIDATOR_VERSION,
+          legal_source_version:LEGAL_SOURCE_VERSION,
+          legal_source_sha256:sha(mpText),
+          memorandum_version:MEMORANDUM_VERSION,
+          memorandum_sha256:sha(memoText),
+          legal_sources_enforced:true
         }
       })
     })
@@ -1699,7 +1704,31 @@ async function adminUsers(req,res){
       const dates=[...allOAuth.map(t=>t.last_used_at),...legacyKeys.filter(k=>k.user_id===u.id).map(k=>k.last_used_at)].filter(Boolean).sort();
       return {...u,gpt:{connected:activeOAuth.length>0,active_oauth_sessions:activeOAuth.length,legacy_keys:activeLegacy.length,last_used_at:dates.at(-1)||null}};
     });
-    return json(res,200,{users:enriched,oauth:oauthConfigStatus(requestBaseUrl(req)),migration_required:migrationRequired});
+    let sourceChecks=[];
+    try{sourceChecks=await db('legal_source_checks?source_id=eq.MPV-1376-2026&select=id,source_id,source_url,source_domain,fingerprint,status,relator,prazo,counts,changed,checked_at&order=checked_at.desc&limit=1')}catch{}
+    const legalSourcesInUse={
+      legislation:[{
+        id:'MPV-1376-2026',
+        name:'Medida Provisória nº 1.376/2026',
+        type:'legislação principal',
+        official_source:'Congresso Nacional',
+        official_url:CONGRESS_MP1376_URL,
+        version:LEGAL_SOURCE_VERSION,
+        sha256:sha(mpText),
+        enforced_in_analysis:true,
+        enforcement:'Citações normativas são validadas literalmente contra o texto integral carregado pelo Veredicta.'
+      }],
+      interpretive_sources:[{
+        id:'MEMORANDO-15-PONTOS',
+        name:'Memorando interpretativo — 15 pontos de análise da MP nº 1.376/2026',
+        type:'fonte interpretativa interna',
+        version:MEMORANDUM_VERSION,
+        sha256:sha(memoText),
+        enforced_in_analysis:true,
+        enforcement:'Os 15 pontos são obrigatórios no pipeline e no quality gate.'
+      }]
+    };
+    return json(res,200,{users:enriched,oauth:oauthConfigStatus(requestBaseUrl(req)),migration_required:migrationRequired,legal_monitor:{last_check:sourceChecks[0]||null,official_source_only:true},legal_sources_in_use:legalSourcesInUse});
   }
 
   if(req.method==='POST'){
