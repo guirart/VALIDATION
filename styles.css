@@ -3521,3 +3521,110 @@ html[data-theme="dark"] .memo15-evidence-style .memo-note{
   display:block !important;
   margin-bottom:10px !important;
 }
+
+
+/* Evidencias v3.18 — mesma linguagem visual dos 15 pontos */
+.evidence-polished{background:#fff !important;padding-top:10px !important}
+.evidence-polished .checkpoint{background:#fff !important;border-color:#d8dee8 !important}
+.evidence-polished .checkpoint>summary{background:#fff !important;color:#17233a !important;padding:13px 12px !important}
+.evidence-polished .checkpoint>summary:hover{background:#f7f9fc !important}
+.evidence-polished .cp-num{color:#66758a !important}
+.evidence-polished .cp-title{color:#17233a !important;font-weight:700 !important}
+.evidence-polished .chev{color:#66758a !important}
+.evidence-polished .cp-body{
+  background:#f7f9fc !important;
+  border-top:1px solid #d8dee8 !important;
+  padding:16px !important;
+}
+.evidence-polished .evidence-grid{gap:14px !important}
+.evidence-polished .evidence-box{
+  background:#fff !important;
+  border:1px solid #d8dee8 !important;
+  border-radius:9px !important;
+  padding:16px !important;
+  color:#34445a !important;
+}
+.evidence-polished .evidence-label{color:#34577f !important;font-weight:800 !important}
+.evidence-polished .evidence-box blockquote{
+  margin:12px 0 10px !important;
+  padding:10px 0 10px 14px !important;
+  border-left:3px solid #9bb0c7 !important;
+  color:#44546a !important;
+  font-size:13px !important;
+  line-height:1.65 !important;
+}
+.evidence-polished .verified{color:#27834b !important;font-weight:700 !important}
+.evidence-polished .not-verified{color:#b43b3b !important;font-weight:700 !important}
+.evidence-polished .evidence-result-row{
+  display:flex !important;
+  flex-wrap:wrap !important;
+  gap:8px !important;
+  margin:12px 0 !important;
+}
+.evidence-polished .evidence-result-row span{
+  background:#eef2f7 !important;
+  border:1px solid #d8dee8 !important;
+  color:#34445a !important;
+  border-radius:999px !important;
+  padding:7px 11px !important;
+}
+.evidence-polished .reasoning{
+  margin:12px 0 !important;
+  padding:13px 15px !important;
+  background:#fff !important;
+  border:1px solid #d8dee8 !important;
+  border-radius:8px !important;
+  color:#34445a !important;
+  line-height:1.6 !important;
+}
+.evidence-polished .audit-line{
+  margin-top:10px !important;
+  padding:12px 14px !important;
+  background:#eef3f8 !important;
+  border:1px solid #d7e0ea !important;
+  border-left:3px solid #607d9e !important;
+  border-radius:7px !important;
+  color:#3b4c61 !important;
+  line-height:1.55 !important;
+}
+
+html[data-theme="dark"] .evidence-polished{background:#15191f !important}
+html[data-theme="dark"] .evidence-polished .checkpoint{background:#15191f !important;border-color:#343c48 !important}
+html[data-theme="dark"] .evidence-polished .checkpoint>summary{background:#181d23 !important;color:#f1f4f8 !important}
+html[data-theme="dark"] .evidence-polished .checkpoint>summary:hover{background:#20262e !important}
+html[data-theme="dark"] .evidence-polished .cp-num{color:#a9b4c2 !important}
+html[data-theme="dark"] .evidence-polished .cp-title{color:#f1f4f8 !important}
+html[data-theme="dark"] .evidence-polished .chev{color:#a9b4c2 !important}
+html[data-theme="dark"] .evidence-polished .cp-body{background:#12161b !important;border-color:#343c48 !important}
+html[data-theme="dark"] .evidence-polished .evidence-box{
+  background:#1b2027 !important;
+  border-color:#3b4552 !important;
+  color:#e6ebf2 !important;
+}
+html[data-theme="dark"] .evidence-polished .evidence-label{color:#9fc1e8 !important}
+html[data-theme="dark"] .evidence-polished .evidence-box blockquote{
+  color:#d7dee8 !important;
+  border-left-color:#607d9e !important;
+}
+html[data-theme="dark"] .evidence-polished .verified{color:#91d7a8 !important}
+html[data-theme="dark"] .evidence-polished .not-verified{color:#f29b91 !important}
+html[data-theme="dark"] .evidence-polished .evidence-result-row span{
+  background:#202731 !important;
+  border-color:#3c4654 !important;
+  color:#d9e0e9 !important;
+}
+html[data-theme="dark"] .evidence-polished .reasoning{
+  background:#1b2027 !important;
+  border-color:#3b4552 !important;
+  color:#d7dee8 !important;
+}
+html[data-theme="dark"] .evidence-polished .audit-line{
+  background:#1c252e !important;
+  border-color:#364554 !important;
+  border-left-color:#7898b8 !important;
+  color:#d4dde7 !important;
+}
+@media(max-width:760px){
+  .evidence-polished .evidence-grid{grid-template-columns:1fr !important}
+  .evidence-polished .cp-body{padding:12px !important}
+}
