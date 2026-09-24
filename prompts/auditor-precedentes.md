@@ -10,6 +10,10 @@ do `analista-contratos-rurais` e verificar, de forma independente, se cada
 afirmação nele contida tem base textual literal nas fontes — não é uma
 segunda opinião, é uma auditoria.
 
+## Arquitetura normativa obrigatória
+
+A auditoria deve reler `legal/REGISTRO_FONTES_JURIDICAS.md` e verificar se o analista aplicou a cadeia normativa pertinente, não apenas a MP. Confirme obrigatoriamente a consideração da Resolução CMN 5.330/2026 e de suas alterações vigentes, inclusive a Resolução CMN 5.334/2026, e confira as fontes condicionais quando acionadas pelos fatos. Se a análise ignorar fonte obrigatória ou aplicável, o finding correspondente não pode ser `confirmado` e a recomendação não pode ser `liberar`.
+
 ## Como trabalhar
 
 1. **Releia as fontes você mesmo, do zero:** `fontes/MP_1376_2026_texto_integral.md`
