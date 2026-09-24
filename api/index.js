@@ -6,7 +6,7 @@ import { signUpUser, signInUser, recoverPassword } from '../lib/userAuth.js';
 import { createCheckoutSession, createBillingPortalSession, retrieveStripeEvent, stripeConfigStatus } from '../lib/stripe.js';
 import { sendWelcomeEmail } from '../lib/email.js';
 import { createAuthorizationCode, exchangeAuthorizationCode, refreshOAuthToken, oauthConfigStatus, validateOAuthClient, validateOAuthRedirectUri, revokeUserOAuth } from '../lib/oauth.js';
-import { verifyAnalysis, FINAL_CLASSES, mpText, memoText, legalRegistryText, cmn5330Text, cmn5334Text } from '../lib/legal.js';
+import { verifyAnalysis, projectAnalysisDisplay, FINAL_CLASSES, mpText, memoText, legalRegistryText, cmn5330Text, cmn5334Text } from '../lib/legal.js';
 import { TRAINING_MAX_ROUNDS, TRAINING_DISTRIBUTION, generateTrainingRound, compareTrainingResult } from '../lib/training.js';
 
 const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','requer-correcao','concluido','erro']);
@@ -454,7 +454,7 @@ async function cases(req,res) {
         )
       ]);
 
-      return json(res,200,{case:{...rows[0],analyses,reviews}});
+      return json(res,200,{case:{...rows[0],analyses:analyses.map(projectAnalysisDisplay),reviews}});
     }
     const runId=String(req.query?.run_id||'').trim();
     const environment=String(req.query?.environment||'').trim();
@@ -1522,7 +1522,7 @@ async function gptAnalysisDetail(req,res){
   return json(res,200,{
     ok:true,
     analysis:{
-      id:a.id,case_id:a.case_id,analyst:a.analyst_json,audit:a.audit_json,
+      id:a.id,case_id:a.case_id,analyst:projectAnalysisDisplay(a).analyst_json,audit:a.audit_json,
       final_classification:a.final_classification,quality_gate:a.quality_gate,
       auditor_recommendation:a.auditor_recommendation,created_at:a.created_at
     },
