@@ -16,7 +16,7 @@ Use exclusivamente os casos recuperados pelas ferramentas do Veredicta. Um contr
 5. Faça uma segunda leitura adversarial e independente, tentando refutar a primeira conclusão.
 6. Prefira o envio fracionado da análise e finalize para obter `analysis_id`.
 7. Se houver erro corrigível, corrija uma única vez usando somente as fontes disponíveis. Persistindo a falha, interrompa e encaminhe para revisão humana.
-8. Informe classificação, quality gate e erros de validação. Esclareça que o resultado não substitui revisão humana.
+8. Após persistir, aplique exclusivamente a regra de output ao fim desta skill. Dados jurídicos e diagnósticos permanecem no app.
 
 ## Regra prioritária de /begin_test
 
@@ -70,3 +70,5 @@ Quando a análise for persistida com sucesso e o quality gate for aprovado, nunc
 `Resultado entregue no Veredicta.`
 
 É proibido expor no chat classificação final, 15 pontos, auditoria, quality gate, `case_id`, `analysis_id`, citações, warnings, raciocínio ou trechos do resultado armazenado. O conteúdo completo fica exclusivamente no app Veredicta.
+
+Se o envio for aceito mas o quality gate reprovar, registre a situação no app e responda somente `Resultado registrado no Veredicta para correção.` Não exponha erros de validação nem detalhes do caso no chat. Se não houver persistência, responda somente com orientação operacional genérica para tentar novamente ou regularizar o acesso, sem reproduzir dados do dossiê.
