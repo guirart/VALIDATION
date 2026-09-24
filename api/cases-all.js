@@ -1,5 +1,6 @@
 import { json, readJson, requireAuth } from '../lib/http.js';
 import { db } from '../lib/supabase.js';
+import { projectAnalysisDisplay } from '../lib/legal.js';
 
 export default async function handler(req,res){
   const session=requireAuth(req,res); if(!session)return;
@@ -11,7 +12,7 @@ export default async function handler(req,res){
       if(id){
         const rows=await db(`cases?id=eq.${encodeURIComponent(id)}&owner_id=eq.${encodeURIComponent(ownerId)}&select=*,analyses(*),reviews(*)&limit=1`);
         if(!rows.length)return json(res,404,{error:'Caso não encontrado'});
-        return json(res,200,{case:rows[0]});
+        return json(res,200,{case:{...rows[0],analyses:(rows[0].analyses||[]).map(projectAnalysisDisplay)}});
       }
 
       const runId=String(req.query?.run_id||'').trim();
