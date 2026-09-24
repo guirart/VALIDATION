@@ -401,47 +401,44 @@ function countVerdicts(a){
   return c;
 }
 function gridHtml(a){
-  const pm=pointsMap(a);const counts=countVerdicts(a);
-  return `<div id="case-points" class="memo15">
+  const pm=pointsMap(a), fm=findingsMap(a), counts=countVerdicts(a);
+  return `<div id="case-points" class="memo15 memo15-evidence-style">
     <div class="memo15-head"><b>Checklist dos 15 pontos do memorando — status neste contrato</b><span>${counts.atinge} atingidos · ${counts.parcial} parcial · ${counts.atencao} atenção · ${counts.ausente} não consta/não se aplica</span></div>
-    <div class="memo-grid">
-      ${CHECKLIST_15.map(item=>{
-        const p=pm.get(item.point);const v=p?visualVerdictClass(p):'ausente';const label=p?verdictLabel(p.verdict,p.display_label):'pendente';
-        return `<button type="button" class="memo-cell memo-cell-clickable" data-point-explain="${item.point}" aria-label="Explicar ponto ${item.point}: ${esc(item.title)}"><span class="memo-num">${String(item.point).padStart(2,'0')}</span><span class="memo-title">${esc(item.title)} <i>(${esc(p?.legal_reference||item.legal_reference)})</i></span><span class="pill v-${v}">${esc(label)}</span><span class="memo-more" aria-hidden="true">ver explicação</span></button>`
-      }).join('')}
-      <div class="memo-cell memo-blank"></div>
-    </div>
-    <div class="memo-note">Clique em qualquer ponto para entender, em linguagem simples, o que ele verifica. O quadro comparativo abaixo mantém as evidências completas usadas na análise.</div>
-    <dialog id="point-explain-dialog" class="point-explain-dialog evidence-style-dialog" aria-labelledby="point-explain-title">
-      <div class="checkpoint point-explain-checkpoint">
-        <div class="point-explain-summary">
-          <span id="point-explain-number" class="cp-num"></span>
-          <span id="point-explain-title" class="cp-title"></span>
-          <span id="point-explain-status" class="pill v-parcial"></span>
-          <button type="button" class="point-explain-close" data-point-close aria-label="Fechar explicação">×</button>
-        </div>
+    <div class="checkpoint-list memo-checkpoint-list">${CHECKLIST_15.map(item=>{
+      const p=pm.get(item.point);const f=fm.get(item.point);const v=p?visualVerdictClass(p):'ausente';
+      const label=p?verdictLabel(p.verdict,p.display_label):'pendente';
+      return `<details class="checkpoint memo-checkpoint" data-verdict="${v}">
+        <summary>
+          <span class="cp-num">${String(item.point).padStart(2,'0')}</span>
+          <span class="cp-title">${esc(p?.title||item.title)}${p?.display_label?` — ${esc(p.display_label)}`:''}</span>
+          <span class="pill v-${v}">${esc(label)}</span>
+          <span class="chev">›</span>
+        </summary>
         <div class="cp-body">
           <div class="evidence-grid">
             <div class="evidence-box">
               <div class="evidence-label">EM LINGUAGEM SIMPLES</div>
-              <p id="point-explain-description" class="point-explain-copy"></p>
+              <p class="point-explain-copy">${esc(item.description)}</p>
             </div>
             <div class="evidence-box">
               <div class="evidence-label">O QUE CONFERIR NESTE CASO</div>
-              <p id="point-explain-action" class="point-explain-copy"></p>
+              <p class="point-explain-copy">${esc(item.resolve)}</p>
             </div>
           </div>
           <div class="evidence-result-row">
-            <span><b>Fundamento:</b> <span id="point-explain-legal"></span></span>
-            <span><b>Status:</b> <span id="point-explain-status-text"></span></span>
+            <span><b>Fundamento:</b> ${esc(p?.legal_reference||item.legal_reference)}</span>
+            <span><b>Status:</b> ${esc(label)}</span>
           </div>
           <div class="evidence-box point-explain-laws">
             <div class="evidence-label">LEGISLAÇÃO OFICIAL PERTINENTE</div>
-            <div id="point-explain-links" class="official-law-links"></div>
+            <div class="official-law-links">${officialLegalLinksHtml(item.point)}</div>
           </div>
+          ${p?.reasoning?`<p class="reasoning"><b>Por quê ${esc(label)}:</b> ${esc(p.reasoning)}</p>`:''}
+          ${f?`<div class="audit-line"><b>Auditoria:</b> ${esc(f.status)}${f.reason?` — ${esc(f.reason)}`:''}</div>`:''}
         </div>
-      </div>
-    </dialog>
+      </details>`;
+    }).join('')}</div>
+    <div class="memo-note">Clique em cada ponto para abrir ou recolher a explicação, no mesmo padrão da aba Evidências.</div>
   </div>`;
 }
 function filterBarHtml(a){
@@ -570,29 +567,6 @@ function renderCase(){
   $('#case-view').innerHTML=html;
 
   $('#analyze-btn')?.addEventListener('click',()=>openInGpt(c));
-  $$('[data-point-explain]').forEach(button=>button.addEventListener('click',()=>{
-    const point=Number(button.dataset.pointExplain);
-    const item=CHECKLIST_15.find(x=>x.point===point);
-    const analysis=latest(selectedCase?.analyses||[]);
-    const p=pointsMap(analysis).get(point);
-    if(!item)return;
-    const dialog=$('#point-explain-dialog');
-    $('#point-explain-number').textContent=`PONTO ${String(point).padStart(2,'0')}`;
-    $('#point-explain-title').textContent=item.title;
-    $('#point-explain-description').textContent=item.description;
-    $('#point-explain-action').textContent=item.resolve;
-    $('#point-explain-legal').textContent=p?.legal_reference||item.legal_reference;
-    const pointStatus=p?verdictLabel(p.verdict,p.display_label):'pendente';
-    const pointClass=p?visualVerdictClass(p):'ausente';
-    const statusPill=$('#point-explain-status');
-    statusPill.textContent=pointStatus;
-    statusPill.className='pill v-'+pointClass;
-    $('#point-explain-status-text').textContent=pointStatus;
-    $('#point-explain-links').innerHTML=officialLegalLinksHtml(point);
-    if(dialog?.showModal)dialog.showModal();else dialog?.setAttribute('open','');
-  }));
-  $('[data-point-close]')?.addEventListener('click',()=>$('#point-explain-dialog')?.close());
-  $('#point-explain-dialog')?.addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.close()});
   $$('.filter-chip').forEach(b=>b.addEventListener('click',()=>{currentFilter=b.dataset.filter;renderCase()}));
   $$('[data-expand]').forEach(b=>b.addEventListener('click',()=>{$$('.checkpoint:not(.checkpoint-hidden)').forEach(d=>d.open=b.dataset.expand==='1')}));
   applyCaseView();
