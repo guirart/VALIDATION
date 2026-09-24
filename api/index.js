@@ -6,7 +6,7 @@ import { signUpUser, signInUser, recoverPassword } from '../lib/userAuth.js';
 import { createCheckoutSession, createBillingPortalSession, retrieveStripeEvent, stripeConfigStatus } from '../lib/stripe.js';
 import { sendWelcomeEmail } from '../lib/email.js';
 import { createAuthorizationCode, exchangeAuthorizationCode, refreshOAuthToken, oauthConfigStatus, validateOAuthClient, validateOAuthRedirectUri, revokeUserOAuth } from '../lib/oauth.js';
-import { verifyAnalysis, FINAL_CLASSES, mpText, memoText } from '../lib/legal.js';
+import { verifyAnalysis, FINAL_CLASSES, mpText, memoText, legalRegistryText } from '../lib/legal.js';
 import { TRAINING_MAX_ROUNDS, TRAINING_DISTRIBUTION, generateTrainingRound, compareTrainingResult } from '../lib/training.js';
 
 const ALLOWED_STATUS = new Set(['pendente','em-analise','aguardando-revisao','requer-correcao','concluido','erro']);
@@ -17,6 +17,18 @@ const APP_VERSION = '3.17.4';
 const VALIDATOR_VERSION = '3.8.1';
 const LEGAL_SOURCE_VERSION = process.env.LEGAL_SOURCE_VERSION || `MP-1.376-2026-sha256-${sha(mpText).slice(0,16)}`;
 const MEMORANDUM_VERSION = process.env.MEMORANDUM_VERSION || `MEMORANDO-15-PONTOS-sha256-${sha(memoText).slice(0,16)}`;
+const LEGAL_REGISTRY_VERSION = `REGISTRO-FONTES-sha256-${sha(legalRegistryText).slice(0,16)}`;
+const LEGAL_SOURCE_REGISTRY=[
+  {id:'MPV-1376-2026',name:'Medida Provisória nº 1.376/2026',authority:'Congresso Nacional',url:'https://www.congressonacional.leg.br/materias/medidas-provisorias/-/mpv/175190',mandatory:true,role:'norma_principal'},
+  {id:'CMN-5330-2026',name:'Resolução CMN nº 5.330/2026',authority:'CMN / Banco Central do Brasil',url:'https://www.bcb.gov.br/estabilidadefinanceira/exibenormativo?numero=5330&tipo=RESOLU%C3%87%C3%83O+CMN',mandatory:true,role:'regulamentacao'},
+  {id:'CMN-5334-2026',name:'Resolução CMN nº 5.334/2026',authority:'CMN / Banco Central do Brasil',url:'https://www.bcb.gov.br/estabilidadefinanceira/exibenormativo?numero=5334&tipo=RESOLU%C3%87%C3%83O+CMN',mandatory:true,role:'alteracao_regulamentar'},
+  {id:'CMN-5340-2026',name:'Resolução CMN nº 5.340/2026',authority:'CMN / Banco Central do Brasil',url:'https://www.bcb.gov.br/estabilidadefinanceira/exibenormativo?numero=5340&tipo=RESOLU%C3%87%C3%83O+CMN',mandatory:false,role:'vinculada_condicional'},
+  {id:'MCR',name:'Manual de Crédito Rural',authority:'Banco Central do Brasil',url:'https://www3.bcb.gov.br/mcr',mandatory:false,role:'condicional'},
+  {id:'LEI-8929-1994',name:'Lei nº 8.929/1994',authority:'Legislação Federal',mandatory:false,role:'cpr_condicional'},
+  {id:'LEI-4595-1964',name:'Lei nº 4.595/1964',authority:'Legislação Federal',mandatory:false,role:'institucional_condicional'},
+  {id:'LEI-12351-2010',name:'Lei nº 12.351/2010',authority:'Legislação Federal',mandatory:false,role:'fundo_social_condicional'},
+  {id:'MPV-1314-2025',name:'Medida Provisória nº 1.314/2025',authority:'Congresso Nacional',mandatory:false,role:'exclusao_condicional'}
+];
 
 function mp1376Relevance(text){
   const raw=String(text||'').trim();
@@ -1659,9 +1671,12 @@ async function sourceStatus(req,res){
     memorandum_version:MEMORANDUM_VERSION,
     mp_sha256:sha(mpText),
     memorandum_sha256:sha(memoText),
+    legal_registry_version:LEGAL_REGISTRY_VERSION,
+    legal_source_registry:LEGAL_SOURCE_REGISTRY,
     sources:{
       legal_source:{version:LEGAL_SOURCE_VERSION,sha256:sha(mpText),content:mpText},
-      memorandum:{version:MEMORANDUM_VERSION,sha256:sha(memoText),content:memoText}
+      memorandum:{version:MEMORANDUM_VERSION,sha256:sha(memoText),content:memoText},
+      legal_registry:{version:LEGAL_REGISTRY_VERSION,sha256:sha(legalRegistryText),content:legalRegistryText}
     },
     instruction:'Use somente trechos literais de sources.legal_source.content em mp_quote. Confira os hashes e use o contract_sha256 retornado por gpt-case no envio da análise.'
   });
@@ -1683,6 +1698,7 @@ async function legalSources(req,res){
       sha256:sha(memoText),
       content:memoText
     },
+    legal_registry:{version:LEGAL_REGISTRY_VERSION,sha256:sha(legalRegistryText),content:legalRegistryText,sources:LEGAL_SOURCE_REGISTRY},
     instruction:'Use somente trechos literais destes conteúdos em mp_quote. Não parafraseie dentro do campo de citação.'
   });
 }
@@ -1802,7 +1818,20 @@ async function assertMp1376CurrentForAnalysis(){
   if(terminal){
     throw Object.assign(new Error(`A MP 1.376/2026 não pôde ser confirmada como legislação vigente. Situação oficial: ${converted||snap.status||'alteração legislativa detectada'}. Análise bloqueada até atualização da base normativa.`),{code:'LEGAL_SOURCE_NOT_CURRENT',snapshot:snap});
   }
-  return {ok:true,checked_at:new Date().toISOString(),snapshot:snap,check_id:record?.id||null,source:CONGRESS_MP1376_URL};
+  const mandatoryRegulations=LEGAL_SOURCE_REGISTRY.filter(x=>x.mandatory&&x.id!=='MPV-1376-2026');
+  const regulationChecks=[];
+  for(const source of mandatoryRegulations){
+    try{
+      const r=await fetch(source.url,{headers:{'user-agent':'Veredicta/3.17 normative-source-gate'}});
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      const body=await r.text();
+      if(body.length<20) throw new Error('resposta vazia');
+      regulationChecks.push({id:source.id,ok:true,checked_at:new Date().toISOString(),official_url:source.url});
+    }catch(error){
+      throw Object.assign(new Error(`Não foi possível confirmar a fonte normativa obrigatória ${source.name} na fonte oficial. Análise bloqueada.`),{code:'MANDATORY_REGULATION_UNVERIFIED',source:source.id});
+    }
+  }
+  return {ok:true,checked_at:new Date().toISOString(),snapshot:snap,check_id:record?.id||null,source:CONGRESS_MP1376_URL,mandatory_regulations:regulationChecks,registry_version:LEGAL_REGISTRY_VERSION};
 }
 
 async function congressMp1376Check(req,res){
