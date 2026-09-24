@@ -24,6 +24,40 @@ const CHECKLIST_15 = [
   {point:14,title:'Dívida Ativa da União',legal_reference:'art. 1º, § 9º',description:'Operação encaminhada à DAU fica fora do mecanismo do art. 1º.',resolve:'Obter certidão e documentação da situação da dívida. Se encaminhada à DAU, registrar a exclusão e avaliar a estratégia jurídica adequada fora desta via.'},
   {point:15,title:'Janela real de 120 dias',legal_reference:'art. 1º, § 4º, IV / art. 62 CF',description:'O prazo do beneficiário não se confunde com a vigência constitucional da MP.',resolve:'Registrar a data de publicação, calcular o prazo de contratação, documentar a data do protocolo e acompanhar separadamente eventual conversão, alteração ou perda de eficácia da MP.'}
 ];
+const OFFICIAL_LEGAL_SOURCES={
+  mp1376:{label:'MP 1.376/2026 — Congresso Nacional',url:'https://www.congressonacional.leg.br/materias/medidas-provisorias/-/mpv/175190'},
+  cmn5330:{label:'Resolução CMN 5.330/2026 — Banco Central',url:'https://www.bcb.gov.br/estabilidadefinanceira/exibenormativo?numero=5330&tipo=RESOLU%C3%87%C3%83O+CMN'},
+  cmn5334:{label:'Resolução CMN 5.334/2026 — Banco Central',url:'https://www.bcb.gov.br/estabilidadefinanceira/exibenormativo?numero=5334&tipo=Resolu%C3%A7%C3%A3o+CMN'},
+  lei8929:{label:'Lei 8.929/1994 (CPR) — Planalto',url:'https://www.planalto.gov.br/ccivil_03/leis/l8929.htm'},
+  constituicao:{label:'Constituição Federal — art. 62 — Planalto',url:'https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm'}
+};
+
+const POINT_LEGAL_SOURCES={
+  1:['mp1376','cmn5330','cmn5334'],
+  2:['mp1376','cmn5330'],
+  3:['mp1376','cmn5330'],
+  4:['mp1376','cmn5330','lei8929'],
+  5:['mp1376','cmn5330'],
+  6:['mp1376'],
+  7:['mp1376','cmn5330'],
+  8:['mp1376','cmn5330'],
+  9:['mp1376','cmn5330'],
+  10:['mp1376','cmn5330'],
+  11:['mp1376','cmn5330'],
+  12:['mp1376','cmn5330'],
+  13:['mp1376','cmn5330'],
+  14:['mp1376','cmn5330'],
+  15:['mp1376','cmn5330','constituicao']
+};
+
+function officialLegalLinksHtml(point){
+  return (POINT_LEGAL_SOURCES[Number(point)]||['mp1376'])
+    .map(key=>OFFICIAL_LEGAL_SOURCES[key])
+    .filter(Boolean)
+    .map(src=>`<a class="official-law-link" href="${esc(src.url)}" target="_blank" rel="noopener noreferrer">${esc(src.label)} <span aria-hidden="true">↗</span></a>`)
+    .join('');
+}
+
 
 const GENERIC_DOCS = [
   ['identificacao','Obter identificação individual completa do produtor/cooperativa — nome, CPF/CNPJ, propriedade rural (matrícula/CCIR) e categoria declarada (Pronaf, Pronamp ou demais produtores).'],
@@ -391,6 +425,10 @@ function gridHtml(a){
             <div><span>Fundamento</span><b id="point-explain-legal"></b></div>
             <div><span>Status</span><b id="point-explain-status"></b></div>
           </div>
+          <div class="point-explain-laws">
+            <span>LEGISLAÇÃO OFICIAL PERTINENTE</span>
+            <div id="point-explain-links" class="official-law-links"></div>
+          </div>
         </div>
       </div>
     </dialog>
@@ -535,6 +573,7 @@ function renderCase(){
     $('#point-explain-action').textContent=item.resolve;
     $('#point-explain-legal').textContent=p?.legal_reference||item.legal_reference;
     $('#point-explain-status').textContent=p?verdictLabel(p.verdict,p.display_label):'pendente';
+    $('#point-explain-links').innerHTML=officialLegalLinksHtml(point);
     if(dialog?.showModal)dialog.showModal();else dialog?.setAttribute('open','');
   }));
   $('[data-point-close]')?.addEventListener('click',()=>$('#point-explain-dialog')?.close());
