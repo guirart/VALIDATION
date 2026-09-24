@@ -778,6 +778,10 @@ async function gptAnalysis(req,res){
 
   stageLog('REQUEST_FIELDS_OK',{case_id:caseId});
 
+  let legalValidity;
+  try{legalValidity=await assertMp1376CurrentForAnalysis();}
+  catch(e){return json(res,503,{ok:false,stage:'legal_validity_gate',code:e.code||'LEGAL_SOURCE_UNVERIFIED',error:e.message,analysis_blocked:true,official_source:CONGRESS_MP1376_URL});}
+
   const rows=await db(`cases?id=eq.${encodeURIComponent(caseId)}&owner_id=eq.${encodeURIComponent(principal.userId)}&select=*&limit=1`);
   if(!rows.length){
     stageLog('CASE_NOT_FOUND',{case_id:caseId});
@@ -936,7 +940,8 @@ async function gptAnalysis(req,res){
           legal_source_sha256:sha(mpText),
           memorandum_version:MEMORANDUM_VERSION,
           memorandum_sha256:sha(memoText),
-          legal_sources_enforced:true
+          legal_sources_enforced:true,
+          legal_validity_check:legalValidity||null
         }
       })
     })
@@ -980,6 +985,9 @@ async function gptAnalysisStart(req,res){
   if(req.method!=='POST')return json(res,405,{error:'Método não permitido'});
   const body=await readJson(req);
   const caseId=String(body?.case_id||'').trim();
+  let legalValidity;
+  try{legalValidity=await assertMp1376CurrentForAnalysis();}
+  catch(e){return json(res,503,{ok:false,stage:'legal_validity_gate',code:e.code||'LEGAL_SOURCE_UNVERIFIED',error:e.message,analysis_blocked:true,official_source:CONGRESS_MP1376_URL});}
   const sourceHash=String(body?.source_contract_sha256||'').trim().toLowerCase();
   if(!caseId||!sourceHash)return json(res,400,{ok:false,error:'case_id e source_contract_sha256 são obrigatórios',app_version:APP_VERSION});
   const rows=await db(`cases?id=eq.${encodeURIComponent(caseId)}&owner_id=eq.${encodeURIComponent(principal.userId)}&select=id,contract_text&limit=1`);
@@ -1776,6 +1784,25 @@ function congressSnapshot(html){
   }
   const canonical=[status,relator,prazo,JSON.stringify(counts)].join('|');
   return {status,relator,prazo,counts,fingerprint:sha(canonical)};
+}
+
+async function assertMp1376CurrentForAnalysis(){
+  const response=await fetch(CONGRESS_MP1376_URL,{headers:{'user-agent':'Veredicta/3.17 MP1376 pre-analysis validity gate'}});
+  if(!response.ok) throw Object.assign(new Error(`Não foi possível confirmar a vigência da MP 1.376/2026 no Congresso Nacional (HTTP ${response.status}). Análise bloqueada.`),{code:'LEGAL_SOURCE_UNVERIFIED'});
+  const html=await response.text();
+  const snap=congressSnapshot(html);
+  const normalized=String(html).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ');
+  const terminal=/convertida\s+em\s+lei|perdeu\s+(?:a\s+)?efic[aá]cia|rejeitada|revogada|arquivada/i.test(normalized);
+  const converted=(normalized.match(/convertida\s+em\s+lei[^.]{0,180}/i)||[])[0]||null;
+  const [record]=await db('legal_source_checks',{method:'POST',body:JSON.stringify({
+    source_id:'MPV-1376-2026',source_url:CONGRESS_MP1376_URL,source_domain:'congressonacional.leg.br',
+    fingerprint:snap.fingerprint,status:snap.status,relator:snap.relator,prazo:snap.prazo,counts:snap.counts,
+    changed:false,checked_at:new Date().toISOString()
+  })}).catch(()=>[null]);
+  if(terminal){
+    throw Object.assign(new Error(`A MP 1.376/2026 não pôde ser confirmada como legislação vigente. Situação oficial: ${converted||snap.status||'alteração legislativa detectada'}. Análise bloqueada até atualização da base normativa.`),{code:'LEGAL_SOURCE_NOT_CURRENT',snapshot:snap});
+  }
+  return {ok:true,checked_at:new Date().toISOString(),snapshot:snap,check_id:record?.id||null,source:CONGRESS_MP1376_URL};
 }
 
 async function congressMp1376Check(req,res){
