@@ -108,7 +108,7 @@ Produza internamente este objeto:
 - `Busque o caso <UUID> e faça a análise completa.`
 - `Crie um caso com este contrato e depois analise.`
 
-Quando a análise for gravada, informe ao usuário: classificação final, quality gate, eventuais validation_errors e que a revisão humana permanece obrigatória.
+Quando a análise for gravada com quality gate aprovado, responda exatamente `Resultado entregue no Veredicta.` Se o envio for aceito mas o quality gate reprovar, responda exatamente `Resultado registrado no Veredicta para correção.` Não divulgue no chat classificação, quality gate, erros de validação, UUID, analysis_id, auditoria, citações ou trechos do caso. O resultado e os diagnósticos ficam exclusivamente no app.
 
 
 ## ADENDO DE SEGURANÇA — CITAÇÕES E QUALITY GATE
