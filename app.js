@@ -91,6 +91,27 @@ function visualVerdictClass(p){
   return verdictClass(p.verdict);
 }
 
+// Etapa atual do fluxo: 1 cadastrar · 2 analisar · 3 revisar · 4 concluído.
+function workflowStep(c){
+  if(!c)return 1;
+  if(String(c.status||'').toLowerCase()==='concluido')return 4;
+  return (c.analyses||[]).length?3:2;
+}
+function renderWorkflowGuide(){
+  const box=$('#workflow-guide');if(!box)return;
+  const current=workflowStep(selectedCase);
+  const steps=[
+    ['Cadastre o caso','Cole o contrato ou dossiê em “+ Novo caso”.'],
+    ['Peça a análise','O assistente de IA verifica os 15 pontos da MP.'],
+    ['Revise o resultado','Confira a conclusão, as evidências e as pendências.'],
+    ['Conclua a revisão','Resolva as pendências e marque o caso como revisado.']
+  ];
+  box.innerHTML=`<ol class="workflow-steps">${steps.map(([title,text],i)=>{
+    const n=i+1;const state=n<current?'done':n===current?'current':'next';
+    return `<li class="workflow-step ${state}"${state==='current'?' aria-current="step"':''}><span class="workflow-num">${state==='done'?'✓':n}</span><div><b>${title}</b><small>${text}</small></div></li>`;
+  }).join('')}</ol>`;
+}
+
 function latest(arr=[]){return [...arr].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0]}
 
 let authState='checking';
@@ -569,6 +590,7 @@ function renderCase(){
   $$('.filter-chip').forEach(b=>b.addEventListener('click',()=>{currentFilter=b.dataset.filter;renderCase()}));
   $$('[data-expand]').forEach(b=>b.addEventListener('click',()=>{$$('.checkpoint:not(.checkpoint-hidden)').forEach(d=>d.open=b.dataset.expand==='1')}));
   applyCaseView();
+  renderWorkflowGuide();
 }
 
 function renderEmptyCase(){
