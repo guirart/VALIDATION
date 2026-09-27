@@ -554,7 +554,7 @@ function executiveSummaryHtml(a){
     </div>
     <div class="executive-status">
       <p><b>Situação geral:</b> ${pending===0?'todos os requisitos analisados foram atendidos':`${pending} ponto${pending===1?' exige':'s exigem'} verificação, complementação ou providência`}.</p>
-      <p><b>Quality gate:</b> <span class="${gate?'quality-ok':'quality-blocked'}">${gate?'liberado':'bloqueado'}</span> · <b>Recomendação da auditoria:</b> ${esc(recommendation)}.</p>
+      <p><b>Checagem automática de qualidade:</b> <span class="${gate?'quality-ok':'quality-blocked'}" title="Confere se os 15 pontos foram analisados e se as citações conferem com a MP e o dossiê.">${gate?'aprovada':'bloqueada — revise com cuidado'}</span> · <b>Recomendação da auditoria:</b> ${esc(recommendation)}.</p>
     </div>
   </section>`;
 }
@@ -572,8 +572,7 @@ function renderCase(){
     html+=classificationHeroHtml(a);
     html+=executiveSummaryHtml(a);
     html+=`<div class="summary-box">
-      <p><b>Resumo:</b> ${esc(aj.summary||au.summary||'')}</p>
-      <p><b>Auditoria:</b> ${esc(a.auditor_recommendation||'—')} · quality gate ${a.quality_gate?'liberado':'bloqueado'}</p>
+      <p><b>Resumo da análise:</b> ${esc(aj.summary||au.summary||'Sem resumo gravado.')}</p>
     </div></article>
     <article class="analysis-sheet case-panel" data-case-panel="points">
       <div class="panel-page-head"><span>15 PONTOS</span><h3>Quadro de enquadramento</h3><p>Resultado individual de cada requisito jurídico analisado.</p></div>
