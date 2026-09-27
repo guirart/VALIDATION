@@ -599,7 +599,7 @@ function renderCase(){
     </article>`;
   }else{
     if(String(c.status||'').toLowerCase()==='em-analise'){
-      html+=`<div class="no-analysis analysis-progress" role="status" aria-live="polite"><h4>Analisando conforme MP...</h4><p>A análise jurídica está em andamento. Os detalhes intermediários permanecem ocultos e o resultado será exibido aqui quando estiver concluído.</p></div></article>`;
+      html+=`<div class="no-analysis analysis-progress" role="status" aria-live="polite"><h4>Analisando conforme MP...</h4><p>A análise jurídica está em andamento. Esta tela se atualiza sozinha e o resultado aparece aqui assim que estiver concluído.</p></div></article>`;
     }else{
       html+=`</article>`;
     }
@@ -617,7 +617,12 @@ function renderCase(){
 }
 
 function renderEmptyCase(){
-  $('#case-view').innerHTML='<div class="empty-card"><h3>Nenhum caso cadastrado</h3><p>Use o formulário abaixo para criar o primeiro contrato.</p></div>';
+  renderWorkflowGuide();
+  $('#case-view').innerHTML=`<div class="empty-card onboarding-card">
+    <h3>Comece cadastrando seu primeiro caso</h3>
+    <p>O Veredicta verifica se um contrato de crédito rural pode ser enquadrado na <b>MP 1.376/2026</b>. Ele confere os <b>15 requisitos</b> da medida, mostra a evidência de cada um no seu documento e lista o que ainda falta resolver.</p>
+    <a class="btn btn-dark" href="/new-case.html">+ Cadastrar primeiro caso</a>
+  </div>`;
 }
 
 function analysisCommand(c){

@@ -3672,3 +3672,5 @@ html[data-theme="dark"] .next-step-done .next-step-eyebrow{color:#91d7a8}
 html[data-theme="dark"] .status-legend{border-color:#343943;color:#aeb8c8}
 @media(max-width:520px){.workflow-steps{grid-template-columns:1fr}.next-step,.status-legend{margin-left:14px;margin-right:14px}}
 .analysis-nav-btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+.onboarding-card p{max-width:640px;line-height:1.6}
+.onboarding-card .btn{display:inline-block;margin-top:8px;text-decoration:none}
