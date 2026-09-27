@@ -3646,3 +3646,5 @@ html[data-theme="dark"] .workflow-step small{color:#aeb8c8}
 html[data-theme="dark"] .workflow-step.current{border-color:#3b82f6}
 html[data-theme="dark"] .workflow-step.done .workflow-num{background:#1d3a26;color:#91d7a8}
 @media(max-width:900px){.workflow-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.case-status-chip{display:inline-block;margin-right:8px;padding:2px 8px;border-radius:999px;background:#eef2f7;color:#42516a;font:600 11px/1.5 system-ui}
+html[data-theme="dark"] .workflow-num,html[data-theme="dark"] .case-status-chip{background:#282d36;color:#b8c1cf}

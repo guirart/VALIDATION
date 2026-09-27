@@ -91,6 +91,15 @@ function visualVerdictClass(p){
   return verdictClass(p.verdict);
 }
 
+const CASE_STATUS_LABELS={
+  'pendente':'Aguardando análise',
+  'em-analise':'Em análise',
+  'aguardando-revisao':'Aguardando sua revisão',
+  'requer-correcao':'Requer correção',
+  'concluido':'Revisado'
+};
+function caseStatusLabel(status=''){return CASE_STATUS_LABELS[String(status).toLowerCase()]||status||'—'}
+
 // Etapa atual do fluxo: 1 cadastrar · 2 analisar · 3 revisar · 4 concluído.
 function workflowStep(c){
   if(!c)return 1;
@@ -375,7 +384,7 @@ function historyItemHtml(c){
     <span class="history-dot ${a?'done':'pending'}"></span>
     <span class="history-content">
       <b class="history-title">${esc(c.title)}</b>
-      <small class="history-uid">UUID ${esc(c.id)}</small>
+      <small class="history-uid" title="UUID ${esc(c.id)}">${esc(caseStatusLabel(c.status))} · #${esc(String(c.id).slice(0,8))}</small>
       <span class="history-meta"><em class="${classCss}">${esc(shortClass(classification))}</em><time>${fmtDate(c.updated_at||c.created_at)}</time></span>
     </span>
   </button>`;
@@ -555,7 +564,7 @@ function renderCase(){
   const a=latest(c.analyses||[]);const aj=a?.analyst_json||{};const au=a?.audit_json||{};
   let html=`<div class="case-pages"><article id="case-overview" class="analysis-sheet case-panel" data-case-panel="overview">
     <div class="case-head">
-      <div><span class="case-eyebrow">ANÁLISE DO CASO</span><h3>${esc(c.title)}</h3><div class="source-line">UUID ${esc(c.id)} · ${esc(c.status)}</div></div>
+      <div><span class="case-eyebrow">ANÁLISE DO CASO</span><h3>${esc(c.title)}</h3><div class="source-line"><span class="case-status-chip">${esc(caseStatusLabel(c.status))}</span> UUID ${esc(c.id)}</div></div>
       <button id="analyze-btn" class="btn btn-outline">${a?'reanalisar no GPT':'analisar no GPT'}</button>
     </div>`;
 
