@@ -3671,3 +3671,4 @@ html[data-theme="dark"] .next-step-done .next-step-eyebrow{color:#91d7a8}
 .status-legend i{font-style:normal;margin-right:2px}
 html[data-theme="dark"] .status-legend{border-color:#343943;color:#aeb8c8}
 @media(max-width:520px){.workflow-steps{grid-template-columns:1fr}.next-step,.status-legend{margin-left:14px;margin-right:14px}}
+.analysis-nav-btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important;box-shadow:none!important}

@@ -789,7 +789,11 @@ function applyCaseView(){
   document.querySelectorAll('[data-case-panel]').forEach(item=>{
     item.classList.toggle('active',item.dataset.casePanel===activeCaseView);
   });
+  const hasAnalysis=Boolean(latest(selectedCase?.analyses||[]));
   document.querySelectorAll('.analysis-nav-btn').forEach(item=>{
+    const unavailable=!hasAnalysis && (item.dataset.caseView==='points'||item.dataset.caseView==='evidence');
+    item.disabled=unavailable;
+    item.title=unavailable?'Disponível depois que o caso for analisado':'';
     const active=item.dataset.caseView===activeCaseView;
     item.classList.toggle('active',active);
     item.setAttribute('aria-selected',String(active));
