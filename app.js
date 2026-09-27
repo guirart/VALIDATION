@@ -565,15 +565,16 @@ function renderCase(){
   let html=`<div class="case-pages"><article id="case-overview" class="analysis-sheet case-panel" data-case-panel="overview">
     <div class="case-head">
       <div><span class="case-eyebrow">ANÁLISE DO CASO</span><h3>${esc(c.title)}</h3><div class="source-line"><span class="case-status-chip">${esc(caseStatusLabel(c.status))}</span> UUID ${esc(c.id)}</div></div>
-      <button id="analyze-btn" class="btn btn-outline">${a?'reanalisar no GPT':'analisar no GPT'}</button>
+      ${a?'<button id="analyze-btn" class="btn btn-outline">reanalisar no GPT</button>':''}
     </div>`;
+  if(!a)html+=nextStepHtml(c,a);
 
   if(a){
     html+=classificationHeroHtml(a);
     html+=executiveSummaryHtml(a);
     html+=`<div class="summary-box">
       <p><b>Resumo da análise:</b> ${esc(aj.summary||au.summary||'Sem resumo gravado.')}</p>
-    </div></article>
+    </div>${nextStepHtml(c,a)}</article>
     <article class="analysis-sheet case-panel" data-case-panel="points">
       <div class="panel-page-head"><span>15 PONTOS</span><h3>Quadro de enquadramento</h3><p>Resultado individual de cada requisito jurídico analisado.</p></div>
       ${gridHtml(a)}
@@ -588,13 +589,15 @@ function renderCase(){
     if(String(c.status||'').toLowerCase()==='em-analise'){
       html+=`<div class="no-analysis analysis-progress" role="status" aria-live="polite"><h4>Analisando conforme MP...</h4><p>A análise jurídica está em andamento. Os detalhes intermediários permanecem ocultos e o resultado será exibido aqui quando estiver concluído.</p></div></article>`;
     }else{
-      html+=`<div class="no-analysis"><h4>Ainda não analisado</h4><p>O caso está salvo. Clique em <b>analisar no GPT</b>; o GPT buscará o contrato pelo UUID, fará os 15 pontos e gravará o resultado aqui.</p><code>Analise o caso ${esc(c.id)}.</code></div></article>`;
+      html+=`</article>`;
     }
   }
   html+='</div>';
   $('#case-view').innerHTML=html;
 
   $('#analyze-btn')?.addEventListener('click',()=>openInGpt(c));
+  $('#copy-command-btn')?.addEventListener('click',()=>copyAnalysisCommand(c));
+  $$('[data-goto-view]').forEach(b=>b.addEventListener('click',()=>{activeCaseView=b.dataset.gotoView;applyCaseView()}));
   $$('.filter-chip').forEach(b=>b.addEventListener('click',()=>{currentFilter=b.dataset.filter;renderCase()}));
   $$('[data-expand]').forEach(b=>b.addEventListener('click',()=>{$$('.checkpoint:not(.checkpoint-hidden)').forEach(d=>d.open=b.dataset.expand==='1')}));
   applyCaseView();
@@ -605,11 +608,57 @@ function renderEmptyCase(){
   $('#case-view').innerHTML='<div class="empty-card"><h3>Nenhum caso cadastrado</h3><p>Use o formulário abaixo para criar o primeiro contrato.</p></div>';
 }
 
+function analysisCommand(c){
+  return `Busque exclusivamente pelo UUID ${c.id} no Veredicta e faça a análise completa seguindo suas instruções. Ignore nomes e títulos para fins de identificação. Execute os 15 pontos, a auditoria adversarial e envie a análise auditada de volta ao mesmo UUID.`;
+}
+async function copyAnalysisCommand(c){
+  let copied=false;
+  try{await navigator.clipboard.writeText(analysisCommand(c));copied=true}catch{}
+  const feedback=$('#copy-feedback');
+  if(feedback)feedback.textContent=copied?'Comando copiado ✓ — agora cole no assistente.':'Não foi possível copiar automaticamente. Selecione o texto acima e copie.';
+  return copied;
+}
 async function openInGpt(c){
-  const command=`Busque exclusivamente pelo UUID ${c.id} no Veredicta e faça a análise completa seguindo suas instruções. Ignore nomes e títulos para fins de identificação. Execute os 15 pontos, a auditoria adversarial e envie a análise auditada de volta ao mesmo UUID.`;
-  try{await navigator.clipboard.writeText(command)}catch{}
-  if(customGptUrl){window.open(customGptUrl,'_blank','noopener,noreferrer');alert('GPT aberto. O comando do caso foi copiado para a área de transferência.')}
-  else alert('Comando copiado. Abra o seu GPT Veredicta e cole o comando. Configure CUSTOM_GPT_URL na Vercel para abrir automaticamente.');
+  const copied=await copyAnalysisCommand(c);
+  if(customGptUrl)window.open(customGptUrl,'_blank','noopener,noreferrer');
+  else if(!$('#copy-feedback'))alert(copied?'Comando copiado. Abra o seu GPT Veredicta e cole o comando.':'Abra o seu GPT Veredicta e peça a análise do caso '+c.id+'.');
+}
+
+// Cartão "próximo passo": diz ao usuário o que fazer agora neste caso.
+function nextStepHtml(c,a){
+  const status=String(c.status||'').toLowerCase();
+  if(!a && status==='em-analise')return '';
+  if(!a){
+    return `<section class="next-step next-step-action">
+      <span class="next-step-eyebrow">PRÓXIMO PASSO</span>
+      <h4>Peça a análise deste caso ao assistente</h4>
+      <ol class="next-step-list">
+        <li>Clique em <b>${customGptUrl?'Abrir assistente e copiar comando':'Copiar comando'}</b>.</li>
+        <li>No ${customGptUrl?'GPT que abrir':'seu GPT ou Claude conectado ao Veredicta'}, cole o comando e envie.</li>
+        <li>Volte para esta tela: o resultado aparece aqui sozinho quando a análise terminar.</li>
+      </ol>
+      <code class="next-step-command">${esc(analysisCommand(c))}</code>
+      <div class="next-step-actions">
+        ${customGptUrl?'<button id="analyze-btn" class="btn btn-dark" type="button">Abrir assistente e copiar comando</button>':''}
+        <button id="copy-command-btn" class="btn ${customGptUrl?'btn-outline':'btn-dark'}" type="button">Copiar comando</button>
+        <span id="copy-feedback" class="next-step-feedback" role="status" aria-live="polite"></span>
+      </div>
+    </section>`;
+  }
+  if(status==='concluido'){
+    return `<section class="next-step next-step-done"><span class="next-step-eyebrow">CASO CONCLUÍDO</span><h4>Revisão humana finalizada</h4><p>Este caso está arquivado em “Casos revisados”. Você ainda pode consultar os 15 pontos e as evidências.</p></section>`;
+  }
+  const c15=countVerdicts(a);
+  const open=c15.parcial+c15.atencao+c15.ausente;
+  return `<section class="next-step">
+    <span class="next-step-eyebrow">PRÓXIMO PASSO</span>
+    <h4>${open?`Revise os ${open} ponto${open===1?'':'s'} que não foram atingidos`:'Confira a análise e conclua a revisão'}</h4>
+    <p>Leia a conclusão acima, confira as citações na aba <b>Evidências</b> e resolva o que falta na aba <b>Pendências</b>. A IA pode errar: a validação final é do advogado.</p>
+    <div class="next-step-actions">
+      <button class="btn btn-dark" type="button" data-goto-view="resolution">Ver pendências</button>
+      <button class="btn btn-outline" type="button" data-goto-view="evidence">Conferir evidências</button>
+    </div>
+  </section>`;
 }
 
 
