@@ -100,6 +100,16 @@ const CASE_STATUS_LABELS={
 };
 function caseStatusLabel(status=''){return CASE_STATUS_LABELS[String(status).toLowerCase()]||status||'—'}
 
+const STATUS_LEGEND=[
+  ['atinge','Atinge','o requisito está comprovado no dossiê.'],
+  ['parcial','Parcial','há indício, mas falta prova ou detalhe.'],
+  ['atencao','Atenção','há problema ou impedimento a tratar.'],
+  ['ausente','Não consta','o dossiê não traz a informação, ou o ponto não se aplica.']
+];
+function statusLegendHtml(){
+  return `<div class="status-legend" aria-label="Como ler os status">${STATUS_LEGEND.map(([k,label,text])=>`<span><i class="pill v-${k}">${label}</i> ${text}</span>`).join('')}</div>`;
+}
+
 // Etapa atual do fluxo: 1 cadastrar · 2 analisar · 3 revisar · 4 concluído.
 function workflowStep(c){
   if(!c)return 1;
@@ -577,10 +587,12 @@ function renderCase(){
     </div>${nextStepHtml(c,a)}</article>
     <article class="analysis-sheet case-panel" data-case-panel="points">
       <div class="panel-page-head"><span>15 PONTOS</span><h3>Quadro de enquadramento</h3><p>Resultado individual de cada requisito jurídico analisado.</p></div>
+      ${statusLegendHtml()}
       ${gridHtml(a)}
     </article>
     <article class="analysis-sheet case-panel" data-case-panel="evidence">
       <div class="panel-page-head"><span>EVIDÊNCIAS</span><h3>Fontes, fundamentos e auditoria</h3><p>Abra cada ponto para consultar as citações e a verificação adversarial.</p></div>
+      ${statusLegendHtml()}
       ${filterBarHtml(a)}
       ${pointCardsHtml(a)}
       <div class="report-foot">análise ${esc(a.id)} · fonte ${esc(a.legal_source_version||'não informada')} · memorando ${esc(a.memorandum_version||'não informado')} · criada em ${fmtDate(a.created_at)}</div>

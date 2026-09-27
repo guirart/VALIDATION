@@ -3667,3 +3667,7 @@ html[data-theme="dark"] .next-step-command{background:#111418;border-color:#3b45
 html[data-theme="dark"] .next-step-feedback{color:#91d7a8}
 html[data-theme="dark"] .next-step-done{background:#15251b;border-color:#24503a;border-left-color:#22c55e}
 html[data-theme="dark"] .next-step-done .next-step-eyebrow{color:#91d7a8}
+.status-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin:0 22px 12px;padding:10px 12px;border:1px solid var(--ui-line,#dbe3ee);border-radius:8px;color:var(--ui-muted,#6b7890);font-size:12px;line-height:1.5}
+.status-legend i{font-style:normal;margin-right:2px}
+html[data-theme="dark"] .status-legend{border-color:#343943;color:#aeb8c8}
+@media(max-width:520px){.workflow-steps{grid-template-columns:1fr}.next-step,.status-legend{margin-left:14px;margin-right:14px}}
