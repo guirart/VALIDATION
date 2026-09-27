@@ -3674,3 +3674,4 @@ html[data-theme="dark"] .status-legend{border-color:#343943;color:#aeb8c8}
 .analysis-nav-btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important;box-shadow:none!important}
 .onboarding-card p{max-width:640px;line-height:1.6}
 .onboarding-card .btn{display:inline-block;margin-top:8px;text-decoration:none}
+html[data-theme="dark"] .summary-box{background:#15181d!important;border-color:#343943!important;color:#c7d0dd!important}
